@@ -1,0 +1,6 @@
+/.venv
+/data
+/_tmpimg_folder
+*.log
+*.lyx~
+*.lyx#
