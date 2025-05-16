@@ -2,8 +2,10 @@
 import h5py as h5
 import numpy as np
 import cupy as cp
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from src.mlsarray import mlsarray,slicelist,irft2, rft2, irft,rft,init_kspace_grid
+from modules.mlsarray import MLSarray,Slicelist,irft2, rft2, irft,rft
 import os
 from functools import partial
 
@@ -13,8 +15,7 @@ plt.rcParams['axes.linewidth'] = 2
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_D_0_0_e0_H_1_0_e3.h5'
-# file_name = datadir+'out_3f_kapt_1_2_chi_0_1_kz_0_1.h5'
+file_name = datadir+'out_kapt_0_36_chi_0_1_D_0_0_e0_H_1_0_em4.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -32,7 +33,7 @@ with h5.File(file_name, 'r', swmr=True) as fl:
 
 
 Nx,Ny=2*Npx//3,2*Npy//3  
-sl=slicelist(Nx,Ny)
+sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 print('kx shape', kx.shape)
 nt = len(t)

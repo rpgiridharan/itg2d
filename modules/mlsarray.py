@@ -35,15 +35,6 @@ class MLSarray(cp.ndarray):
         self[:,:]=ifft(self,norm='forward',overwrite_x=True,axis=0)
     def fftx(self):
         self[:,:]=fft(self,norm='forward',overwrite_x=True,axis=0)
-        
-def init_kspace_grid(sl):
-    Nx,Ny=sl.shape
-    kxl=np.r_[0:int(Nx/2),-int(Nx/2):0]
-    kyl=np.r_[0:int(Ny/2+1)]
-    kx,ky=np.meshgrid(kxl,kyl,indexing='ij')
-    kx=cp.hstack([kx[l].ravel() for l in sl.insl])
-    ky=cp.hstack([ky[l].ravel() for l in sl.insl])
-    return kx,ky
 
 def init_kgrid(sl,Lx,Ly):
     Nx,Ny=sl.shape
@@ -55,9 +46,10 @@ def init_kgrid(sl,Lx,Ly):
     ky=cp.hstack([ky[l].ravel() for l in sl.insl])
     return kx,ky
 
-def irft2(uk,Npx,Npy,sl):
+def irft2(uk,Npx,Npy,Nx,sl):
     u=MLSarray(Npx,Npy)
     u[sl]=uk
+    u[-1:-int(Nx/2):-1,0]=u[1:int(Nx/2),0].conj()
     u.irfft2()
     return u.view(dtype=float)[:,:-2]
 

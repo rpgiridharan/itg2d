@@ -21,8 +21,8 @@ b=67.0/160.0
 chi=0.1
 DPhi=0*1e-3
 DP=0*1e-3
-HPhi=1e-4
-HP=1e-4
+HPhi=1e-3
+HP=1e-3
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -50,12 +50,12 @@ dtshow=0.1
 gammax=gam_max(ky0,kapt)
 dtstep,dtsavecb=round(0.00275/gammax,6),round(0.0275/gammax,6)
 t0,t1=0.0,int(round(100/gammax)/dtstep)*dtstep #3000/gammax
-rtol,atol=1e-6,1e-8
+rtol,atol=1e-8,1e-10
 wecontinue=False
 
 #%% Functions
 
-irft2 = partial(original_irft2, Npx=Npx, Npy=Npy, sl=sl)
+irft2 = partial(original_irft2, Npx=Npx, Npy=Npy, Nx=Nx, sl=sl)
 rft2 = partial(original_rft2, sl=sl)
 irft = partial(original_irft, Npx=Npx, Nx=Nx)
 rft = partial(original_rft, Nx=Nx)

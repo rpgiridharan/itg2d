@@ -2,6 +2,8 @@
 import h5py as h5
 import numpy as np
 import cupy as cp
+import matplotlib
+matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist, irft2, rft2, irft, rft
 import os
@@ -192,10 +194,10 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'p2_vs_t.png',dpi=600)
-    else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'p2_vs_t_').replace('.h5', '.png'),dpi=600)
+    # if file_name.endswith('out.h5'):
+    #     plt.savefig(datadir+'p2_vs_t.png',dpi=600)
+    # else:
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'p2_vs_t_').replace('.h5', '.png'),dpi=600)
     plt.show()
 
     # Plot kinetic energy vs time
@@ -241,26 +243,11 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
-    else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
-    plt.show()
-
-    # # Plot zonal shear vs time
-    # plt.figure(figsize=(8,6))
-    # plt.plot(t[:nt], Ombar_t, '-', label = '$\\partial_x^2\\overline{\\phi}$')
-    # plt.xlabel('$t$')
-    # plt.ylabel('$\\partial_x^2\\overline{\\phi}$')
-    # plt.title('$\\partial_x^2\\overline{\\phi}$ vs t')
-    # plt.grid()
-    # plt.legend()
-    # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'Ombar_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Ombar_vs_t_').replace('.h5', '.png'), dpi=600)
-    # plt.show()
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
+    plt.show()
 
     # Plot R vs time
     plt.figure(figsize=(8,6))
