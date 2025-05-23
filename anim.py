@@ -22,7 +22,7 @@ plt.rcParams['axes.linewidth'] = 2
 #%% Load the HDF5 file
 
 datadir = "data/"
-infl = datadir+'out_kapt_0_36_chi_0_1_D_0_0_e0_H_1_0_em4.h5'
+infl = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
 outfl = infl.replace('.h5', '.mp4')
 
 with h5.File(infl, "r", libver='latest', swmr=True) as fl:

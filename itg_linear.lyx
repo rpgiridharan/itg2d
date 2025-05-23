@@ -154,13 +154,13 @@ In the limit
 \begin_layout Standard
 Also,
  adding collisional viscous terms like in [Ivanov 2020,
- Ivanov 2022] along with hyperviscous terms gives
+ Ivanov 2022] along with hyperviscous and hypoviscous terms (to imitate low k landau damping) gives
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =-\gamma\nabla_{\parallel}\tilde{v}_{\parallel}+\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
-\partial_{t}v_{\parallel}+\left\{ \phi,v_{\parallel}\right\}  & =-\nabla_{\parallel}\left(\tilde{\phi}+\tilde{P}\right)+s\chi\nabla_{\perp}^{2}v_{\parallel}+D_{v_{\parallel}}\nabla_{\perp}^{4}v_{\parallel}+\nu_{v}\nabla_{\parallel}^{4}\tilde{v}_{\parallel}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =-\gamma\nabla_{\parallel}\tilde{v}_{\parallel}+\chi\nabla_{\perp}^{2}P-D_{P}\nabla_{\perp}^{4}P+H_{P}\nabla_{\perp}^{-6}\widetilde{P}-\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}v_{\parallel}+\left\{ \phi,v_{\parallel}\right\}  & =-\nabla_{\parallel}\left(\tilde{\phi}+\tilde{P}\right)+s\chi\nabla_{\perp}^{2}v_{\parallel}-D_{v}\nabla_{\perp}^{4}v_{\parallel}+H_{v}\nabla_{\perp}^{-6}\widetilde{v}_{\parallel}-\nu_{v}\nabla_{\parallel}^{4}\tilde{v}_{\parallel}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\}  & +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\nabla_{\parallel}\tilde{v}_{\parallel}-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\nabla_{\parallel}\tilde{v}_{\parallel}-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)-D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+H_{\phi}\nabla_{\perp}^{-6}\widetilde{\phi}-\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp}
 \end{equation}
@@ -221,10 +221,10 @@ To obtain Ivanov's equations we assume the constant density limit,
 
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} _{k}+\kappa_{T}\partial_{y}\phi & =-\gamma\nabla_{\parallel}v_{\parallel}+\chi\nabla_{\perp}^{2}P-D_{P}\nabla_{\perp}^{4}P-\nu_{T}\nabla_{\parallel}^{4}P\\
-\partial_{t}v_{\parallel}+\left\{ \phi,v_{\parallel}\right\}  & =-\nabla_{\parallel}\left(\phi+P\right)+s\chi\nabla_{\perp}^{2}v_{\parallel}-D_{v}\nabla_{\perp}^{4}v_{\parallel}-\nu_{v}\nabla_{\parallel}^{4}v_{\parallel}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} _{k}+\kappa_{T}\partial_{y}\phi & =-\gamma\nabla_{\parallel}v_{\parallel}+\chi\nabla_{\perp}^{2}P-D_{P}\nabla_{\perp}^{4}P+H_{P}\nabla_{\perp}^{-6}\widetilde{P}-\nu_{P}\nabla_{\parallel}^{4}P\\
+\partial_{t}v_{\parallel}+\left\{ \phi,v_{\parallel}\right\}  & =-\nabla_{\parallel}\left(\phi+P\right)+s\chi\nabla_{\perp}^{2}v_{\parallel}-D_{v}\nabla_{\perp}^{4}v_{\parallel}+H_{v}\nabla_{\perp}^{-6}\widetilde{v}_{\parallel}-\nu_{v}\nabla_{\parallel}^{4}v_{\parallel}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\}  & +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} +\kappa_{T}\partial_{y}\nabla_{\perp}^{2}\phi-\partial_{y}\left(\phi+P\right)\\
- & =-\nabla_{\parallel}v_{\parallel}-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)-D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)-\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)
+ & =-\nabla_{\parallel}v_{\parallel}-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)-D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+H_{\phi}\nabla_{\perp}^{-6}\widetilde{\phi}-\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)
 \end{aligned}
 \end{equation}
 
@@ -261,10 +261,10 @@ nolink "false"
  give
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P_{k}+\left\{ \phi,P\right\} _{k}+\left(\kappa_{n}+\kappa_{T}\right)ik_{y}\phi_{k} & =-\gamma ik_{\parallel}v_{\parallel k}-\chi k_{\perp}^{2}P_{k}-D_{P}k_{\perp}^{4}P_{k}-\nu_{T}k_{\parallel}^{2}P_{k}\\
-\partial_{t}v_{\parallel k}+\left\{ \phi,v_{\parallel}\right\} _{k} & =-ik_{\parallel}\left(\phi_{k}+P_{k}\right)-s\chi k_{\perp}^{2}v_{\parallel k}-D_{v}k_{\perp}^{4}v_{\parallel}-\nu_{v}k_{\parallel}^{4}v_{\parallel}\\
+\begin{aligned}\partial_{t}P_{k}+\left\{ \phi,P\right\} _{k}+\left(\kappa_{n}+\kappa_{T}\right)ik_{y}\phi_{k} & =-\gamma ik_{\parallel}v_{\parallel k}-\chi k_{\perp}^{2}P_{k}-D_{P}k_{\perp}^{4}P_{k}-H_{P}k_{\perp}^{-6}\widetilde{P}-\nu_{P}k_{\parallel}^{2}P_{k}\\
+\partial_{t}v_{\parallel k}+\left\{ \phi,v_{\parallel}\right\} _{k} & =-ik_{\parallel}\left(\phi_{k}+P_{k}\right)-s\chi k_{\perp}^{2}v_{\parallel k}-D_{v}k_{\perp}^{4}v_{\parallel}-H_{v}k_{\perp}^{-6}\widetilde{v}_{\parallel}-\nu_{v}k_{\parallel}^{4}v_{\parallel}\\
 \partial_{t}\phi_{k}+\left\{ \phi,\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right\} _{k}/fac+\left(\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \right)_{k}/fac & -\left(\kappa_{B}-\kappa_{n}\right)ik_{y}\phi/fac-\left(\kappa_{n}+\kappa_{T}\right)ik_{y}k_{\perp}^{2}\phi_{k}/fac-\kappa_{B}ik_{y}P_{k}/fac\\
- & =-ik_{\parallel}v_{\parallel k}/fac-\chi k_{\perp}^{4}\left(a\phi_{k}-bP_{k}\right)-D_{\phi}k_{\perp}^{4}\phi_{k}-\nu_{\phi}k_{\parallel}^{4}\phi_{k}
+ & =-ik_{\parallel}v_{\parallel k}/fac-\chi k_{\perp}^{4}\left(a\phi_{k}-bP_{k}\right)-D_{\phi}k_{\perp}^{4}\phi_{k}-H_{\phi}k_{\perp}^{-6}\widetilde{\phi}-\nu_{\phi}k_{\parallel}^{4}\phi_{k}
 \end{aligned}
 \end{equation}
 
@@ -277,10 +277,10 @@ nolink "false"
 Ignoring nonlinear terms and taking the FT in time gives
 \begin_inset Formula 
 \begin{align*}
--i\omega P_{k}+\left(\kappa_{n}+\kappa_{T}\right)ik_{y}\phi_{k} & =-\gamma ik_{\parallel}v_{\parallel k}-\chi k_{\perp}^{2}P_{k}-D_{P}k_{\perp}^{4}P_{k}-\nu_{T}k_{\parallel}^{2}P_{k}\\
--i\omega v_{\parallel k} & =-ik_{\parallel}\left(\phi_{k}+P_{k}\right)-s\chi k_{\perp}^{2}v_{\parallel k}-D_{v}k_{\perp}^{4}v_{\parallel}-\nu_{v}k_{\parallel}^{4}v_{\parallel}\\
+-i\omega P_{k}+\left(\kappa_{n}+\kappa_{T}\right)ik_{y}\phi_{k} & =-\gamma ik_{\parallel}v_{\parallel k}-\chi k_{\perp}^{2}P_{k}-D_{P}k_{\perp}^{4}P_{k}-H_{P}k_{\perp}^{-6}P-\nu_{P}k_{\parallel}^{2}P_{k}\\
+-i\omega v_{\parallel k} & =-ik_{\parallel}\left(\phi_{k}+P_{k}\right)-s\chi k_{\perp}^{2}v_{\parallel k}-D_{v}k_{\perp}^{4}v_{\parallel}-H_{v}k_{\perp}^{-6}v_{\parallel}-\nu_{v}k_{\parallel}^{4}v_{\parallel}\\
 -i\omega\phi_{k}-\left(\kappa_{B}-\kappa_{n}\right)ik_{y}\phi/fac-\left(\kappa_{n}+\kappa_{T}\right)ik_{y}k_{\perp}^{2}\phi_{k}/fac & -\kappa_{B}ik_{y}P_{k}/fac\\
- & =-ik_{\parallel}v_{\parallel k}/fac-\chi k_{\perp}^{4}\left(a\phi_{k}-bP_{k}\right)/fac-D_{\phi}k_{\perp}^{4}\phi_{k}-\nu_{\phi}k_{\parallel}^{4}\phi_{k}
+ & =-ik_{\parallel}v_{\parallel k}/fac-\chi k_{\perp}^{4}\left(a\phi_{k}-bP_{k}\right)/fac-D_{\phi}k_{\perp}^{4}\phi_{k}-H_{\phi}k_{\perp}^{-6}\phi-\nu_{\phi}k_{\parallel}^{4}\phi_{k}
 \end{align*}
 
 \end_inset
@@ -450,14 +450,11 @@ This gives
 \end_layout
 
 \begin_layout Standard
-\begin_inset Formula $\sqrt{a+ib}=\sqrt{a}+i\frac{b}{|b|}\frac{b}{2\sqrt{a}}.$
-\end_inset
-
- This gives
+This gives
 \begin_inset Formula 
 \begin{align*}
-\omega & =\frac{\left(-iA_{P}k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)-iA_{\phi}k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)+\kappa_{n}k_{y}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}-\kappa_{B}k_{y}\right)}{2\left(\tau+k_{\perp}^{2}\right)}\\
- & \pm\frac{1}{2\left(\tau+k_{\perp}^{2}\right)}\sqrt{\left(-iA_{P}k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)-iA_{\phi}k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)+\kappa_{n}k_{y}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}-\kappa_{B}k_{y}\right)^{2}-4\left(-iA_{P}k_{\perp}^{2}\right)\left(\kappa_{n}k_{y}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}-\kappa_{B}k_{y}-iA_{\phi}k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)\right)+4\left(-\kappa_{B}k_{y}+i\chi k_{\perp}^{4}b\right)\left(\kappa_{n}+\kappa_{T}\right)k_{y}}
+\omega & =\frac{\left(-i\left(A_{P}+A_{\phi}\right)k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)+\kappa_{n}k_{y}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}-\kappa_{B}k_{y}\right)}{2\left(\tau+k_{\perp}^{2}\right)}\\
+ & \pm\frac{1}{2\left(\tau+k_{\perp}^{2}\right)}\sqrt{\left(-i\left(A_{P}+A_{\phi}\right)k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)+\kappa_{n}k_{y}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}-\kappa_{B}k_{y}\right)^{2}-4\left(\tau+k_{\perp}^{2}\right)\left(-iA_{P}k_{\perp}^{2}\right)\left(\kappa_{n}k_{y}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}-\kappa_{B}k_{y}-iA_{\phi}k_{\perp}^{2}\left(\tau+k_{\perp}^{2}\right)\right)+4\left(-\kappa_{B}k_{y}+i\chi k_{\perp}^{4}b\right)\left(\kappa_{n}+\kappa_{T}\right)k_{y}}
 \end{align*}
 
 \end_inset
@@ -466,10 +463,91 @@ This gives
 \end_layout
 
 \begin_layout Standard
+For 
+\begin_inset Formula $k_{\perp}^{2}\gg1$
+\end_inset
+
+,
+ 
 \begin_inset Formula 
 \begin{align*}
-\omega_{r}\left(k_{x},k_{y}\right) & =\frac{-\kappa_{T}k_{y}}{\left(1+k_{\perp}^{2}\right)\left(1-a\right)}\\
-\gamma\left(k_{x},k_{y}\right) & =-D_{0}k_{\perp}^{4}-\frac{a\chi k_{\perp}^{2}}{1+k_{\perp}^{2}}
+\omega & =\frac{\left(-i\left(A_{P}+A_{\phi}\right)k_{\perp}^{2}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}\right)}{2}\\
+ & \pm\frac{1}{2}\sqrt{-\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}+i\left[\left(-2\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}+4\chi b\right)\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right]}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula $\sqrt{a+ib}=\sqrt{a}+i\frac{b}{|b|}\frac{b}{2\sqrt{a}}.$
+\end_inset
+
+ This gives
+\begin_inset Formula 
+\begin{align*}
+\omega & =\frac{\left(-i\left(A_{P}+A_{\phi}\right)k_{\perp}^{2}-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}\right)}{2}\\
+ & \pm\frac{1}{2}\sqrt{-\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}\\
+ & \pm\frac{i}{2}\frac{\left|\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}-2\chi b\right)\right|\left(\kappa_{n}+\kappa_{T}\right)k_{y}}{\sqrt{-\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}}
+\end{align*}
+
+\end_inset
+
+This gives
+\begin_inset Formula 
+\begin{align*}
+\gamma_{k} & =\frac{-\left(A_{P}+A_{\phi}\right)k_{\perp}^{2}}{2}\\
+ & \pm\frac{1}{2}\frac{\left|\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}-2\chi b\right)\right|\left(\kappa_{n}+\kappa_{T}\right)k_{y}}{\sqrt{-\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}}\\
+\omega & =\frac{\left(-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}\right)}{2}\\
+ & \pm\frac{1}{2}\sqrt{-\left(\left(A_{P}-A_{\phi}\right)k_{\perp}^{2}\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using 
+\begin_inset Formula $A_{P}=\chi+D_{P}k_{\perp}^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $A_{\phi}=\chi a/k_{\perp}^{2}+D_{\phi}k_{\perp}^{2}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align*}
+\gamma_{k} & =\frac{-\left(\chi k_{\perp}^{2}+\left(D_{P}+D_{\phi}\right)k_{\perp}^{4}\right)}{2}\\
+ & \pm\frac{1}{2}\frac{\left|\left(\left(D_{P}-D_{\phi}\right)k_{\perp}^{4}+\chi k_{\perp}^{2}\right)\right|\left(\kappa_{n}+\kappa_{T}\right)k_{y}}{\sqrt{-\left(\left(\chi k_{\perp}^{2}+\left(D_{P}-D_{\phi}\right)k_{\perp}^{4}\right)\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}}\\
+\omega & =\frac{\left(-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}\right)}{2}\\
+ & \pm\frac{1}{2}\sqrt{-\left(\left(\chi k_{\perp}^{2}+\left(D_{P}-D_{\phi}\right)k_{\perp}^{4}\right)\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $D_{P}=D_{\phi}=D_{0}$
+\end_inset
+
+,
+ 
+\begin_inset Formula $H_{P}=H_{\phi}=H_{0}$
+\end_inset
+
+,
+\begin_inset Formula 
+\begin{align*}
+\gamma_{k} & =\frac{-\left(\chi k_{\perp}^{2}+2D_{0}k_{\perp}^{4}\right)}{2}\\
+ & \pm\frac{1}{2}\frac{\chi k_{\perp}^{2}\left(\kappa_{n}+\kappa_{T}\right)k_{y}}{\sqrt{-\left(\left(\chi k_{\perp}^{2}+\left(D_{P}-D_{\phi}\right)k_{\perp}^{4}\right)\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}}\\
+\omega & =\frac{\left(-\left(\kappa_{n}+\kappa_{T}\right)k_{y}k_{\perp}^{2}\right)}{2}\\
+ & \pm\frac{1}{2}\sqrt{-\left(\chi k_{\perp}^{2}\right)^{2}+\left(\left(\kappa_{n}+\kappa_{T}\right)k_{y}\right)^{2}}
 \end{align*}
 
 \end_inset

@@ -14,13 +14,13 @@ from functools import partial
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=0.36 
+kapt=1.2#0.36 
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
-DPhi=0*1e-3
-DP=0*1e-3
+DPhi=1e-3
+DP=1e-3
 HPhi=1e-3
 HP=1e-3
 
@@ -47,11 +47,11 @@ output_dir = "data/"
 filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
 
 dtshow=0.1
-gammax=gam_max(ky0,kapt)
+gammax=round(gam_max(ky0,kapt),6)
 dtstep,dtsavecb=round(0.00275/gammax,6),round(0.0275/gammax,6)
 t0,t1=0.0,int(round(100/gammax)/dtstep)*dtstep #3000/gammax
-rtol,atol=1e-8,1e-10
-wecontinue=False
+rtol,atol=1e-9,1e-11
+wecontinue=True
 
 #%% Functions
 
@@ -113,12 +113,15 @@ def rhs_itg(t,y):
     sigk=cp.sign(ky)
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
+    term1, term2, term3 = dxphi*dyP, dyphi*dxP, dyphi*dyP - dxphi*dxP
+    term1_k, term2_k, term3_k = rft2(term1), rft2(term2), rft2(term3)
 
     dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-DPhi*kpsq**2*Phik-HPhi/(kpsq**3)*Phik*sigk 
     dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-DP*kpsq**2*Pk-HP/(kpsq**3)*Pk*sigk 
 
     dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
-    dPhikdt[:]+= (kx**2*rft2(dxphi*dyP)-ky**2*rft2(dyphi*dxP)+kx*ky*rft2(dyphi*dyP-dxphi*dxP))/fac
+    # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
+    dPhikdt[:]+= (kx**2*term1_k - ky**2*term2_k + kx*ky*term3_k)/fac
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     return dzkdt.view(dtype=float)
 
@@ -140,6 +143,6 @@ else:
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
-r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,rtol=rtol,atol=atol)
+r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
 r.run()
 fl.close()
