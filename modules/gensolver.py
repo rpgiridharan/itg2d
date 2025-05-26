@@ -113,7 +113,7 @@ def save_data(fl,grpname,ext_flag,**kwargs):
 #                     tsavenext[l]=round(tsavenext[l]+dtsave[l],trnd)
 #                     self.fsave[l](r.t,r.y)
 
-class gensolver:    
+class Gensolver:    
     def __init__(self,solver,f,t0,y0,t1,fsave,fshow=None,fy=None,dtstep=0.1,dtshow=None,dtsave=None,dtfupdate=None,force_update=None,dense=False,**kwargs):
 
         svs=solver.split(".")

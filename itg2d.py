@@ -51,7 +51,7 @@ gammax=round(gam_max(ky0,kapt),6)
 dtstep,dtsavecb=round(0.00275/gammax,6),round(0.0275/gammax,6)
 t0,t1=0.0,int(round(100/gammax)/dtstep)*dtstep #3000/gammax
 rtol,atol=1e-9,1e-11
-wecontinue=True
+wecontinue=False
 
 #%% Functions
 
@@ -75,20 +75,20 @@ def fsavecb(t,y,flag):
     Om=irft2(-kpsq*Phik)
     P=irft2(Pk)
     if flag=='fields':
-        save_data(fl,'fields',ext_flag=True,Om=Om.get(),P=P.get(),t=t.get())
+        save_data(fl,'fields',ext_flag=True,Om=Om.get(),P=P.get(),t=t)
     elif flag=='zonal':
         vbar=cp.mean(vy,1)
         Ombar=cp.mean(Om,1)
         Pbar=cp.mean(P,1)
-        save_data(fl,'zonal',ext_flag=True,vbar=vbar.get(),Ombar=Ombar.get(),Pbar=Pbar.get(),t=t.get())
+        save_data(fl,'zonal',ext_flag=True,vbar=vbar.get(),Ombar=Ombar.get(),Pbar=Pbar.get(),t=t)
     elif flag=='fluxes':
         vx=irft2(-1j*ky*Phik) #ExB flow: x comp
         wx=irft2(-1j*ky*Pk) #diamagnetic flow: x comp
         Q=cp.mean(P*vx,1)
         R=cp.mean(vy*vx,1)
         PiP=cp.mean(vy*wx,1)
-        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),R=R.get(),PiP=PiP.get(),t=t.get())
-    save_data(fl,'last',ext_flag=False,zk=zk.get(),t=t.get())
+        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),R=R.get(),PiP=PiP.get(),t=t)
+    save_data(fl,'last',ext_flag=False,zk=zk.get(),t=t)
 
 def fshowcb(t,y):
     zk=y.view(dtype=complex)
