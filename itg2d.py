@@ -57,10 +57,10 @@ wecontinue=False
 
 #%% Functions
 
-irft2 = partial(original_irft2, Npx=Npx, Npy=Npy, Nx=Nx, sl=sl)
-rft2 = partial(original_rft2, sl=sl)
-irft = partial(original_irft, Npx=Npx, Nx=Nx)
-rft = partial(original_rft, Nx=Nx)
+irft2 = partial(original_irft2,Npx=Npx,Npy=Npy,Nx=Nx,sl=sl)
+rft2 = partial(original_rft2,sl=sl)
+irft = partial(original_irft,Npx=Npx,Nx=Nx)
+rft = partial(original_rft,Nx=Nx)
 
 def init_fields(kx,ky,w=10.0,A=1e-6):
     Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
