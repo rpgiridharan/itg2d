@@ -8,6 +8,7 @@ from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irf
 from modules.gamma import gam_max   
 from modules.gensolver import Gensolver,save_data
 from functools import partial
+import os
 
 #%% Parameters
 
@@ -44,11 +45,12 @@ def format_exp(d):
     exp = str(int(exp))
     return f"{base}_{prefix}{exp}"
 output_dir = "data/"
+os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
 
 dtshow=0.1
 gammax=round(gam_max(ky0,kapt),6)
-dtstep,dtsavecb=round(0.00275/gammax,6),round(0.0275/gammax,6)
+dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
 t0,t1=0.0,int(round(100/gammax)/dtstep)*dtstep #3000/gammax
 rtol,atol=1e-9,1e-11
 wecontinue=False
@@ -116,8 +118,8 @@ def rhs_itg(t,y):
     term1, term2, term3 = dxphi*dyP, dyphi*dxP, dyphi*dyP - dxphi*dxP
     term1_k, term2_k, term3_k = rft2(term1), rft2(term2), rft2(term3)
 
-    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-DPhi*kpsq**2*Phik-HPhi/(kpsq**3)*Phik*sigk 
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-DP*kpsq**2*Pk-HP/(kpsq**3)*Pk*sigk 
+    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*(DPhi*kpsq**2*Phik+HPhi/(kpsq**3)*Phik) 
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*(DP*kpsq**2*Pk+HP/(kpsq**3)*Pk) 
 
     dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
