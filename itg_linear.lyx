@@ -277,8 +277,8 @@ nolink "false"
 Ignoring nonlinear terms and taking the FT in time gives
 \begin_inset Formula 
 \begin{align*}
--i\omega P_{k}+\left(\kappa_{n}+\kappa_{T}\right)ik_{y}\phi_{k} & =-\gamma ik_{\parallel}v_{\parallel k}-\chi k_{\perp}^{2}P_{k}-D_{P}k_{\perp}^{4}P_{k}-H_{P}k_{\perp}^{-6}P-\nu_{P}k_{\parallel}^{2}P_{k}\\
--i\omega v_{\parallel k} & =-ik_{\parallel}\left(\phi_{k}+P_{k}\right)-s\chi k_{\perp}^{2}v_{\parallel k}-D_{v}k_{\perp}^{4}v_{\parallel}-H_{v}k_{\perp}^{-6}v_{\parallel}-\nu_{v}k_{\parallel}^{4}v_{\parallel}\\
+-i\omega P_{k}+\left(\kappa_{n}+\kappa_{T}\right)ik_{y}\phi_{k} & =-\gamma ik_{\parallel}v_{\parallel k}-\chi k_{\perp}^{2}P_{k}-D_{P}k_{\perp}^{4}P_{k}-H_{P}k_{\perp}^{-6}P_{k}-\nu_{P}k_{\parallel}^{2}P_{k}\\
+-i\omega v_{\parallel k} & =-ik_{\parallel}\left(\phi_{k}+P_{k}\right)-s\chi k_{\perp}^{2}v_{\parallel k}-D_{v}k_{\perp}^{4}v_{\parallel k}-H_{v}k_{\perp}^{-6}v_{\parallel k}-\nu_{v}k_{\parallel}^{4}v_{\parallel k}\\
 -i\omega\phi_{k}-\left(\kappa_{B}-\kappa_{n}\right)ik_{y}\phi/fac-\left(\kappa_{n}+\kappa_{T}\right)ik_{y}k_{\perp}^{2}\phi_{k}/fac & -\kappa_{B}ik_{y}P_{k}/fac\\
  & =-ik_{\parallel}v_{\parallel k}/fac-\chi k_{\perp}^{4}\left(a\phi_{k}-bP_{k}\right)/fac-D_{\phi}k_{\perp}^{4}\phi_{k}-H_{\phi}k_{\perp}^{-6}\phi-\nu_{\phi}k_{\parallel}^{4}\phi_{k}
 \end{align*}
