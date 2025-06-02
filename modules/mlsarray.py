@@ -8,8 +8,8 @@ class Slicelist:
         shp=(Nx,Ny)
         insl=[np.s_[0:1,1:int(Ny/2)],np.s_[1:int(Nx/2),:int(Ny/2)],np.s_[-int(Nx/2)+1:,1:int(Ny/2)]]
         shps=[[len(range(*(l[j].indices(shp[j])))) for j in range(len(l))] for l in insl]
-        Ns=[np.prod(l) for l in shps]
-        outsl=[np.s_[sum(Ns[:l]):sum(Ns[:l])+Ns[l]] for l in range(len(Ns))]
+        Ns=[np.prod(l) for l in shps] # Ns elements can be numpy.int64
+        outsl=[np.s_[int(sum(Ns[:l])):int(sum(Ns[:l])+Ns[l])] for l in range(len(Ns))]
         self.insl,self.shape,self.shps,self.Ns,self.outsl=insl,shp,shps,Ns,outsl
 
 class MLSarray(cp.ndarray):
@@ -46,35 +46,35 @@ def init_kgrid(sl,Lx,Ly):
     ky=cp.hstack([ky[l].ravel() for l in sl.insl])
     return kx,ky
 
-# def irft2(uk,Npx,Npy,Nx,sl):
-#     u=MLSarray(Npx,Npy)
-#     u[sl]=uk
-#     u[-1:-int(Nx/2):-1,0]=u[1:int(Nx/2),0].conj()
-#     u.irfft2()
-#     return u.view(dtype=float)[:,:-2]
-
-def irft2(uk, Npx, Npy, Nx, sl):
-    u = MLSarray(Npx, Npy)
-    # Ensure uk is a contiguous array before assignment
-    if not uk.flags.c_contiguous:
-        uk = uk.copy()
-    # Handle the assignments with explicit copies to avoid view issues
-    for l, j, shp in zip(sl.insl, sl.outsl, sl.shps):
-        u[l] = uk[j].reshape(shp)
-    u[-1:-int(Nx/2):-1, 0] = u[1:int(Nx/2), 0].conj()
+def irft2(uk,Npx,Npy,Nx,sl):
+    u=MLSarray(Npx,Npy)
+    u[sl]=uk
+    u[-1:-int(Nx/2):-1,0]=u[1:int(Nx/2),0].conj()
     u.irfft2()
-    return u.view(dtype=float)[:, :-2]
+    return u.view(dtype=float)[:,:-2]
 
-# def rft2(u,sl):
-#     uk=rfft2(u,norm='forward',overwrite_x=True).view(type=MLSarray)
-#     return cp.hstack(uk[sl])
+# def irft2(uk, Npx, Npy, Nx, sl):
+#     u = MLSarray(Npx, Npy)
+#     # Ensure uk is a contiguous array before assignment
+#     if not uk.flags.c_contiguous:
+#         uk = uk.copy()
+#     # Handle the assignments with explicit copies to avoid view issues
+#     for l, j, shp in zip(sl.insl, sl.outsl, sl.shps):
+#         u[l] = uk[j].reshape(shp)
+#     u[-1:-int(Nx/2):-1, 0] = u[1:int(Nx/2), 0].conj()
+#     u.irfft2()
+#     return u.view(dtype=float)[:, :-2]
 
 def rft2(u,sl):
-    uk_raw = rfft2(u,norm='forward',overwrite_x=True)
-    slices = [uk_raw[l].ravel() for l in sl.insl]
-    # Make sure arrays are contiguous before stacking
-    contiguous_slices = [s.copy() if not s.flags.c_contiguous else s for s in slices]
-    return cp.hstack(contiguous_slices)
+    uk=rfft2(u,norm='forward',overwrite_x=True).view(type=MLSarray)
+    return cp.hstack(uk[sl])
+
+# def rft2(u,sl):
+#     uk_raw = rfft2(u,norm='forward',overwrite_x=True)
+#     slices = [uk_raw[l].ravel() for l in sl.insl]
+#     # Make sure arrays are contiguous before stacking
+#     contiguous_slices = [s.copy() if not s.flags.c_contiguous else s for s in slices]
+#     return cp.hstack(contiguous_slices)
 
 def irft(vk,Npx,Nx):
     v = cp.zeros(int(Npx/2)+1, dtype='complex128')

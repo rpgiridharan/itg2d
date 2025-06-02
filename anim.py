@@ -6,7 +6,7 @@ import numpy as np
 import h5py as h5
 import matplotlib as mpl
 mpl.use("Agg")
-import matplotlib.pylab as plt
+import matplotlib.pyplot as plt
 from mpi4py import MPI
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -22,7 +22,7 @@ plt.rcParams['axes.linewidth'] = 2
 #%% Load the HDF5 file
 
 datadir = "data/"
-infl = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+infl = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_complete.h5'
 outfl = infl.replace('.h5', '.mp4')
 
 with h5.File(infl, "r", libver='latest', swmr=True) as fl:
