@@ -3,6 +3,6 @@
 /_tmpimg_folder
 /modules/__pycache__
 *.log
-*.lyx
 *.lyx~
 *.lyx#
+itg2d_temp_run.py
