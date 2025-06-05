@@ -46,7 +46,7 @@ def format_exp(d):
     return f"{base}_{prefix}{exp}"
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}_debug_l.h5'
+filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
 
 dtshow=0.1
 gammax=round(gam_max(ky0,kapt),6)
@@ -116,17 +116,17 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    print(f"Time: {t}")
-    print(f"kpsq: type={type(kpsq)}, shape={kpsq.shape}, dtype={kpsq.dtype}, is_contiguous={kpsq.flags.c_contiguous}, has_nan={cp.any(cp.isnan(kpsq))}, has_inf={cp.any(cp.isinf(kpsq))}")
-    print(f"Phik: type={type(Phik)}, shape={Phik.shape}, dtype={Phik.dtype}, is_contiguous={Phik.flags.c_contiguous}, has_nan={cp.any(cp.isnan(Phik))}, has_inf={cp.any(cp.isinf(Phik))}")
-    print(f"ky: type={type(ky)}, shape={ky.shape}, dtype={ky.dtype}, is_contiguous={ky.flags.c_contiguous}, has_nan={cp.any(cp.isnan(ky))}, has_inf={cp.any(cp.isinf(ky))}")
-    print(f"fac: type={type(fac)}, shape={fac.shape}, dtype={fac.dtype}, is_contiguous={fac.flags.c_contiguous}, has_nan={cp.any(cp.isnan(fac))}, has_inf={cp.any(cp.isinf(fac))}, has_zero={cp.any(fac == 0)}")
-
     dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*(DPhi*kpsq**2*Phik+HPhi/(kpsq**3)*Phik) 
     dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*(DP*kpsq**2*Pk+HP/(kpsq**3)*Pk) 
 
     dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
+
+    nl_term1_num = 1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg)
+    dPhikdt[:] += nl_term1_num / fac
+    nl_term2_num = kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP)
+    dPhikdt[:] += nl_term2_num / fac
+
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     return dzkdt.view(dtype=float)
 
@@ -155,53 +155,8 @@ def rhs_itg_debug(t,y):
     print(f"ky: type={type(ky)}, shape={ky.shape}, dtype={ky.dtype}, is_contiguous={ky.flags.c_contiguous}, has_nan={cp.any(cp.isnan(ky))}, has_inf={cp.any(cp.isinf(ky))}")
     print(f"fac: type={type(fac)}, shape={fac.shape}, dtype={fac.dtype}, is_contiguous={fac.flags.c_contiguous}, has_nan={cp.any(cp.isnan(fac))}, has_inf={cp.any(cp.isinf(fac))}, has_zero={cp.any(fac == 0)}")
 
-    # --- Break down dPhikdt calculation ---
-    # Term 1
-    term_A1 = (kapb - kapn) * Phik
-    term_A = 1j * ky * term_A1 / fac
-    print(f"DEBUG: term_A computed. Has NaN: {cp.any(cp.isnan(term_A))}, Has Inf: {cp.any(cp.isinf(term_A))}")
-
-    # Term 2 (original suspect for SystemError)
-    term_B1 = (kapn + kapt) * kpsq
-    term_B2 = term_B1 * Phik
-    term_B = 1j * ky * term_B2 / fac
-    print(f"DEBUG: term_B computed. Has NaN: {cp.any(cp.isnan(term_B))}, Has Inf: {cp.any(cp.isinf(term_B))}")
-
-    # Term 3
-    term_C1 = kapb * Pk
-    term_C = 1j * ky * term_C1 / fac
-    print(f"DEBUG: term_C computed. Has NaN: {cp.any(cp.isnan(term_C))}, Has Inf: {cp.any(cp.isinf(term_C))}")
-
-    # Term 4
-    term_D1_chi_part = a * Phik - b * Pk
-    term_D2_chi_part = kpsq**2 * term_D1_chi_part
-    term_D = -chi * term_D2_chi_part / fac
-    print(f"DEBUG: term_D computed. Has NaN: {cp.any(cp.isnan(term_D))}, Has Inf: {cp.any(cp.isinf(term_D))}")
-
-    # Term 5 (Hyperviscosity)
-    HPhi_contribution = HPhi * Phik / (kpsq**3)
-    term_E1_hypervisc_part = DPhi * kpsq**2 * Phik
-    term_E2_hypervisc_part = term_E1_hypervisc_part + HPhi_contribution
-    term_E = -sigk * term_E2_hypervisc_part
-    print(f"DEBUG: term_E computed. Has NaN: {cp.any(cp.isnan(term_E))}, Has Inf: {cp.any(cp.isinf(term_E))}")
-
-    dPhikdt_view[:] = term_A + term_B + term_C + term_D + term_E
-    print(f"DEBUG: dPhikdt initial assignment done. Has NaN: {cp.any(cp.isnan(dPhikdt_view))}, Has Inf: {cp.any(cp.isinf(dPhikdt_view))}")
-
-
-    # --- Break down dPkdt calculation ---
-    pk_term_A = -1j * ky * (kapn + kapt) * Phik
-
-    pk_term_B = -chi * kpsq * Pk
-
-    HP_contribution = HP * Pk / (kpsq**3)
-    pk_term_C1_hypervisc_part = DP * kpsq**2 * Pk
-    pk_term_C2_hypervisc_part = pk_term_C1_hypervisc_part + HP_contribution
-    pk_term_C = -sigk * pk_term_C2_hypervisc_part
-    
-    dPkdt_view[:] = pk_term_A + pk_term_B + pk_term_C
-    print(f"DEBUG: dPkdt initial assignment done. Has NaN: {cp.any(cp.isnan(dPkdt_view))}, Has Inf: {cp.any(cp.isinf(dPkdt_view))}")
-
+    dPhikdt_view[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*(DPhi*kpsq**2*Phik+HPhi/(kpsq**3)*Phik) 
+    dPkdt_view[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*(DP*kpsq**2*Pk+HP/(kpsq**3)*Pk) 
 
     # --- Nonlinear terms (additive) ---
     nl_term1_num = 1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg)
@@ -213,90 +168,8 @@ def rhs_itg_debug(t,y):
     print(f"DEBUG: dPhikdt after NL2. Has NaN: {cp.any(cp.isnan(dPhikdt_view))}, Has Inf: {cp.any(cp.isinf(dPhikdt_view))}")
     
     dPkdt_view[:] += rft2(dyphi*dxP-dxphi*dyP)
-    print(f"DEBUG: dPkdt after NL. Has NaN: {cp.any(cp.isnan(dPkdt_view))}, Has Inf: {cp.any(cp.isinf(dPkdt_view))}")
     
     return dzkdt.view(dtype=float)
-
-def rhs_itg_debug_l(t,y):
-    zk=y.view(dtype=complex)
-    dzkdt=cp.zeros_like(zk)
-    # It's often safer to work with copies if zk might be modified elsewhere,
-    # or if the solver relies on y not changing during rhs_itg.
-    # However, for performance, views are common. Let's assume current usage is intended.
-    Phik,Pk=zk[:Nk],zk[Nk:]
-
-    dPhikdt_view,dPkdt_view=dzkdt[:Nk],dzkdt[Nk:] # Views for assignment
-
-    dxphi=irft2(1j*kx*Phik)
-    dyphi=irft2(1j*ky*Phik)
-    dxP=irft2(1j*kx*Pk)
-    dyP=irft2(1j*ky*Pk)
-    sigk=cp.sign(ky)
-    fac=sigk+kpsq # kpsq is global
-    nOmg=irft2(fac*Phik)
-
-    # Your diagnostic prints here (they are good)
-    print(f"Time: {t}")
-    print(f"kpsq: type={type(kpsq)}, shape={kpsq.shape}, dtype={kpsq.dtype}, is_contiguous={kpsq.flags.c_contiguous}, has_nan={cp.any(cp.isnan(kpsq))}, has_inf={cp.any(cp.isinf(kpsq))}")
-    print(f"Phik: type={type(Phik)}, shape={Phik.shape}, dtype={Phik.dtype}, is_contiguous={Phik.flags.c_contiguous}, has_nan={cp.any(cp.isnan(Phik))}, has_inf={cp.any(cp.isinf(Phik))}")
-    print(f"ky: type={type(ky)}, shape={ky.shape}, dtype={ky.dtype}, is_contiguous={ky.flags.c_contiguous}, has_nan={cp.any(cp.isnan(ky))}, has_inf={cp.any(cp.isinf(ky))}")
-    print(f"fac: type={type(fac)}, shape={fac.shape}, dtype={fac.dtype}, is_contiguous={fac.flags.c_contiguous}, has_nan={cp.any(cp.isnan(fac))}, has_inf={cp.any(cp.isinf(fac))}, has_zero={cp.any(fac == 0)}")
-
-    # --- Break down dPhikdt calculation ---
-    # Term 1
-    term_A1 = (kapb - kapn) * Phik
-    term_A = 1j * ky * term_A1 / fac
-    print(f"DEBUG: term_A computed. Has NaN: {cp.any(cp.isnan(term_A))}, Has Inf: {cp.any(cp.isinf(term_A))}")
-
-    # Term 2 (original suspect for SystemError)
-    term_B1 = (kapn + kapt) * kpsq
-    term_B2 = term_B1 * Phik
-    term_B = 1j * ky * term_B2 / fac
-    print(f"DEBUG: term_B computed. Has NaN: {cp.any(cp.isnan(term_B))}, Has Inf: {cp.any(cp.isinf(term_B))}")
-
-    # Term 3
-    term_C1 = kapb * Pk
-    term_C = 1j * ky * term_C1 / fac
-    print(f"DEBUG: term_C computed. Has NaN: {cp.any(cp.isnan(term_C))}, Has Inf: {cp.any(cp.isinf(term_C))}")
-
-    # Term 4
-    term_D1_chi_part = a * Phik - b * Pk
-    term_D2_chi_part = kpsq**2 * term_D1_chi_part
-    term_D = -chi * term_D2_chi_part / fac
-    print(f"DEBUG: term_D computed. Has NaN: {cp.any(cp.isnan(term_D))}, Has Inf: {cp.any(cp.isinf(term_D))}")
-
-    # Term 5 (Hyperviscosity)
-    HPhi_contribution = HPhi * Phik / (kpsq**3)
-    term_E1_hypervisc_part = DPhi * kpsq**2 * Phik
-    term_E2_hypervisc_part = term_E1_hypervisc_part + HPhi_contribution
-    term_E = -sigk * term_E2_hypervisc_part
-    print(f"DEBUG: term_E computed. Has NaN: {cp.any(cp.isnan(term_E))}, Has Inf: {cp.any(cp.isinf(term_E))}")
-
-    dPhikdt_view[:] = term_A + term_B + term_C + term_D + term_E
-    print(f"DEBUG: dPhikdt initial assignment done. Has NaN: {cp.any(cp.isnan(dPhikdt_view))}, Has Inf: {cp.any(cp.isinf(dPhikdt_view))}")
-
-
-    # --- Break down dPkdt calculation ---
-    pk_term_A = -1j * ky * (kapn + kapt) * Phik
-
-    pk_term_B = -chi * kpsq * Pk
-
-    HP_contribution = HP * Pk / (kpsq**3)
-    pk_term_C1_hypervisc_part = DP * kpsq**2 * Pk
-    pk_term_C2_hypervisc_part = pk_term_C1_hypervisc_part + HP_contribution
-    pk_term_C = -sigk * pk_term_C2_hypervisc_part
-    
-    dPkdt_view[:] = pk_term_A + pk_term_B + pk_term_C
-    print(f"DEBUG: dPkdt initial assignment done. Has NaN: {cp.any(cp.isnan(dPkdt_view))}, Has Inf: {cp.any(cp.isinf(dPkdt_view))}")
-
-
-    # --- Nonlinear terms (additive) --- difference being /fac is in the same line
-    dPhikdt_view[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
-    dPhikdt_view[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
-    dPkdt_view[:]+=rft2(dyphi*dxP-dxphi*dyP)
-    
-    return dzkdt.view(dtype=float)
-
 
 #%% Run the simulation    
 
@@ -316,6 +189,6 @@ else:
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
-r=Gensolver('cupy_ivp.DOP853',rhs_itg_debug_l,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
+r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
 r.run()
 fl.close()
