@@ -3,5 +3,6 @@
 /_tmpimg_folder
 /modules/__pycache__
 *.log
+*.lyx
 *.lyx~
 *.lyx#
