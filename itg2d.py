@@ -15,7 +15,7 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=1.2#0.36 
+kapt=1.0#0.36 
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
@@ -128,47 +128,6 @@ def rhs_itg(t,y):
     dPhikdt[:] += nl_term2_num / fac
 
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
-    return dzkdt.view(dtype=float)
-
-def rhs_itg_debug(t,y):
-    zk=y.view(dtype=complex)
-    dzkdt=cp.zeros_like(zk)
-    # It's often safer to work with copies if zk might be modified elsewhere,
-    # or if the solver relies on y not changing during rhs_itg.
-    # However, for performance, views are common. Let's assume current usage is intended.
-    Phik,Pk=zk[:Nk],zk[Nk:]
-
-    dPhikdt_view,dPkdt_view=dzkdt[:Nk],dzkdt[Nk:] # Views for assignment
-
-    dxphi=irft2(1j*kx*Phik)
-    dyphi=irft2(1j*ky*Phik)
-    dxP=irft2(1j*kx*Pk)
-    dyP=irft2(1j*ky*Pk)
-    sigk=cp.sign(ky)
-    fac=sigk+kpsq # kpsq is global
-    nOmg=irft2(fac*Phik)
-
-    # Your diagnostic prints here (they are good)
-    print(f"Time: {t}")
-    print(f"kpsq: type={type(kpsq)}, shape={kpsq.shape}, dtype={kpsq.dtype}, is_contiguous={kpsq.flags.c_contiguous}, has_nan={cp.any(cp.isnan(kpsq))}, has_inf={cp.any(cp.isinf(kpsq))}")
-    print(f"Phik: type={type(Phik)}, shape={Phik.shape}, dtype={Phik.dtype}, is_contiguous={Phik.flags.c_contiguous}, has_nan={cp.any(cp.isnan(Phik))}, has_inf={cp.any(cp.isinf(Phik))}")
-    print(f"ky: type={type(ky)}, shape={ky.shape}, dtype={ky.dtype}, is_contiguous={ky.flags.c_contiguous}, has_nan={cp.any(cp.isnan(ky))}, has_inf={cp.any(cp.isinf(ky))}")
-    print(f"fac: type={type(fac)}, shape={fac.shape}, dtype={fac.dtype}, is_contiguous={fac.flags.c_contiguous}, has_nan={cp.any(cp.isnan(fac))}, has_inf={cp.any(cp.isinf(fac))}, has_zero={cp.any(fac == 0)}")
-
-    dPhikdt_view[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*(DPhi*kpsq**2*Phik+HPhi/(kpsq**3)*Phik) 
-    dPkdt_view[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*(DP*kpsq**2*Pk+HP/(kpsq**3)*Pk) 
-
-    # --- Nonlinear terms (additive) ---
-    nl_term1_num = 1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg)
-    dPhikdt_view[:] += nl_term1_num / fac
-    print(f"DEBUG: dPhikdt after NL1. Has NaN: {cp.any(cp.isnan(dPhikdt_view))}, Has Inf: {cp.any(cp.isinf(dPhikdt_view))}")
-
-    nl_term2_num = kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP)
-    dPhikdt_view[:] += nl_term2_num / fac
-    print(f"DEBUG: dPhikdt after NL2. Has NaN: {cp.any(cp.isnan(dPhikdt_view))}, Has Inf: {cp.any(cp.isinf(dPhikdt_view))}")
-    
-    dPkdt_view[:] += rft2(dyphi*dxP-dxphi*dyP)
-    
     return dzkdt.view(dtype=float)
 
 #%% Run the simulation    
