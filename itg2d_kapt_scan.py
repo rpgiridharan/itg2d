@@ -15,7 +15,7 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=0.4#0.36 
+kapt_vals=np.arange(0.3,1.5,0.1)  # Scan over kapt values
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
@@ -32,28 +32,6 @@ kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
 ky0=ky[:Ny/2-1]
-
-def format_exp(d):
-    dstr = f"{d:.1e}"
-    base, exp = dstr.split("e")
-    base = base.replace(".", "_")
-    if "-" in exp:
-        exp = exp.replace("-", "")
-        prefix = "em"
-    else:
-        prefix = "e"
-    exp = str(int(exp))
-    return f"{base}_{prefix}{exp}"
-output_dir = "data/"
-os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
-
-dtshow=0.1
-gammax=round(gam_max(ky0,kapt),6)
-dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
-t0,t1=0.0,int(round(100/gammax)/dtstep)*dtstep #3000/gammax
-rtol,atol=1e-9,1e-11
-wecontinue=False
 
 #%% Functions
 
@@ -132,22 +110,46 @@ def rhs_itg(t,y):
 
 #%% Run the simulation    
 
-print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
+for kapt in kapt_vals:
+    kapt=round(kapt,3)
+    def format_exp(d):
+        dstr = f"{d:.1e}"
+        base, exp = dstr.split("e")
+        base = base.replace(".", "_")
+        if "-" in exp:
+            exp = exp.replace("-", "")
+            prefix = "em"
+        else:
+            prefix = "e"
+        exp = str(int(exp))
+        return f"{base}_{prefix}{exp}"
+    output_dir = "data/"
+    os.makedirs(output_dir, exist_ok=True)
+    filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
 
-if(wecontinue):
-    fl=h5.File(filename,'r+',libver='latest')
-    fl.swmr_mode = True
-    zk=fl['last/zk'][()]
-    t0=fl['last/t'][()]
-else:
-    fl=h5.File(filename,'w',libver='latest')
-    fl.swmr_mode = True
-    zk=init_fields(kx,ky)
-    save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
+    dtshow=0.1
+    gammax=round(gam_max(ky0,kapt),3)
+    dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
+    t0,t1=0.0,round(100/gammax) #3000/gammax
+    rtol,atol=1e-8,1e-10
+    wecontinue=False
 
-fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
-dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
-r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
-r.run()
-fl.close()
+    print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
+
+    if(wecontinue):
+        fl=h5.File(filename,'r+',libver='latest')
+        fl.swmr_mode = True
+        zk=fl['last/zk'][()]
+        t0=fl['last/t'][()]
+    else:
+        fl=h5.File(filename,'w',libver='latest')
+        fl.swmr_mode = True
+        zk=init_fields(kx,ky)
+        save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
+        save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
+
+    fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
+    dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
+    r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
+    r.run()
+    fl.close()

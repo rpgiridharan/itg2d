@@ -15,7 +15,7 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=1.0#0.36 
+kapt=0.7
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
@@ -49,11 +49,11 @@ os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
 
 dtshow=0.1
-gammax=round(gam_max(ky0,kapt),6)
+gammax=round(gam_max(ky0,kapt),3)
 dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
-t0,t1=0.0,int(round(100/gammax)/dtstep)*dtstep #3000/gammax
-rtol,atol=1e-9,1e-11
-wecontinue=False
+t0,t1=0.0,round(100/gammax) #3000/gammax
+rtol,atol=1e-8,1e-10
+wecontinue=True
 
 #%% Functions
 
