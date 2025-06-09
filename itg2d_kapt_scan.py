@@ -108,29 +108,46 @@ def rhs_itg(t,y):
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     return dzkdt.view(dtype=float)
 
+def format_exp(d):
+    dstr = f"{d:.1e}"
+    base, exp = dstr.split("e")
+    base = base.replace(".", "_")
+    if "-" in exp:
+        exp = exp.replace("-", "")
+        prefix = "em"
+    else:
+        prefix = "e"
+    exp = str(int(exp))
+    return f"{base}_{prefix}{exp}"
+
+def round_to_nsig(number, n):
+    """Rounds a number to n significant figures."""
+    if not np.isfinite(number): # Catches NaN, Inf, -Inf
+        return number 
+    if number == 0:
+        return 0.0
+    if n <= 0:
+        raise ValueError("Number of significant figures (n) must be positive.")
+    
+    order_of_magnitude = np.floor(np.log10(np.abs(number)))
+    decimals_to_round = int(n - 1 - order_of_magnitude)
+    
+    return np.round(number, decimals=decimals_to_round)
+
 #%% Run the simulation    
 
 for kapt in kapt_vals:
     kapt=round(kapt,3)
-    def format_exp(d):
-        dstr = f"{d:.1e}"
-        base, exp = dstr.split("e")
-        base = base.replace(".", "_")
-        if "-" in exp:
-            exp = exp.replace("-", "")
-            prefix = "em"
-        else:
-            prefix = "e"
-        exp = str(int(exp))
-        return f"{base}_{prefix}{exp}"
+
     output_dir = "data/"
     os.makedirs(output_dir, exist_ok=True)
     filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
 
     dtshow=0.1
     gammax=round(gam_max(ky0,kapt),3)
-    dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
-    t0,t1=0.0,round(100/gammax) #3000/gammax
+    # dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
+    dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+    t0,t1=0.0,round(100/gammax,0) #3000/gammax
     rtol,atol=1e-8,1e-10
     wecontinue=False
 
