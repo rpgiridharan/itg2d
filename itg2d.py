@@ -146,8 +146,7 @@ gammax=round(gam_max(ky0,kapt),3)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(100/gammax,0) #3000/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=False
-print(int(t1/dtstep))
+wecontinue=True
 
 #%% Run the simulation    
 

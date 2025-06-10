@@ -99,7 +99,7 @@ class Gensolver:
         while(t<t1):
             r.integrate(tnext)
             t=r.t.item()
-            tnext=tnext+dtstep
+            tnext=min(tnext+dtstep, r.t_bound)
             if(not(dtfupdate is None)):
                 if(t>=tnextfupdate):
                     tnextfupdate=tnextfupdate+dtfupdate
