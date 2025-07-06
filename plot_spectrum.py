@@ -9,18 +9,24 @@ from modules.mlsarray import MLSarray,Slicelist,irft2, rft2, irft,rft
 import os
 from functools import partial
 
-plt.rcParams['lines.linewidth'] = 2
-plt.rcParams['font.size'] = 14
-plt.rcParams['axes.linewidth'] = 2  
+plt.rcParams['lines.linewidth'] = 4
+plt.rcParams['font.size'] = 16
+plt.rcParams['axes.linewidth'] = 3  
+plt.rcParams['xtick.major.width'] = 3
+plt.rcParams['ytick.major.width'] = 3
+plt.rcParams['xtick.minor.visible'] = True
+plt.rcParams['ytick.minor.visible'] = True
+plt.rcParams['xtick.minor.width'] = 1.5 
+plt.rcParams['ytick.minor.width'] = 1.5 
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+file_name = datadir+'out_kapt_1_2_chi_0_1_D_0_0_e0_H_1_0_em3.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
-    Om = np.mean(fl['fields/Om'][-400:],axis=0)
-    P = np.mean(fl['fields/P'][-400:],axis=0)
+    Omk = np.mean(fl['fields/Omk'][-400:],axis=0)
+    Pk = np.mean(fl['fields/Pk'][-400:],axis=0)
     Ombar = np.mean(fl['zonal/Ombar'][-400:],axis=0)
     Pbar = np.mean(fl['zonal/Pbar'][-400:],axis=0)
     t = fl['fields/t'][:]
@@ -43,7 +49,7 @@ print("nt: ", nt)
 
 def ES(omk, kp, k, dk):
     ''' Returns the kinetic energy spectrum'''
-    ek = np.abs(omk)**2/kp**2
+    ek = np.abs(omk)**2/kp
 
     Ek = np.zeros(len(k))
     for i in range(len(k)):
@@ -52,7 +58,7 @@ def ES(omk, kp, k, dk):
 
 def ES_ZF(omk, kp, k, dk, slbar):
     ''' Returns the zonal kinetic energy spectrum'''   
-    ek_ZF = np.abs(omk[slbar])**2/kp[slbar]**2
+    ek_ZF = np.abs(omk[slbar])**2/kp[slbar]
     
     Ek_ZF = np.zeros(len(k))
     for i in range(len(k)):
@@ -77,22 +83,22 @@ def WS_ZF(omk, kp, k, dk, slbar):
         Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
     return Wk_ZF
 
-def PS(tk, kp, k, dk):
+def PS(pk, kp, k, dk):
     ''' Returns the pressure spectrum'''
-    tk = np.abs(tk)
-    Tk = np.zeros(len(k))
+    pk = np.abs(pk)
+    Pk = np.zeros(len(k))
     for i in range(len(k)):
-        Tk[i] = np.sum(tk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
-    return Tk
+        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+    return Pk
 
-def PS_ZF(tk, kp, k, dk, slbar):
+def PS_ZF(pk, kp, k, dk, slbar):
     ''' Returns the zonal pressure spectrum'''   
-    tk_ZF = np.abs(tk[slbar])
+    pk_ZF = np.abs(pk[slbar])
     
-    Tk_ZF = np.zeros(len(k))
+    Pk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Tk_ZF[i] = np.sum(tk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
-    return Tk_ZF
+        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+    return Pk_ZF
 
 # def rft2(u):
 #     Npx = u.shape[-2]
@@ -113,13 +119,9 @@ def PS_ZF(tk, kp, k, dk, slbar):
 #         uk[:, 0, 0] = 0
         
 #     return np.hstack(uk)
+
 #%% Plots
 
-Omk=cp.asnumpy(rft2(cp.asarray(Om), sl))
-Pk=cp.asnumpy(rft2(cp.asarray(P), sl))
-
-# Omk=rft2(Om)
-# Pk=rft2(P)
 print(Omk.shape)
 
 dk = ky[1]-ky[0]
@@ -131,14 +133,16 @@ Ek = ES(Omk, kp, k, dk)
 Ek_ZF = ES_ZF(Omk, kp, k, dk, slbar)
 Ek_turb = Ek-Ek_ZF
 plt.figure()
-plt.loglog(k[1:-1], Ek[1:-1], label = '$E_{k,total}$')
-plt.loglog(k[Ek_ZF>0][1:-1], Ek_ZF[Ek_ZF>0][1:-1], label = '$E_{k,ZF}$')
+plt.loglog(k[1:-1], Ek[1:-1], label = '$\\mathcal{E}_{k,total}$')
+plt.loglog(k[Ek_ZF>0][1:-1], Ek_ZF[Ek_ZF>0][1:-1], label = '$\\mathcal{E}_{k,ZF}$')
 plt.loglog(k[1:-1], Ek_turb[1:-1], label = '$\\mathcal{E}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{E}_k$')
 plt.title('$\\mathcal{E}_k(k)$; $t = %.1f$' %t[it])
 plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'energy_spectrum.png', dpi=600)
@@ -158,6 +162,7 @@ plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{W}_k$')
 plt.title('$\\mathcal{W}_k(k)$; $t = %.1f$' %t[it])
 plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'enstrophy_spectrum.png', dpi=600)
@@ -177,6 +182,7 @@ plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{P}_k$')
 plt.title('$\\mathcal{P}_k(k)$; $t = %.1f$' %t[it])
 plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'pressure_spectrum.png', dpi=600)

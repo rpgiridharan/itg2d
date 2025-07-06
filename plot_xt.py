@@ -8,14 +8,14 @@ from modules.mlsarray import MLSarray,Slicelist,rfft2,irft,rft
 from modules.plot_basics import symmetrize_y_axis, ubar, rft2_g, irft_g
 import os
 
-plt.rcParams['lines.linewidth'] = 2
-plt.rcParams['font.size'] = 14
-plt.rcParams['axes.linewidth'] = 2  
+plt.rcParams['lines.linewidth'] = 4
+plt.rcParams['font.size'] = 16
+plt.rcParams['axes.linewidth'] = 3  
 
 #%% Load the HDF5 file
 
-datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+datadir = 'data_scan/'
+file_name = datadir+'out_kapt_0_8_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
 
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -112,7 +112,7 @@ plt.figure(figsize=(6, 5))  # Set specific figure size
 plt.pcolormesh(xm, tm, PiP_t[:nt_data,:], vmin=-PiP_lim, vmax=PiP_lim, cmap='seismic')
 plt.xlabel('x')
 plt.ylabel('t')
-plt.title('Diamagnetic Stress: $\\Pi_T$')
+plt.title('Diamagnetic Stress: $\\Pi_P$')
 plt.colorbar()
 plt.tight_layout(pad=0.5)  # Reduce padding
 if file_name.endswith('out.h5'):

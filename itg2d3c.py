@@ -15,13 +15,14 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=0.8
+kapt=1.2
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
 HPhi=1e-3
 HP=1e-3
+HV=1e-3
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -41,14 +42,16 @@ rft = partial(original_rft,Nx=Nx)
 def init_fields(kx,ky,w=10.0,A=1e-6):
     Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
     Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
+    Vk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
     Phik[slbar]=0
     Pk[slbar]=0
+    Vk[slbar]=0
     zk=np.hstack((Phik,Pk))
     return zk
 
 def fsavecb(t,y,flag):
     zk=y.view(dtype=complex)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik,Pk,Vk=zk[:Nk],zk[Nk:2*Nk],zk[2*Nk:]
     Omk=-kpsq*Phik
     vy=irft2(1j*kx*Phik) 
     Om=irft2(Omk)
@@ -71,9 +74,9 @@ def fsavecb(t,y,flag):
 
 def fshowcb(t,y):
     zk=y.view(dtype=complex)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik=zk[:Nk]
     vx=irft2(-1j*ky*Phik)
-    P=irft2(Pk)
+    # P=irft2(Pk)
     Q=np.mean(vx*P)
     Ktot = np.sum(kpsq*np.abs(Phik)**2)
     Kbar = np.sum((kx[slbar]*np.abs(Phik[slbar]))**2)
@@ -82,19 +85,22 @@ def fshowcb(t,y):
 def rhs_itg(t,y):
     zk=y.view(dtype=complex)
     dzkdt=cp.zeros_like(zk)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik,Pk,Vk=zk[:Nk],zk[Nk:2*Nk],zk[2*Nk:]
 
-    dPhikdt,dPkdt=dzkdt[:Nk],dzkdt[Nk:]
+    dPhikdt,dPkdt,dVkdt=dzkdt[:Nk],dzkdt[Nk:2*Nk],dzkdt[2*Nk:]
     dxphi=irft2(1j*kx*Phik)
     dyphi=irft2(1j*ky*Phik)
     dxP=irft2(1j*kx*Pk)
     dyP=irft2(1j*ky*Pk)
+    dxV=irft2(1j*kx*Vk)
+    dyV=irft2(1j*ky*Vk)
     sigk=cp.sign(ky)
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik
+    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik 
     dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
+    dVkdt[:]=-s*chi*kpsq*Vk-sigk*HV/(kpsq**3)*Vk 
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
@@ -105,6 +111,7 @@ def rhs_itg(t,y):
     dPhikdt[:] += nl_term2_num / fac
 
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
+    dVkdt[:]+=rft2(dyphi*dxV-dxphi*dyV)
     return dzkdt.view(dtype=float)
 
 def format_exp(d):

@@ -1,5 +1,6 @@
 /.venv
 /data
+/data_scan
 /_tmpimg_folder
 /modules/__pycache__
 *.log

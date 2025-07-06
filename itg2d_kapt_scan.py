@@ -15,13 +15,11 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt_vals=np.arange(0.3,1.5,0.1)  # Scan over kapt values
+kapt_vals=np.arange(0.3,1.6,0.1)  # Scan over kapt values
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
-DPhi=1e-3
-DP=1e-3
 HPhi=1e-3
 HP=1e-3
 
@@ -51,11 +49,12 @@ def init_fields(kx,ky,w=10.0,A=1e-6):
 def fsavecb(t,y,flag):
     zk=y.view(dtype=complex)
     Phik,Pk=zk[:Nk],zk[Nk:]
+    Omk=-kpsq*Phik
     vy=irft2(1j*kx*Phik) 
-    Om=irft2(-kpsq*Phik)
+    Om=irft2(Omk)
     P=irft2(Pk)
     if flag=='fields':
-        save_data(fl,'fields',ext_flag=True,Om=Om.get(),P=P.get(),t=t)
+        save_data(fl,'fields',ext_flag=True,Omk=Omk.get(),Pk=Pk.get(),t=t)
     elif flag=='zonal':
         vbar=cp.mean(vy,1)
         Ombar=cp.mean(Om,1)
@@ -94,8 +93,8 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*(DPhi*kpsq**2*Phik+HPhi/(kpsq**3)*Phik) 
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*(DP*kpsq**2*Pk+HP/(kpsq**3)*Pk) 
+    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
 
     dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
@@ -141,7 +140,7 @@ for kapt in kapt_vals:
 
     output_dir = "data/"
     os.makedirs(output_dir, exist_ok=True)
-    filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_D_{format_exp(DPhi)}_H_{format_exp(HPhi)}.h5'
+    filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
     dtshow=0.1
     gammax=round(gam_max(ky0,kapt),3)

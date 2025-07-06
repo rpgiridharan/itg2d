@@ -4,6 +4,16 @@ import cupy as cp
 import matplotlib.pyplot as plt
 import torch 
 
+plt.rcParams['lines.linewidth'] = 4
+plt.rcParams['font.size'] = 16
+plt.rcParams['axes.linewidth'] = 3  
+plt.rcParams['xtick.major.width'] = 3
+plt.rcParams['ytick.major.width'] = 3
+plt.rcParams['xtick.minor.visible'] = True
+plt.rcParams['ytick.minor.visible'] = True
+plt.rcParams['xtick.minor.width'] = 1.5 
+plt.rcParams['ytick.minor.width'] = 1.5 
+
 #%% Define Functions
 
 def init_kspace_grid(Nx,Ny,Nz,Lx,Ly,Lz):
@@ -59,15 +69,15 @@ Nx,Ny,Nz=2*int(Npx/3),2*int(Npy/3),2*int(Npz/3)
 Lx,Ly,Lz=32*np.pi,32*np.pi,32*np.pi
 kx,ky,kz=init_kspace_grid(Nx,Ny,Nz,Lx,Ly,Lz)
 kapn=0. #rho_i/L_n
-kapt=1.0 #rho_i/L_T
+kapt=1.2 #rho_i/L_T
 kapb=1.0 #2*rho_i/L_B
 chi=0.1
 a=9.0/40.0
 b=67.0/160.0
 s=0.9
-D0=0*1e-6
-H0=0*1e-5
-nu0=0*1e-6
+D0=0*1e-3
+H0=0*1e-3
+nu0=0*1e-3
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
@@ -123,6 +133,7 @@ plt.legend(['$k_z='+str(l)+'$' for l in kz[0,0,slz]]+['$-\\chi k_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{x,max}(k_y,k_z),k_y,k_{zi})$ vs $k_y$ for diff $k_z$') 
+plt.tight_layout()
 plt.savefig('data/gam_vs_ky_kzvals_itg.png',dpi=600)
 plt.show()
 
@@ -132,6 +143,7 @@ plt.plot(kz[0,0,:],kymax_kz,'.-')
 plt.xlabel('$k_z$')
 plt.ylabel('$k_{y,max}$')
 plt.title('$k_{y,max}$ vs $k_z$')
+plt.tight_layout()
 plt.savefig('data/ky_vs_kz_itg.png',dpi=600)
 plt.show()
     
@@ -143,6 +155,7 @@ plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0,0]]+['$-\\chi k_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{xi},k_y,k_{z,max}(k_x,k_y))$ vs $k_x$ for diff $k_x$')
+plt.tight_layout()
 plt.savefig('data/gam_vs_ky_kxvals_itg.png',dpi=600)
 plt.show()
 
@@ -152,6 +165,7 @@ plt.plot(kx[:int(Nx/2),0,0],kymax_kx,'.-')
 plt.xlabel('$k_x$')
 plt.ylabel('$k_{y,max}$')
 plt.title('$k_{y,max}$ vs $k_x$')
+plt.tight_layout()
 plt.savefig('data/ky_vs_kx_itg.png',dpi=600)
 plt.show()
 
@@ -166,6 +180,7 @@ plt.xlabel('$k_y$')
 plt.ylabel('$k_z$')
 plt.title('$\\gamma(k_{x,max}(k_y,k_z),k_y,k_z)$')
 plt.colorbar()
+plt.tight_layout()
 plt.savefig('data/gamkykz_itg.png',dpi=600)
 plt.show()
 
@@ -189,6 +204,7 @@ plt.xlabel('$k_x$')
 plt.ylabel('$k_y$')
 plt.title('$\\gamma(k_x,k_y,k_{z,max}(k_x,k_y))$')
 plt.colorbar()
+plt.tight_layout()
 plt.savefig('data/gamkxky_itg.png',dpi=600)
 plt.show()
 

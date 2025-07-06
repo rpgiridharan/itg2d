@@ -45,8 +45,8 @@ plt.figure(figsize=(8, 5))  # Set specific figure size
 plt.plot(x[:,0],R,label='$\\mathcal{\\Pi}_\\phi$')
 plt.plot(x[:,0],PiP,label='$\\mathcal{\\Pi}_P$')
 plt.plot(x[:,0],R+PiP,label='$\\Pi_t=\\mathcal{\\Pi}_P+\\mathcal{\\Pi}_\\phi$')
-plt.plot(x[:,0],Ombar,'k',label='$\\partial_x^2\\overline{\\phi}$')
-# plt.plot(x[:,0],0.25*np.max(np.abs(PiP))*vbar/np.max(vbar),'k',label='$\\overline{v}_y$')
+ylim = plt.gca().get_ylim()
+plt.plot(x[:,0],0.5*ylim[-1]*Ombar/np.max(np.abs(Ombar)),'k',label='$\\partial_x^2\\overline{\\phi}$')
 plt.axhline(0, color='gray', linestyle='--')
 plt.xlabel('x')
 plt.title('$\\mathcal{\\Pi}(x)$' %t[it])
@@ -58,10 +58,9 @@ if file_name.endswith('out.h5'):
 else:
     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Pi_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
 
-
 plt.figure(figsize=(8, 5))  # Set specific figure size
 plt.plot(x[:,0],Q,label='$\\mathcal{Q}$')
-plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*vbar/np.max(vbar),'k',label='$\\overline{v}_y$')
+plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*vbar/np.max(np.abs(vbar)),'k',label='$\\overline{v}_y$')
 # plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*Ombar/np.max(Ombar),label='$\\partial_x\\overline{v}_y$')
 plt.axhline(np.mean(Q), color='gray', linestyle='--')
 plt.xlabel('x')

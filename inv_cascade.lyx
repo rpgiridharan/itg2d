@@ -1,0 +1,1267 @@
+#LyX 2.4 created this file. For more info see https://www.lyx.org/
+\lyxformat 620
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass revtex4-2
+\use_default_options true
+\maintain_unincluded_children no
+\language american
+\language_package default
+\inputencoding utf8
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\float_placement class
+\float_alignment class
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine natbib
+\cite_engine_type authoryear
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_formatted_ref 0
+\use_minted 0
+\use_lineno 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tablestyle default
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content true
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Inverse Cascading
+\end_layout
+
+\begin_layout Section
+System
+\end_layout
+
+\begin_layout Standard
+We would like to study the following system describing 2D toroidal ITG turbulence (due to the corresponding instability) to see what causes the inverse cascade that is observed.
+ The 
+\begin_inset Formula $\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi$
+\end_inset
+
+ in the 
+\begin_inset Formula $P$
+\end_inset
+
+ equation and 
+\begin_inset Formula $-\kappa_{B}\partial_{y}P$
+\end_inset
+
+ in the 
+\begin_inset Formula $\phi$
+\end_inset
+
+ equation are responsible for the instability.
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right) & +\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
+ & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The inverse cascading means we need low-k damping for a stationary state to be achieved.
+ [Nordman 1990] mentions that the inclusion of non-linear ion polarisation drift leads to inverse cascading.
+ And [Nordman 1990],
+ like a lot of papers,
+ doesn't have 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 75text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Energy spectrum,
+ 
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+,
+ of full system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Case 1:
+ Omit 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Omitting the 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ fluctuations we get
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(-\nabla_{\perp}^{2}\phi\right) & +\left\{ \phi,\left(-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
+ & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp-case1}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is somewhat like the voriticity equation with terms like 
+\begin_inset Formula $-\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi$
+\end_inset
+
+ that come from the density equation.
+\end_layout
+
+\begin_layout Standard
+For reference,
+ the vorticity equation omitting 
+\begin_inset Formula $n_{pe}=\tau\widetilde{\phi}$
+\end_inset
+
+ is
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}\nabla_{\perp}^{2}\phi & +\left\{ \phi,\nabla_{\perp}^{2}\phi\right\} -\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
+ & -\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi+\kappa_{B}\partial_{y}P\\
+ & =\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\nabla_{\perp}^{2}\phi+\nu_{\phi}\nabla_{\parallel}^{4}\left(\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:vorticity_eq}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\nospellcheck off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\nospellcheck default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case1.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of system without 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 1
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ is omitted,
+ the equations are divided by 
+\begin_inset Formula $k_{\perp}^{2}$
+\end_inset
+
+ instead of 
+\begin_inset Formula $1+k_{\perp}^{2}$
+\end_inset
+
+.
+ So at low k,
+ the linear terms are now big in comparison to the complete system because 
+\begin_inset Formula $1/k_{\perp}^{2}$
+\end_inset
+
+diverges while 
+\begin_inset Formula $1/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ doesn't exceed 1.
+ At large 
+\begin_inset Formula $k_{\perp},$
+\end_inset
+
+there shouldn't really be a difference between 
+\begin_inset Formula $1+k_{\perp}^{2}$
+\end_inset
+
+and 
+\begin_inset Formula $k_{\perp}^{2}$
+\end_inset
+
+ and hence the linear terms behave the same.
+ As far as the non linear term is concerned 
+\begin_inset Formula $\left\{ \phi,\tau\widetilde{\phi}\right\} _{k}/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ is missing from the equation and 
+\begin_inset Formula $\left\{ \phi,-\nabla_{\perp}^{2}\phi\right\} _{k}/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ and 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} _{k}/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ have become 
+\begin_inset Formula $\left\{ \phi,-\nabla_{\perp}^{2}\phi\right\} _{k}/k_{\perp}^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} _{k}/k_{\perp}^{2}$
+\end_inset
+
+ respectively which enhances these terms at lower 
+\begin_inset Formula $k_{\perp}$
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+Case 2:
+ Omit 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ in 
+\begin_inset Formula $\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)$
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Omitting 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ in 
+\begin_inset Formula $\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)$
+\end_inset
+
+ we get
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp-case2}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Solution doesn't converge after a point.
+\end_layout
+
+\begin_layout Subsection
+Case 3:
+ Omit 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ in 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Omitting 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ in the non-linear term 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+ we get
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp-case3}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\nospellcheck off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\nospellcheck default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of system without 
+\begin_inset Formula $\tau\widetilde{\phi}$
+\end_inset
+
+ in 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 3
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The equations are divided by 
+\begin_inset Formula $1/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ as in the complete system.
+ The first nonlinear term becomes 
+\begin_inset Formula $\left\{ \phi,-\nabla_{\perp}^{2}\phi\right\} _{k}/\left(1+k_{\perp}^{2}\right),$
+\end_inset
+
+while the rest scale as 
+\begin_inset Formula $1/\left(1+k_{\perp}^{2}\right).$
+\end_inset
+
+ As far as the non linear term is concerned 
+\begin_inset Formula $\left\{ \phi,\tau\widetilde{\phi}\right\} _{k}/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ is missing from the equation and the rest stay the same as in the complete case.
+ 
+\end_layout
+
+\begin_layout Standard
+The result seems to be dominance of zonal flows at smaller scales.
+ So the absence of 
+\begin_inset Formula $\left\{ \phi,\tau\widetilde{\phi}\right\} _{k}/\left(1+k_{\perp}^{2}\right)=\left\{ \overline{\phi},\tau\widetilde{\phi}\right\} _{k}/\left(1+k_{\perp}^{2}\right)$
+\end_inset
+
+ leads to zonal flow domination.
+ Perhaps,
+ this is because the absence of this term means the zonal modes don't lost energy advecting fluctuations.
+\end_layout
+
+\begin_layout Subsection
+Case 4:
+ Omit 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Omitting the non-linear term 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+ we get
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp-case4}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\nospellcheck off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+
+\family default
+\series default
+\shape default
+\size default
+\emph default
+\nospellcheck default
+\bar default
+\strikeout default
+\xout default
+\uuline default
+\uwave default
+\noun default
+\color inherit
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case4.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of system without diamagnetic stress,
+ 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 4
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Case 5:
+ Omit 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+Omitting the non-linear term 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+ we get
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp-case5}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case5.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of system without 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 5
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Case 6:
+ Role of 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Omitting the non-linear term 
+\begin_inset Formula $\left\{ \phi,P\right\} $
+\end_inset
+
+ in the 
+\begin_inset Formula $P$
+\end_inset
+
+ equation and 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+in the 
+\begin_inset Formula $\phi$
+\end_inset
+
+ equation,
+ we get
+\begin_inset Formula 
+\begin{equation}
+\begin{aligned}\partial_{t}P+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+\end{aligned}
+\label{eq:itg_simp-case6}
+\end{equation}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case6.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of system without 
+\begin_inset Formula $\left\{ \phi,P\right\} $
+\end_inset
+
+ and 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 6
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/pressure_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $P_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/pressure_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case6.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $P_{k}$
+\end_inset
+
+ of system without 
+\begin_inset Formula $\left\{ \phi,P\right\} $
+\end_inset
+
+ and 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $P_{k}$
+\end_inset
+
+ comparison for Case 6
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\end_body
+\end_document

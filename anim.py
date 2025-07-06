@@ -22,7 +22,7 @@ plt.rcParams['axes.linewidth'] = 2
 #%% Load the HDF5 file
 
 datadir = "data/"
-infl = datadir+'out_kapt_0_5_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+infl = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case6.h5'
 outfl = infl.replace('.h5', '.mp4')
 
 with h5.File(infl, "r", libver='latest', swmr=True) as fl:
@@ -35,8 +35,8 @@ with h5.File(infl, "r", libver='latest', swmr=True) as fl:
 Npx, Npy = Om.shape[-2], Om.shape[-1]
 Nx,Ny=2*int(np.floor(Npx/3)),2*int(np.floor(Npy/3))
 
-Om_max_last = max(abs(Om_last.min()), abs(Om_last.max()))
-P_max_last = max(abs(P_last.min()), abs(P_last.max()))
+Om_max_last = np.max(np.abs(Om_last)) 
+P_max_last = np.max(np.abs(P_last))
 
 #%% Plot the data
 
