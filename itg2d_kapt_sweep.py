@@ -152,8 +152,6 @@ for i, kapt in enumerate(kapt_vals):
     t0,t1=0.0,round(100/gammax,0) #3000/gammax
     rtol,atol=1e-8,1e-10
 
-    print(f'Sweep step {i+1}/{len(kapt_vals)}: chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
-
     # Create new file for each kapt value
     fl=h5.File(filename,'w',libver='latest')
     fl.swmr_mode = True
@@ -178,5 +176,3 @@ for i, kapt in enumerate(kapt_vals):
     
     fl.close()
     print(f'  Completed sweep step {i+1}/{len(kapt_vals)} for kapt={kapt}')
-
-print(f'\nSweep completed! Processed {len(kapt_vals)} kapt values from {kapt_vals[0]:.1f} to {kapt_vals[-1]:.1f}')
