@@ -35,7 +35,7 @@ def gam_max(ky, kapt, kz):
     gamk_max = np.take_along_axis(gamk, np.argmax(gamk, axis=-1, keepdims=True), axis=-1).squeeze(axis=-1)
     return np.max(gamk_max)
 
-def gamkp6_max(ky, kapt):
+def gam_kmin(ky, kapt, kz):
     # Convert CuPy array to NumPy if needed
     if isinstance(ky, cp.ndarray):
         ky = ky.get()
@@ -50,4 +50,4 @@ def gamkp6_max(ky, kapt):
     roots = np.array([np.roots(p) for p in coeffs])
     gamk = np.real(roots)
     gamk_max = np.take_along_axis(gamk, np.argmax(gamk, axis=-1, keepdims=True), axis=-1).squeeze(axis=-1)
-    return np.max(gamk_max*kpsq**3)
+    return gamk_max[0]

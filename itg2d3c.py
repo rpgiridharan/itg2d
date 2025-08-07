@@ -5,7 +5,7 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma_2d3c import gam_max, gamkp6_max   
+from modules.gamma_2d3c import gam_max, gam_kmin 
 from modules.gensolver import Gensolver,save_data
 from functools import partial
 import os
@@ -15,7 +15,7 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=20
+kapt=2.0
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
@@ -31,8 +31,8 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 ky0=ky[:Ny/2-1]
 
-# H0 = 1e-3*gamkp6_max(ky0,kapt)/gamkp6_max(ky0,1.2)
-H0=5e-2
+H0 = 1e-3*gam_kmin(ky0,kapt,kz)/gam_kmin(ky0,1.2,kz)
+# H0=5e-2
 HPhi=H0
 HP=H0
 HV=H0

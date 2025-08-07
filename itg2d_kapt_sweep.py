@@ -141,7 +141,7 @@ zk = None
 for i, kapt in enumerate(kapt_vals):
     kapt=round(kapt,3)
 
-    output_dir = "data/"
+    output_dir = "data_sweep/"
     os.makedirs(output_dir, exist_ok=True)
     filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
