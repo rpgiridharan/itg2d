@@ -5,7 +5,7 @@ import cupy as cp
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from modules.mlsarray import MLSarray,Slicelist, irft2, rft2, irft, rft
+from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
 import os
 from functools import partial
 
@@ -62,11 +62,11 @@ def Gam(Omk, kpsq, slbar):
 def sigma(Omk, Pk, Q, kx, kpsq, sl):
     ''' Returns the entropy production rate of the system'''
     #-Q/T^2delT/delx
-    Phi = irft2(-Omk/kpsq,Npx,Npy,Nx,sl)
-    P = irft2(Pk,Npx,Npy,Nx,sl)
+    Phi = irft2np(-Omk/kpsq,Npx,Npy,Nx,sl)
+    P = irft2np(Pk,Npx,Npy,Nx,sl)
     T = P/Phi
-    Tk = rft2(T, sl)
-    dTdx = irft2(1j*kx*Tk, sl)
+    Tk = rft2np(T, sl)
+    dTdx = irft2np(1j*kx*Tk, sl)
     sig = -Q/T**2 * dTdx
     return sig
 

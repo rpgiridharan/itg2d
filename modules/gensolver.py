@@ -105,7 +105,7 @@ class Gensolver:
                     tnextfupdate=tnextfupdate+dtfupdate
                     self.force_update(self.fy,t)
             if(t>=tshownext):
-                print('t='+str(round(tifd(t,tshownext),Nrnd))+', '+str(time()-self.ct)+" secs elapsed." , end='')
+                print('t='+str(round(tifd(t,tshownext),Nrnd))+', '+"{:.3g}".format(time()-self.ct)+" secs elapsed." , end=' ')
                 if(callable(self.fshow)):
                     self.fshow(round(tifd(t,tshownext),Nrnd),r.y)
                 tshownext=tshownext+dtshow

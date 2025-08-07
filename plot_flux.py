@@ -2,8 +2,8 @@
 import h5py as h5
 import numpy as np
 import matplotlib.pyplot as plt
-from modules.mlsarray import MLSarray,Slicelist,irft2, rft2
-from modules.plot_basics import symmetrize_y_axis, ubar, rft2_g, irft_g
+from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np
+from modules.plot_basics import symmetrize_y_axis
 import os
 
 plt.rcParams['lines.linewidth'] = 2

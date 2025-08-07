@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from modules.mlsarray import MLSarray,Slicelist,rfft2,irft,rft
-from modules.plot_basics import symmetrize_y_axis, ubar, rft2_g, irft_g
+from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
+from modules.plot_basics import symmetrize_y_axis
 import os
 
 plt.rcParams['lines.linewidth'] = 4

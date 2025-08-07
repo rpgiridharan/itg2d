@@ -5,7 +5,7 @@ import cupy as cp
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from modules.mlsarray import MLSarray,Slicelist, irft2, rft2, irft, rft
+from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
 import os
 from functools import partial
 from mpi4py import MPI
@@ -19,10 +19,11 @@ plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 16
 plt.rcParams['axes.linewidth'] = 3  
 
-#%% Load the HDF5 file
+#%% Load the HDF5 fil2
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_kapt_1_2_chi_0_1_D_0_0_e0_H_1_0_em3.h5'
+file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_14.h5'
+# file_name = datadir+'out_kapt_0_8_chi_0_1_H_1_0_em3.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
@@ -214,7 +215,7 @@ if rank == 0:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=600)
     plt.show()
 
-    # Plot kinetic energy vs time
+    # Plot zonal energy fraction vs time
     plt.figure(figsize=(8,6))
     plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$')
     plt.xlabel('$t$')
@@ -223,10 +224,10 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'energy_vs_t.png',dpi=600)
-    # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=600)
+    if file_name.endswith('out.h5'):
+        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=600)
+    else:
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=600)
     plt.show()
 
     # Plot enstrophy vs time

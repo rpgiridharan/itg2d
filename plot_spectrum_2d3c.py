@@ -21,14 +21,16 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_0_8_chi_0_1_H_1_0_em3.h5'
+file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_14.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = np.mean(fl['fields/Omk'][-400:],axis=0)
     Pk = np.mean(fl['fields/Pk'][-400:],axis=0)
+    Vk = np.mean(fl['fields/Vk'][-400:],axis=0)
     Ombar = np.mean(fl['zonal/Ombar'][-400:],axis=0)
     Pbar = np.mean(fl['zonal/Pbar'][-400:],axis=0)
+    Vbar = np.mean(fl['zonal/Vbar'][-400:],axis=0)
     t = fl['fields/t'][:]
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
@@ -83,6 +85,19 @@ def WS_ZF(omk, kp, k, dk, slbar):
         Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
     return Wk_ZF
 
+def HS(omk,kp):
+    '''Returns the helicity spectrum'''
+
+
+def HS_ZF(omk, kp, slbar):
+    '''Returns the zonal helicity spectrum'''
+    hk_ZF = np.abs(omk[slbar])**2/kp[slbar]
+    
+    Hk_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Hk_ZF[i] = np.sum(hk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+    return Hk_ZF
+
 def PS(pk, kp, k, dk):
     ''' Returns the pressure spectrum'''
     pk = np.abs(pk)
@@ -100,25 +115,22 @@ def PS_ZF(pk, kp, k, dk, slbar):
         Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
     return Pk_ZF
 
-# def rft2(u):
-#     Npx = u.shape[-2]
-#     Nx, Ny = int(Npx/3)*2, int(Npx/3)*2
-#     Nxh = int(Nx/2)
-#     yk= np.fft.rfft2(u, norm='forward', axes=(-2,-1))
-    
-#     if len(u.shape)==2:
-#         uk = np.zeros((Nx, int(Ny/2)+1), dtype=complex)
-#         uk[:Nxh,:-1] = yk[:Nxh,:int(Ny/2)]
-#         uk[-1:-Nxh:-1,:-1] = yk[-1:-Nxh:-1,:int(Ny/2)]
-#         uk[0, 0] = 0
+def VS(vk, kp, k, dk):
+    ''' Returns the parallel velocity spectrum'''
+    vk = np.abs(vk)
+    Vk = np.zeros(len(k))
+    for i in range(len(k)):
+        Vk[i] = np.sum(vk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+    return Vk
 
-#     else:
-#         uk = np.zeros((u.shape[0], Nx, int(Ny/2)+1), dtype=complex)
-#         uk[:, :Nxh,:-1] = yk[:, :Nxh,:int(Ny/2)]
-#         uk[:, -1:-Nxh:-1,:-1] = yk[:, -1:-Nxh:-1,:int(Ny/2)]
-#         uk[:, 0, 0] = 0
-        
-#     return np.hstack(uk)
+def VS_ZF(vk, kp, k, dk, slbar):
+    ''' Returns the zonal parallel velocity spectrum'''   
+    vk_ZF = np.abs(vk[slbar])
+    
+    Vk_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Vk_ZF[i] = np.sum(vk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+    return Vk_ZF
 
 #%% Plots
 
@@ -188,6 +200,26 @@ if file_name.endswith('out.h5'):
     plt.savefig(datadir+'pressure_spectrum.png', dpi=600)
 else:
     plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+plt.show()
+
+Vkp = VS(Vk, kp, k, dk)
+Vkp_ZF = VS_ZF(Vk, kp, k, dk, slbar)
+Vkp_turb = Vkp-Vkp_ZF
+plt.figure()
+plt.loglog(k[1:-1], Vkp[1:-1], label = '$\\mathcal{V}_{k,total}$')
+plt.loglog(k[Vkp_ZF>0][1:-1], Vkp_ZF[Pkp_ZF>0][1:-1], label = '$\\mathcal{V}_{k,ZF}$')
+plt.loglog(k[1:-1], Vkp_turb[1:-1], label = '$\\mathcal{V}_{k,turb}$')
+plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
+plt.xlabel('$k$')
+plt.ylabel('$\\mathcal{V}_k$')
+plt.title('$\\mathcal{V}_k(k)$; $t = %.1f$' %t[it])
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'parallel_velocity_spectrum.png', dpi=600)
+else:
+    plt.savefig(datadir+"parallel_velocity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
 # %%

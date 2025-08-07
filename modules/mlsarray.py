@@ -65,3 +65,23 @@ def irft(vk,Npx,Nx):
 def rft(v,Nx):
     return cp.fft.rfft(v, norm='forward')[1:int(Nx/2)]
 
+def irft2np(uk,Npx,Npy,Nx,sl):
+    uk_cp = cp.asarray(uk)
+    result = irft2(uk_cp,Npx,Npy,Nx,sl)
+    return cp.asnumpy(result)
+
+def rft2np(u,sl):
+    u_cp = cp.asarray(u)
+    result = rft2(u_cp,sl)
+    return cp.asnumpy(result)
+
+def irftnp(vk,Npx,Nx):
+    vk_cp = cp.asarray(vk)
+    result = irft(vk_cp,Npx,Nx)
+    return cp.asnumpy(result)
+
+def rftnp(v,Nx):
+    v_cp = cp.asarray(v)
+    result = rft(v_cp,Nx)
+    return cp.asnumpy(result)
+

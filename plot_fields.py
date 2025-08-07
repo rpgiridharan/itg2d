@@ -6,7 +6,7 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 import os
 from functools import partial
-from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
+from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
 from modules.mlsarray import Slicelist
 import cupy as cp
 
@@ -24,7 +24,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 datadir = 'data_scan/'
 file_name = datadir+'out_kapt_0_8_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
 
-it = -2
+it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][it]
     Pk = fl['fields/Pk'][it]
@@ -51,13 +51,13 @@ x,y=np.meshgrid(np.array(xl),np.array(yl),indexing='ij')
 
 #%% Plots
 
-irft2 = partial(original_irft2,Npx=Npx,Npy=Npy,Nx=Nx,sl=sl)
-rft2 = partial(original_rft2,sl=sl)
-irft = partial(original_irft,Npx=Npx,Nx=Nx)
-rft = partial(original_rft,Nx=Nx)
+irft2np = partial(original_irft2np,Npx=Npx,Npy=Npy,Nx=Nx,sl=sl)
+rft2np = partial(original_rft2np,sl=sl)
+irftnp = partial(original_irftnp,Npx=Npx,Nx=Nx)
+rftnp = partial(original_rftnp,Nx=Nx)
 
-Om = irft2(cp.asarray(Omk)).get()
-P = irft2(cp.asarray(Pk)).get()
+Om = irft2np(Omk)
+P = irft2np(Pk)
 
 # Plotting function
 def plot_colormesh(dat, dat_bar, title, lab_bar, ax):

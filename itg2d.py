@@ -15,7 +15,7 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=0.8
+kapt=1.2
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
@@ -142,9 +142,11 @@ filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).r
 dtshow=0.1
 gammax=gam_max(ky0,kapt)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(100/gammax,0) #3000/gammax
+t0,t1=0.0,round(300/gammax,0) #3000/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=False
+wecontinue=True
+if not os.path.exists(filename):
+    wecontinue=False
 
 #%% Run the simulation    
 

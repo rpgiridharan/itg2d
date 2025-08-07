@@ -9,31 +9,43 @@ mpl.use("Agg")
 import matplotlib.pyplot as plt
 from mpi4py import MPI
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
 
 # Initialize MPI
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-plt.rcParams['lines.linewidth'] = 2
-plt.rcParams['font.size'] = 14
-plt.rcParams['axes.linewidth'] = 2  
+plt.rcParams['lines.linewidth'] = 4
+plt.rcParams['font.size'] = 16
+plt.rcParams['axes.linewidth'] = 3  
+plt.rcParams['xtick.major.width'] = 3
+plt.rcParams['ytick.major.width'] = 3
+plt.rcParams['xtick.minor.visible'] = True
+plt.rcParams['ytick.minor.visible'] = True
+plt.rcParams['xtick.minor.width'] = 1.5 
+plt.rcParams['ytick.minor.width'] = 1.5 
 
 #%% Load the HDF5 file
 
 datadir = "data/"
-infl = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case6.h5'
+infl = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_14.h5'
 outfl = infl.replace('.h5', '.mp4')
 
 with h5.File(infl, "r", libver='latest', swmr=True) as fl:
     t = fl['fields/t'][:]
-    Om = fl['fields/Om'][0]
-    P = fl['fields/P'][0]
-    Om_last = fl['fields/Om'][-1]
-    P_last = fl['fields/P'][-1]
+    Npx= fl['params/Npx'][()]
+    Npy= fl['params/Npy'][()]
 
-Npx, Npy = Om.shape[-2], Om.shape[-1]
-Nx,Ny=2*int(np.floor(Npx/3)),2*int(np.floor(Npy/3))
+Nx,Ny=2*Npx//3,2*Npy//3  
+sl=Slicelist(Nx,Ny)
+slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
+
+with h5.File(infl, "r", libver='latest', swmr=True) as fl:
+    Om = irft2np(fl['fields/Omk'][0],Npx,Npy,Nx,sl)
+    P = irft2np(fl['fields/Pk'][0],Npx,Npy,Nx,sl)
+    Om_last = irft2np(fl['fields/Omk'][-1],Npx,Npy,Nx,sl)
+    P_last = irft2np(fl['fields/Pk'][-1],Npx,Npy,Nx,sl)
 
 Om_max_last = np.max(np.abs(Om_last)) 
 P_max_last = np.max(np.abs(P_last))
@@ -83,8 +95,8 @@ lt_loc = comm.scatter(lt_loc, root=0)
 for j in lt_loc:
     print(j)
     with h5.File(infl, "r", libver='latest', swmr=True) as fl:
-        Om = fl['fields/Om'][j]
-        P = fl['fields/P'][j]
+        Om = irft2np(fl['fields/Omk'][j],Npx,Npy,Nx,sl)
+        P = irft2np(fl['fields/Pk'][j],Npx,Npy,Nx,sl)
 
     qd[0].set_array(Om.T.ravel())
     qd[1].set_array(P.T.ravel())
@@ -95,8 +107,8 @@ comm.Barrier()
 
 if comm.rank == 0:
     with h5.File(infl, "r", libver='latest', swmr=True) as fl:
-        Om = fl['fields/Om'][0]
-        P = fl['fields/P'][0]
+        Om = irft2np(fl['fields/Omk'][0],Npx,Npy,Nx,sl)
+        P = irft2np(fl['fields/Pk'][0],Npx,Npy,Nx,sl)
 
     qd[0].set_array(Om.T.ravel())
     qd[1].set_array(P.T.ravel())
