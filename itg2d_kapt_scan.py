@@ -5,7 +5,7 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma import gam_max   
+from modules.gamma import gam_max, gam_kmin   
 from modules.gensolver import Gensolver,save_data
 from functools import partial
 import os
@@ -20,8 +20,6 @@ kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
-HPhi=1e-3
-HP=1e-3
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -137,6 +135,9 @@ def round_to_nsig(number, n):
 
 for kapt in kapt_vals:
     kapt=round(kapt,3)
+    H0 = 1e-3*gam_kmin(ky0,kapt)/gam_kmin(ky0,1.2)
+    HPhi=H0
+    HP=H0
 
     output_dir = "data/"
     os.makedirs(output_dir, exist_ok=True)

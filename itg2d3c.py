@@ -31,8 +31,8 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 ky0=ky[:Ny/2-1]
 
-H0 = 1e-3*gam_kmin(ky0,kapt,kz)/gam_kmin(ky0,1.2,kz)
-# H0=5e-2
+# H0 = 1e-3*gam_kmin(ky0,kapt,kz)/gam_kmin(ky0,1.2,kz)
+H0=5e-2
 HPhi=H0
 HP=H0
 HV=H0
