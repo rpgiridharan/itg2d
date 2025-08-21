@@ -21,7 +21,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_14.h5'
+file_name = datadir+'out_2d3c_kapt_2_0_chi_0_1_kz_0_0.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:

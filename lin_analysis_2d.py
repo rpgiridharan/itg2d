@@ -27,8 +27,8 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,eps,tau,chi,a,b,Dphi,Dt,Hphi,Ht = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','eps','tau','chi','a','b','Dphi','Dt','Hphi','Ht']
+    kapn,kapt,kapb,eps,tau,chi,a,b,Hphi,Ht = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','eps','tau','chi','a','b','Hphi','Ht']
     ]
     sqre = torch.sqrt(eps)
     kpsq = kx**2 + ky**2
@@ -37,10 +37,10 @@ def init_linmats(pars,kx,ky):
     sigk = ky>0
     fac=tau+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*chi*kpsq-1j*Dt*kpsq**2-1j*sigk*Ht/kpsq**3
+    lm[:,:,0,0]=-1j*chi*kpsq-1j*sigk*Ht/kpsq**3
     lm[:,:,0,1]=(kapn+kapt)*ky
     lm[:,:,1,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*Dphi*kpsq**2-1j*sigk*Hphi/kpsq**3
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*sigk*Hphi/kpsq**3
 
     return lm
 
@@ -61,14 +61,13 @@ Npx,Npy=512,512
 Nx,Ny=2*int(Npx/3),2*int(Npy/3)
 Lx,Ly=32*np.pi,32*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
-kapn=0.5 #rho_i/L_n
+kapn=0*0.5 #rho_i/L_n
 kapt=2.0 #rho_i/L_T
 kapb=1.0 #2*rho_i/L_B
 chi=0.1
 a=9.0/40.0
 b=67.0/160.0
-D0=0*1e-3
-H0=0*1e-3
+H0=5e-12
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
@@ -77,8 +76,6 @@ base_pars={'kapn':kapn,
       'chi':chi,
       'a':a,
       'b':b,
-      'Dphi':D0,
-      'Dt':D0,
       'Hphi':H0,
       'Ht':H0}
 
@@ -109,7 +106,7 @@ slx=slice(None,int(Nx/8),int((Nx/8)/8)) #9 kx points
 plt.plot(ky[slx,:int(Ny/8)].T,gam[slx,:int(Ny/8)].T,'.-')
 plt.plot(ky[0,:int(Ny/8)],0*ky[0,:int(Ny/8)]**2,'k--')
 # plt.plot(ky[0,:int(Ny/8)],-a*chi*ky[0,:int(Ny/8)]**2-D0*ky[0,:int(Ny/8)]**4,'k--')
-plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-D_0k_y^4-a\\chi k_y^2$'])
+plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-a\\chi k_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{xi},k_y)$ vs $k_x$ for diff $k_x$')

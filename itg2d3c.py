@@ -32,7 +32,7 @@ Nk=kx.size
 ky0=ky[:Ny/2-1]
 
 # H0 = 1e-3*gam_kmin(ky0,kapt,kz)/gam_kmin(ky0,1.2,kz)
-H0=5e-2
+H0=5e-1
 HPhi=H0
 HP=H0
 HV=H0
@@ -157,7 +157,8 @@ filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(ch
 
 dtshow=0.1
 gammax=gam_max(ky0,kapt,kz)
-dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+# dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+dtstep,dtsavecb=round_to_nsig(0.00275*1e-3/H0,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(300/gammax,0) #3000/gammax
 rtol,atol=1e-8,1e-10
 wecontinue=False
