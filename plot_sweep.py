@@ -5,9 +5,8 @@ import cupy as cp
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
-import os
-from functools import partial
+from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np
+import glob
 
 plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 16
@@ -70,10 +69,22 @@ def sigma(Omk, Pk, Q, kx, kpsq, sl):
     sig = -Q/T**2 * dTdx
     return sig
 
+def format_exp(d):
+    dstr = f"{d:.1e}"
+    base, exp = dstr.split("e")
+    base = base.replace(".", "_")
+    if "-" in exp:
+        exp = exp.replace("-", "")
+        prefix = "em"
+    else:
+        prefix = "e"
+    exp = str(int(exp))
+    return f"{base}_{prefix}{exp}"
+
 #%% Define the quantities to be plotted
 
-datadir = 'data_scan/'
-kapt_vals = np.arange(0.3,1.6,0.1)
+datadir = 'data_sweep/'
+kapt_vals = np.arange(0.3,1.5,0.1)
 
 E_frac_scan = np.zeros(kapt_vals.shape)
 E_frac_scan_err = np.zeros(kapt_vals.shape)
@@ -83,9 +94,16 @@ Q_scan = np.zeros(kapt_vals.shape)
 Q_scan_err = np.zeros(kapt_vals.shape)
 
 for i,kapt in enumerate(kapt_vals):
-    kapt = round(kapt, 3)  
+    kapt = round(kapt, 3)
     print(f'Processing kappa_T = {kapt}')
-    file_name = datadir+f'out_kapt_{str(kapt).replace(".", "_")}_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+
+    pattern = datadir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_*.h5'
+    files = glob.glob(pattern)
+    if not files:
+        print(f"No file found for kappa_T = {kapt}")
+        continue
+    file_name = files[0] 
+    print(file_name)
 
     with h5.File(file_name, 'r', swmr=True) as fl:
         t = fl['fields/t'][:]

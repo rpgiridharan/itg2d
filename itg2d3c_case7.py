@@ -15,13 +15,13 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=1.6
+kapt=1.2
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
 s=0.9
-kz=0.32#0.3
+kz=0.05#0.3
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -119,8 +119,6 @@ def rhs_itg(t,y):
 
     nl_term1_num = 1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg)
     dPhikdt[:] += nl_term1_num / fac
-    nl_term2_num = kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP)
-    dPhikdt[:] += nl_term2_num / fac
 
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     dVkdt[:]+=rft2(dyphi*dxV-dxphi*dyV)
@@ -156,7 +154,7 @@ def round_to_nsig(number, n):
 
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
+filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}_case7.h5'
 
 dtshow=0.1
 gammax=gam_max(ky0,kapt,kz)

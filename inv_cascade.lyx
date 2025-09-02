@@ -117,10 +117,10 @@ We would like to study the following system describing 2D toroidal ITG turbulenc
  equation are responsible for the instability.
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right) & +\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp}
 \end{equation}
@@ -201,10 +201,10 @@ Omitting the
  fluctuations we get
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(-\nabla_{\perp}^{2}\phi\right) & +\left\{ \phi,\left(-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp-case1}
 \end{equation}
@@ -233,7 +233,7 @@ For reference,
 \begin{equation}
 \begin{aligned}\partial_{t}\nabla_{\perp}^{2}\phi & +\left\{ \phi,\nabla_{\perp}^{2}\phi\right\} -\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
  & -\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi+\kappa_{B}\partial_{y}P\\
- & =\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\nabla_{\perp}^{2}\phi+\nu_{\phi}\nabla_{\parallel}^{4}\left(\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:vorticity_eq}
 \end{equation}
@@ -469,9 +469,9 @@ Omitting
  we get
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp-case2}
 \end{equation}
@@ -510,9 +510,9 @@ Omitting
  we get
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp-case3}
 \end{equation}
@@ -711,9 +711,9 @@ Omitting the non-linear term
  we get
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp-case4}
 \end{equation}
@@ -876,9 +876,9 @@ Omitting the non-linear term
  we get
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp-case5}
 \end{equation}
@@ -1025,9 +1025,9 @@ in the
  we get
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+D_{P}\nabla_{\perp}^{4}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\}  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
- & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+D_{\phi}\nabla_{\perp}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\phi\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
+ & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
 \end{aligned}
 \label{eq:itg_simp-case6}
 \end{equation}
@@ -1259,7 +1259,16 @@ status open
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Subsection
+Case 7:
+ 
+\begin_inset Formula $k_{\parallel}$
+\end_inset
+
+but no
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
 
 \end_layout
 
