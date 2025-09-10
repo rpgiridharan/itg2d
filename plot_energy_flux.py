@@ -5,221 +5,165 @@ import cupy as cp
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
+from modules.mlsarray import MLSarray,Slicelist
+from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
 import os
 from functools import partial
+from mpi4py import MPI
+
+# Initialize MPI
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
+size = comm.Get_size()
 
 plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 16
 plt.rcParams['axes.linewidth'] = 3  
-plt.rcParams['xtick.major.width'] = 3
-plt.rcParams['ytick.major.width'] = 3
-plt.rcParams['xtick.minor.visible'] = True
-plt.rcParams['ytick.minor.visible'] = True
-plt.rcParams['xtick.minor.width'] = 1.5 
-plt.rcParams['ytick.minor.width'] = 1.5 
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_2d3c_kapt_1_6_chi_0_1_kz_0_12.h5'
+comm.Barrier()
+file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_1.h5'
 it = -1
-# it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
-    Omk = np.mean(fl['fields/Omk'][-400:],axis=0)
-    Pk = np.mean(fl['fields/Pk'][-400:],axis=0)
-    Vk = np.mean(fl['fields/Vk'][-400:],axis=0)
-    Ombar = np.mean(fl['zonal/Ombar'][-400:],axis=0)
-    Pbar = np.mean(fl['zonal/Pbar'][-400:],axis=0)
-    Vbar = np.mean(fl['zonal/Vbar'][-400:],axis=0)
+    Omk = fl['fields/Omk'][it]
+    Pk = fl['fields/Pk'][it]
+    Ombar = fl['zonal/Ombar'][it]
+    Pbar = fl['zonal/Pbar'][it]
+    PiP = fl['fluxes/PiP'][it]
+    Q = fl['fluxes/Q'][it]
     t = fl['fields/t'][:]
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
     Lx = fl['params/Lx'][()]
     Ly = fl['params/Ly'][()]
-    Npx= fl['params/Npx'][()]
-    Npy= fl['params/Npy'][()]
-
+    Npx = fl['params/Npx'][()]
+    Npy = fl['params/Npy'][()]
+    chi = fl['params/chi'][()]
+    HP = fl['params/HP'][()]
+    HPhi = fl['params/HPhi'][()]
+    a = fl['params/a'][()]
+    b = fl['params/b'][()]
+    kapt = fl['params/kapt'][()]
+    kapn = fl['params/kapn'][()]
+    kapb = fl['params/kapb'][()]
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-print('kx shape', kx.shape)
-nt = len(t)
-print("nt: ", nt)
 
-#%% Functions for energy and enstrophy
+nt = len(t) - (len(t) % size)
+if rank == 0:
+    print("nt: ", nt)
 
-def ES(omk, kp, k, dk):
-    ''' Returns the kinetic energy spectrum'''
-    ek = np.abs(omk)**2/kp
+#%% Functions for energy, enstrophy and entropy
 
-    Ek = np.zeros(len(k))
-    for i in range(len(k)):
-        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])
-    return Ek
+irft2np = partial(original_irft2np,Npx=Npx,Npy=Npy,Nx=Nx,sl=sl)
+rft2np = partial(original_rft2np,sl=sl)
+irftnp = partial(original_irftnp,Npx=Npx,Nx=Nx)
+rftnp = partial(original_rftnp,Nx=Nx)
 
-def ES_ZF(omk, kp, k, dk, slbar):
-    ''' Returns the zonal kinetic energy spectrum'''   
-    ek_ZF = np.abs(omk[slbar])**2/kp[slbar]
+def spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik'):
+    ''' Returns the RHS of the model equations'''
+    kpsq = kx**2 + ky**2
+    Phik = -Omk/kpsq
+    dyphi=irft2np(1j*ky*Phik)
+    dxphi=irft2np(1j*kx*Phik)
+    dyP=irft2np(1j*ky*Pk)
+    dxP=irft2np(1j*kx*Pk)
+    sigk=np.sign(ky)
+    fac=sigk+kpsq
+    dxnOmg=irft2np(1j*kx*fac*Phik)
+    dynOmg=irft2np(1j*ky*fac*Phik)
+
+    nltermOmg=-kx**2*(rft2np(dxphi*dyP))+kx*ky*(rft2np(dxphi*dxP))-kx*ky*(rft2np(dyphi*dyP))+ky**2*(rft2np(dyphi*dxP))
+    nltermP=rft2np(dxphi*dynOmg-dyphi*dxnOmg)
+
+    ak = np.zeros_like(Omk)
+    Ak = np.zeros(len(k))
+    if flag=='Pik_Phi':
+        ak = -np.real(np.conj(Phik)*nltermOmg)
+        for i in range(len(k)):
+            Ak[i] = np.sum(ak[np.where(kp<=k[i])])
+    elif flag=='Pik_P':
+        ak = -np.real(np.conj(Phik)*nltermP)
+        for i in range(len(k)):
+            Ak[i] = np.sum(ak[np.where(kp<=k[i])])
+    elif flag=='fk':
+        ak = np.real(np.conj(Phik)*((kapb-kapn)*1j*ky*Phik+(kapn+kapt)*1j*ky*kpsq*Phik+kapb*1j*ky*Pk))
+        for i in range(len(k)):
+            Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
+    elif flag=='dk':
+        ak = np.real(np.conj(Phik)*(chi*kpsq**2*(a*Phik-b*Pk)+HPhi*(1+kpsq)/kpsq**3*Phik))
+        for i in range(len(k)):
+            Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
+    return Ak
     
-    Ek_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
-    return Ek_ZF
-
-def WS(omk, kp, k , dk):
-    ''' Returns the enstrophy spectrum'''    
-    wk = np.abs(omk)**2 
-
-    Wk = np.zeros(len(k))
-    for i in range(len(k)):
-        Wk[i] = np.sum(wk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
-    return Wk
-    
-def WS_ZF(omk, kp, k, dk, slbar):
-    ''' Returns the zonal enstrophy spectrum'''    
-    wk_ZF = np.abs(omk[slbar])**2
-
-    Wk_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
-    return Wk_ZF
-
-def HS(omk,kp):
-    '''Returns the helicity spectrum'''
-
-
-def HS_ZF(omk, kp, slbar):
-    '''Returns the zonal helicity spectrum'''
-    hk_ZF = np.abs(omk[slbar])**2/kp[slbar]
-    
-    Hk_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Hk_ZF[i] = np.sum(hk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
-    return Hk_ZF
-
-def PS(pk, kp, k, dk):
-    ''' Returns the pressure spectrum'''
-    pk = np.abs(pk)
-    Pk = np.zeros(len(k))
-    for i in range(len(k)):
-        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
-    return Pk
-
-def PS_ZF(pk, kp, k, dk, slbar):
-    ''' Returns the zonal pressure spectrum'''   
-    pk_ZF = np.abs(pk[slbar])
-    
-    Pk_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
-    return Pk_ZF
-
-def VS(vk, kp, k, dk):
-    ''' Returns the parallel velocity spectrum'''
-    vk = np.abs(vk)
-    Vk = np.zeros(len(k))
-    for i in range(len(k)):
-        Vk[i] = np.sum(vk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
-    return Vk
-
-def VS_ZF(vk, kp, k, dk, slbar):
-    ''' Returns the zonal parallel velocity spectrum'''   
-    vk_ZF = np.abs(vk[slbar])
-    
-    Vk_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Vk_ZF[i] = np.sum(vk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
-    return Vk_ZF
-
-#%% Plots
+#%% Calculate quantities
 
 print(Omk.shape)
 
-dk = ky[1]-ky[0]
+delk = ky[1]-ky[0]
 kp = np.sqrt(np.abs(kx)**2 + np.abs(ky)**2)
-# k = np.logspace(np.log10(np.min(kp)), np.log10(np.max(kp)), num=int(np.max(kp)/dk))
-k = np.linspace(np.min(kp), np.max(kp), num=int(np.max(kp)/dk))
+k = np.linspace(np.min(kp), np.max(kp), num=int(np.max(kp)/delk))
 
-Ek = ES(Omk, kp, k, dk)
-Ek_ZF = ES_ZF(Omk, kp, k, dk, slbar)
-Ek_turb = Ek-Ek_ZF
+Pik_Phi = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_Phi')
+Pik_P = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_P')
+Pik = Pik_Phi + Pik_P
+
+fk = spectrum(Omk, Pk, kx, ky, k, delk, flag='fk')
+k_max_fk = k[np.argmax(fk)]
+
+dk = spectrum(Omk, Pk, kx, ky, k, delk, flag='dk')
+
+#%% Plots
+
 plt.figure()
-plt.loglog(k[1:-1], Ek[1:-1], label = '$\\mathcal{E}_{k,total}$')
-plt.loglog(k[Ek_ZF>0][1:-1], Ek_ZF[Ek_ZF>0][1:-1], label = '$\\mathcal{E}_{k,ZF}$')
-plt.loglog(k[1:-1], Ek_turb[1:-1], label = '$\\mathcal{E}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
-plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
+plt.plot(k[1:-1], Pik[1:-1], label = '$\\Pi_{k}$')
+plt.plot(k[1:-1], Pik_Phi[1:-1], label = '$\\Pi_{k,\\phi}$')
+plt.plot(k[1:-1], Pik_P[1:-1], label = '$\\Pi_{k,P}$')
+plt.axvline(x=k_max_fk, color='k', linestyle=':', linewidth=2)
+plt.xscale('log')
 plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{E}_k$')
-plt.title('$\\mathcal{E}_k(k)$; $t = %.1f$' %t[it])
+plt.ylabel('$\\Pi_k$')
+plt.title('$\\Pi_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'energy_spectrum.png', dpi=600)
+    plt.savefig(datadir+'energy_flux.png', dpi=600)
 else:
-    plt.savefig(datadir+"energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"energy_flux_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
-Wk = WS(Omk, kp, k, dk)
-Wk_ZF = WS_ZF(Omk, kp, k, dk, slbar)
-Wk_turb = Wk-Wk_ZF
+
 plt.figure()
-plt.loglog(k[1:-1], Wk[1:-1], label = '$\\mathcal{W}_{k,total}$')
-plt.loglog(k[Wk_ZF>0][1:-1], Wk_ZF[Wk_ZF>0][1:-1], label = '$\\mathcal{W}_{k,ZF}$')
-plt.loglog(k[1:-1], Wk_turb[1:-1], label = '$\\mathcal{W}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-1), 'k--', label = '$k^{-1}$')
+plt.plot(k[1:-1], fk[1:-1], label = '$\\mathcal{f}_{k,total}$')
+plt.axvline(x=k_max_fk, color='k', linestyle=':', linewidth=2, label=f'$k_{{max}}={k_max_fk:.2f}$')
+plt.xscale('log')
 plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{W}_k$')
-plt.title('$\\mathcal{W}_k(k)$; $t = %.1f$' %t[it])
+plt.ylabel('$\\mathcal{f}_k$')
+plt.title('$\\mathcal{f}_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'enstrophy_spectrum.png', dpi=600)
+    plt.savefig(datadir+'energy_injection.png', dpi=600)
 else:
-    plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"energy_injection_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
-Pkp = PS(Pk, kp, k, dk)
-Pkp_ZF = PS_ZF(Pk, kp, k, dk, slbar)
-Pkp_turb = Pkp-Pkp_ZF
 plt.figure()
-plt.loglog(k[1:-1], Pkp[1:-1], label = '$\\mathcal{P}_{k,total}$')
-plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$\\mathcal{P}_{k,ZF}$')
-plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$\\mathcal{P}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
+plt.plot(k[1:-1], dk[1:-1], label = '$\\mathcal{d}_{k,total}$')
+plt.xscale('log')
 plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{P}_k$')
-plt.title('$\\mathcal{P}_k(k)$; $t = %.1f$' %t[it])
+plt.ylabel('$\\mathcal{d}_k$')
+plt.title('$\\mathcal{d}_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'pressure_spectrum.png', dpi=600)
+    plt.savefig(datadir+'dissipation.png', dpi=600)
 else:
-    plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"dissipation_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
-
-Vkp = VS(Vk, kp, k, dk)
-Vkp_ZF = VS_ZF(Vk, kp, k, dk, slbar)
-Vkp_turb = Vkp-Vkp_ZF
-plt.figure()
-plt.loglog(k[1:-1], Vkp[1:-1], label = '$\\mathcal{V}_{k,total}$')
-plt.loglog(k[Vkp_ZF>0][1:-1], Vkp_ZF[Pkp_ZF>0][1:-1], label = '$\\mathcal{V}_{k,ZF}$')
-plt.loglog(k[1:-1], Vkp_turb[1:-1], label = '$\\mathcal{V}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
-plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{V}_k$')
-plt.title('$\\mathcal{V}_k(k)$; $t = %.1f$' %t[it])
-plt.legend()
-plt.grid(which='both', linestyle='--', linewidth=0.5)
-plt.tight_layout()
-if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'parallel_velocity_spectrum.png', dpi=600)
-else:
-    plt.savefig(datadir+"parallel_velocity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
-plt.show()
-
-# %%

@@ -152,7 +152,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 75text%
 
@@ -261,7 +261,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -540,7 +540,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -741,7 +741,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -805,7 +805,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case4.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3_case4.png
 	lyxscale 20
 	width 48text%
 
@@ -906,7 +906,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -942,7 +942,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case5.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3_case5.png
 	lyxscale 20
 	width 48text%
 
@@ -1055,7 +1055,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -1091,7 +1091,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/energy_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case6.png
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3_case6.png
 	lyxscale 20
 	width 48text%
 
@@ -1166,7 +1166,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/pressure_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.png
+	filename data/pressure_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -1202,7 +1202,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/pressure_spectrum_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3_case6.png
+	filename data/pressure_spectrum_kapt_1_2_chi_0_1_H_1_0_em3_case6.png
 	lyxscale 20
 	width 48text%
 
@@ -1267,6 +1267,227 @@ Case 7:
 
 but no
 \begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_spectrum_2d3c_kapt_1_2_chi_0_1_kz_0_01_case7.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ of system without diamagnetic stress,
+ 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 7 with
+\begin_inset Formula $k_{\parallel}=0.01$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/pressure_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $P_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/pressure_spectrum_2d3c_kapt_1_2_chi_0_1_kz_0_01_case7.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $P_{k}$
+\end_inset
+
+ of system without diamagnetic stress,
+ 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $P_{k}$
+\end_inset
+
+ comparison for Case 7 with 
+\begin_inset Formula $k_{\parallel}=0.01$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \end_inset
 
 

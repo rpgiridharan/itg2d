@@ -29,7 +29,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 #%% Load the HDF5 file
 
 datadir = "data/"
-infl = datadir+'out_2d3c_kapt_1_6_chi_0_1_kz_0_36.h5'
+infl = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_case6.h5'
 outfl = infl.replace('.h5', '.mp4')
 
 with h5.File(infl, "r", libver='latest', swmr=True) as fl:

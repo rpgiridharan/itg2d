@@ -21,7 +21,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_2d3c_kapt_1_6_chi_0_1_kz_0_12.h5'
+file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_1.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -39,7 +39,6 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     Npx= fl['params/Npx'][()]
     Npy= fl['params/Npy'][()]
 
-
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
@@ -50,86 +49,98 @@ print("nt: ", nt)
 #%% Functions for energy and enstrophy
 
 def ES(omk, kp, k, dk):
-    ''' Returns the kinetic energy spectrum'''
-    ek = np.abs(omk)**2/kp
-
+    ''' Returns the total energy spectrum'''
+    sigk=np.sign(ky)
+    fac = sigk+kp**2
+    ek = 0.5*fac*np.abs(omk)**2/kp**4
+    
     Ek = np.zeros(len(k))
     for i in range(len(k)):
-        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])
+        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])*dk
     return Ek
 
 def ES_ZF(omk, kp, k, dk, slbar):
-    ''' Returns the zonal kinetic energy spectrum'''   
-    ek_ZF = np.abs(omk[slbar])**2/kp[slbar]
+    ''' Returns the zonal total energy spectrum'''   
+    sigk=np.sign(ky[slbar])
+    fac = sigk+kp[slbar]**2 
+    ek_ZF = 0.5*fac*np.abs(omk[slbar])**2/kp[slbar]**4
     
     Ek_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Ek_ZF
 
 def WS(omk, kp, k , dk):
     ''' Returns the enstrophy spectrum'''    
-    wk = np.abs(omk)**2 
+    wk = 0.5*np.abs(omk)**2 
+    # wk = 0.5*np.conj(omk)*omk
 
     Wk = np.zeros(len(k))
     for i in range(len(k)):
-        Wk[i] = np.sum(wk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+        Wk[i] = np.sum(wk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
     return Wk
     
 def WS_ZF(omk, kp, k, dk, slbar):
     ''' Returns the zonal enstrophy spectrum'''    
-    wk_ZF = np.abs(omk[slbar])**2
+    wk_ZF = 0.5*np.abs(omk[slbar])**2
 
     Wk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Wk_ZF
 
-def HS(omk,kp):
-    '''Returns the helicity spectrum'''
+def HS(omk, vk, kp, k, dk):
+    '''Returns the kinetic helicity spectrum'''
+    hk = 2*np.abs(np.real(np.conj(vk)*omk))
 
+    Hk = np.zeros(len(k))
+    for i in range(len(k)):
+        Hk[i] = np.sum(hk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
+    return Hk
 
-def HS_ZF(omk, kp, slbar):
-    '''Returns the zonal helicity spectrum'''
-    hk_ZF = np.abs(omk[slbar])**2/kp[slbar]
-    
+def HS_ZF(omk, vk, kp, k, dk, slbar):
+    '''Returns the zonal kinetic helicity spectrum'''
+    hk_ZF = 2*np.abs(np.real(np.conj(vk[slbar])*omk[slbar]))
+
     Hk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Hk_ZF[i] = np.sum(hk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Hk_ZF[i] = np.sum(hk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Hk_ZF
 
 def PS(pk, kp, k, dk):
-    ''' Returns the pressure spectrum'''
-    pk = np.abs(pk)
+    ''' Returns the var(P) spectrum'''
+    pk = np.abs(pk)**2
+
     Pk = np.zeros(len(k))
     for i in range(len(k)):
-        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
     return Pk
 
 def PS_ZF(pk, kp, k, dk, slbar):
-    ''' Returns the zonal pressure spectrum'''   
-    pk_ZF = np.abs(pk[slbar])
+    ''' Returns the zonal var(P) spectrum'''   
+    pk_ZF = np.abs(pk[slbar])**2
     
     Pk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Pk_ZF
 
 def VS(vk, kp, k, dk):
-    ''' Returns the parallel velocity spectrum'''
-    vk = np.abs(vk)
+    ''' Returns the var(V) spectrum'''
+    vk = np.abs(vk)**2
+
     Vk = np.zeros(len(k))
     for i in range(len(k)):
-        Vk[i] = np.sum(vk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+        Vk[i] = np.sum(vk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
     return Vk
 
 def VS_ZF(vk, kp, k, dk, slbar):
-    ''' Returns the zonal parallel velocity spectrum'''   
-    vk_ZF = np.abs(vk[slbar])
+    ''' Returns the zonal var(V) spectrum'''   
+    vk_ZF = np.abs(vk[slbar])**2
     
     Vk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Vk_ZF[i] = np.sum(vk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Vk_ZF[i] = np.sum(vk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Vk_ZF
 
 #%% Plots
@@ -152,7 +163,7 @@ plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
 plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{E}_k$')
-plt.title('$\\mathcal{E}_k(k)$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{E}_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -169,10 +180,11 @@ plt.figure()
 plt.loglog(k[1:-1], Wk[1:-1], label = '$\\mathcal{W}_{k,total}$')
 plt.loglog(k[Wk_ZF>0][1:-1], Wk_ZF[Wk_ZF>0][1:-1], label = '$\\mathcal{W}_{k,ZF}$')
 plt.loglog(k[1:-1], Wk_turb[1:-1], label = '$\\mathcal{W}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-1), 'k--', label = '$k^{-1}$')
+plt.loglog(k[1:-1], k[1:-1]**(1/3), 'k--', label = '$k^{1/3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-1), 'r--', label = '$k^{-1}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{W}_k$')
-plt.title('$\\mathcal{W}_k(k)$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{W}_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -182,17 +194,38 @@ else:
     plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
+Hk = HS(Omk, Vk, kp, k, dk)
+Hk_ZF = HS_ZF(Omk, Vk, kp, k, dk, slbar)
+Hk_turb = Hk-Hk_ZF
+plt.figure()
+plt.loglog(k[1:-1], Hk[1:-1], label = '$|\\mathcal{H}_{k,total}|$')
+plt.loglog(k[Hk_ZF>0][1:-1], Hk_ZF[Hk_ZF>0][1:-1], label = '$|\\mathcal{H}_{k,ZF}|$')
+plt.loglog(k[1:-1], Hk_turb[1:-1], label = '$|\\mathcal{H}_{k,turb}|$')
+plt.loglog(k[1:-1], k[1:-1]**(-1), 'k--', label = '$k^{-1}$')
+plt.xlabel('$k$')
+plt.ylabel('$|\\mathcal{H}_k|$')
+plt.title('$|\\mathcal{H}_k|$; $t = %.1f$' %t[it])
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'helicity_spectrum.png', dpi=600)
+else:
+    plt.savefig(datadir+"helicity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+plt.show()
+
 Pkp = PS(Pk, kp, k, dk)
 Pkp_ZF = PS_ZF(Pk, kp, k, dk, slbar)
 Pkp_turb = Pkp-Pkp_ZF
 plt.figure()
-plt.loglog(k[1:-1], Pkp[1:-1], label = '$\\mathcal{P}_{k,total}$')
-plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$\\mathcal{P}_{k,ZF}$')
-plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$\\mathcal{P}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
+plt.loglog(k[1:-1], Pkp[1:-1], label = '$P_{k,total}^2$')
+plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$P_{k,ZF}^2$')
+plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$P_{k,turb}^2$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-4), 'r--', label = '$k^{-4}$')
 plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{P}_k$')
-plt.title('$\\mathcal{P}_k(k)$; $t = %.1f$' %t[it])
+plt.ylabel('$P_k^2$')
+plt.title('$P_k^2$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -206,13 +239,14 @@ Vkp = VS(Vk, kp, k, dk)
 Vkp_ZF = VS_ZF(Vk, kp, k, dk, slbar)
 Vkp_turb = Vkp-Vkp_ZF
 plt.figure()
-plt.loglog(k[1:-1], Vkp[1:-1], label = '$\\mathcal{V}_{k,total}$')
-plt.loglog(k[Vkp_ZF>0][1:-1], Vkp_ZF[Pkp_ZF>0][1:-1], label = '$\\mathcal{V}_{k,ZF}$')
-plt.loglog(k[1:-1], Vkp_turb[1:-1], label = '$\\mathcal{V}_{k,turb}$')
+plt.loglog(k[1:-1], Vkp[1:-1], label = '$V_{k,total}^2$')
+plt.loglog(k[Vkp_ZF>0][1:-1], Vkp_ZF[Vkp_ZF>0][1:-1], label = '$V_{k,ZF}^2$')
+plt.loglog(k[1:-1], Vkp_turb[1:-1], label = '$V_{k,turb}^2$')
 plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
 plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{V}_k$')
-plt.title('$\\mathcal{V}_k(k)$; $t = %.1f$' %t[it])
+plt.ylabel('$V_k^2$')
+plt.title('$V_k^2$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()

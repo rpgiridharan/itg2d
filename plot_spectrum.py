@@ -21,7 +21,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_0_8_chi_0_1_H_1_0_em3.h5'
+file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -48,77 +48,63 @@ print("nt: ", nt)
 #%% Functions for energy and enstrophy
 
 def ES(omk, kp, k, dk):
-    ''' Returns the kinetic energy spectrum'''
-    ek = np.abs(omk)**2/kp
+    ''' Returns the total energy spectrum'''
+    sigk=np.sign(ky)
+    fac = sigk+kp**2
+    ek = 0.5*fac*np.abs(omk)**2/kp**4
 
     Ek = np.zeros(len(k))
     for i in range(len(k)):
-        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])
+        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])*dk
     return Ek
 
 def ES_ZF(omk, kp, k, dk, slbar):
-    ''' Returns the zonal kinetic energy spectrum'''   
-    ek_ZF = np.abs(omk[slbar])**2/kp[slbar]
+    ''' Returns the zonal kinetic energy spectrum'''  
+    sigk=np.sign(ky[slbar])
+    fac = sigk+kp[slbar]**2 
+    ek_ZF = 0.5*fac*np.abs(omk[slbar])**2/kp[slbar]**4
     
     Ek_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Ek_ZF
 
 def WS(omk, kp, k , dk):
     ''' Returns the enstrophy spectrum'''    
-    wk = np.abs(omk)**2 
+    wk = 0.5*np.abs(omk)**2 
 
     Wk = np.zeros(len(k))
     for i in range(len(k)):
-        Wk[i] = np.sum(wk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+        Wk[i] = np.sum(wk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
     return Wk
     
 def WS_ZF(omk, kp, k, dk, slbar):
     ''' Returns the zonal enstrophy spectrum'''    
-    wk_ZF = np.abs(omk[slbar])**2
+    wk_ZF = 0.5*np.abs(omk[slbar])**2
 
     Wk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Wk_ZF
 
 def PS(pk, kp, k, dk):
-    ''' Returns the pressure spectrum'''
-    pk = np.abs(pk)
+    ''' Returns the var(P) spectrum'''
+    pk = np.abs(pk)**2
+    
     Pk = np.zeros(len(k))
     for i in range(len(k)):
-        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])
+        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
     return Pk
 
 def PS_ZF(pk, kp, k, dk, slbar):
-    ''' Returns the zonal pressure spectrum'''   
-    pk_ZF = np.abs(pk[slbar])
+    ''' Returns the zonal var(P) spectrum'''   
+    pk_ZF = np.abs(pk[slbar])**2
     
     Pk_ZF = np.zeros(len(k))
     for i in range(len(k)):
-        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])
+        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Pk_ZF
 
-# def rft2(u):
-#     Npx = u.shape[-2]
-#     Nx, Ny = int(Npx/3)*2, int(Npx/3)*2
-#     Nxh = int(Nx/2)
-#     yk= np.fft.rfft2(u, norm='forward', axes=(-2,-1))
-    
-#     if len(u.shape)==2:
-#         uk = np.zeros((Nx, int(Ny/2)+1), dtype=complex)
-#         uk[:Nxh,:-1] = yk[:Nxh,:int(Ny/2)]
-#         uk[-1:-Nxh:-1,:-1] = yk[-1:-Nxh:-1,:int(Ny/2)]
-#         uk[0, 0] = 0
-
-#     else:
-#         uk = np.zeros((u.shape[0], Nx, int(Ny/2)+1), dtype=complex)
-#         uk[:, :Nxh,:-1] = yk[:, :Nxh,:int(Ny/2)]
-#         uk[:, -1:-Nxh:-1,:-1] = yk[:, -1:-Nxh:-1,:int(Ny/2)]
-#         uk[:, 0, 0] = 0
-        
-#     return np.hstack(uk)
 
 #%% Plots
 
@@ -140,7 +126,7 @@ plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
 plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{E}_k$')
-plt.title('$\\mathcal{E}_k(k)$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{E}_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -157,10 +143,11 @@ plt.figure()
 plt.loglog(k[1:-1], Wk[1:-1], label = '$\\mathcal{W}_{k,total}$')
 plt.loglog(k[Wk_ZF>0][1:-1], Wk_ZF[Wk_ZF>0][1:-1], label = '$\\mathcal{W}_{k,ZF}$')
 plt.loglog(k[1:-1], Wk_turb[1:-1], label = '$\\mathcal{W}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-1), 'k--', label = '$k^{-1}$')
+plt.loglog(k[1:-1], k[1:-1]**(1/3), 'k--', label = '$k^{1/3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-1), 'r--', label = '$k^{-1}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{W}_k$')
-plt.title('$\\mathcal{W}_k(k)$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{W}_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -174,13 +161,14 @@ Pkp = PS(Pk, kp, k, dk)
 Pkp_ZF = PS_ZF(Pk, kp, k, dk, slbar)
 Pkp_turb = Pkp-Pkp_ZF
 plt.figure()
-plt.loglog(k[1:-1], Pkp[1:-1], label = '$\\mathcal{P}_{k,total}$')
-plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$\\mathcal{P}_{k,ZF}$')
-plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$\\mathcal{P}_{k,turb}$')
-plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
+plt.loglog(k[1:-1], Pkp[1:-1], label = '$P_{k,total}^2$')
+plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$P_{k,ZF}^2$')
+plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$P_{k,turb}^2$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-4), 'r--', label = '$k^{-4}$')
 plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{P}_k$')
-plt.title('$\\mathcal{P}_k(k)$; $t = %.1f$' %t[it])
+plt.ylabel('$P_k^2$')
+plt.title('$P^2_k$; $t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
