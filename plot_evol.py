@@ -22,8 +22,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 fil2
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3.h5'
-# file_name = datadir+'out_kapt_0_8_chi_0_1_H_1_0_em3.h5'
+file_name = datadir+'out_kapt_0_9_chi_0_1_H_1_0_em3.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]

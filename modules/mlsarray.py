@@ -42,8 +42,8 @@ def init_kgrid(sl,Lx,Ly):
     kyl=np.r_[0:int(Ny/2+1)]
     dkx,dky=2*np.pi/Lx,2*np.pi/Ly
     kx,ky=np.meshgrid(kxl*dkx,kyl*dky,indexing='ij')
-    kx=cp.hstack([kx[l].ravel() for l in sl.insl])
-    ky=cp.hstack([ky[l].ravel() for l in sl.insl])
+    kx=cp.hstack([cp.asarray(kx[l].ravel()) for l in sl.insl])
+    ky=cp.hstack([cp.asarray(ky[l].ravel()) for l in sl.insl])
     return kx,ky
 
 def irft2(uk,Npx,Npy,Nx,sl):
