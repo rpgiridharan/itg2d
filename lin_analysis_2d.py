@@ -27,20 +27,20 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,eps,tau,chi,a,b,Hphi,Ht = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','eps','tau','chi','a','b','Hphi','Ht']
+    kapn,kapt,kapb,tau,chi,a,b,HPhi,HP = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','HPhi','HP']
     ]
-    sqre = torch.sqrt(eps)
     kpsq = kx**2 + ky**2
     kpsq = torch.where(kpsq==0, 1e-10, kpsq)
+    iv=1
         
     sigk = ky>0
-    fac=tau+kpsq
+    fac=tau*sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*chi*kpsq-1j*sigk*Ht/kpsq**3
-    lm[:,:,0,1]=(kapn+kapt)*ky
+    lm[:,:,0,0]=-2*(5/3)*kapb*ky*iv-1j*chi*kpsq-1j*sigk*HP/kpsq**3
+    lm[:,:,0,1]=(kapn+kapt+(tau-1)*kapb*(5/3)*iv)*ky
     lm[:,:,1,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*sigk*Hphi/kpsq**3
+    lm[:,:,1,1]=(-(kapb-kapn)*ky-(kapn+kapt)*ky*kpsq-1j*chi*kpsq**2*a)/fac-1j*sigk*HPhi/kpsq**3
 
     return lm
 
@@ -62,22 +62,21 @@ Nx,Ny=2*int(Npx/3),2*int(Npy/3)
 Lx,Ly=32*np.pi,32*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
 kapn=0*0.5 #rho_i/L_n
-kapt=2.0 #rho_i/L_T
-kapb=1.0 #2*rho_i/L_B
+kapt=1.2 #rho_i/L_T
+kapb=1.2 #2*rho_i/L_B
 chi=0.1
 a=9.0/40.0
 b=67.0/160.0
-H0=5e-12
+H0=5e-3*0
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
-      'eps':0.1,#trapped e fraction
       'tau':1.,#Ti/Te
       'chi':chi,
       'a':a,
       'b':b,
-      'Hphi':H0,
-      'Ht':H0}
+      'HPhi':H0,
+      'HP':H0}
 
 #%% Compute om
 
@@ -100,12 +99,12 @@ omr_kx0 = omr[0,:]
 
 #%% Plots
    
-plt.figure()
+plt.figure(figsize=(9.71,6))
 # slx=slice(None,int(Nx/32),1) 
-slx=slice(None,int(Nx/8),int((Nx/8)/8)) #9 kx points
-plt.plot(ky[slx,:int(Ny/8)].T,gam[slx,:int(Ny/8)].T,'.-')
-plt.plot(ky[0,:int(Ny/8)],0*ky[0,:int(Ny/8)]**2,'k--')
-# plt.plot(ky[0,:int(Ny/8)],-a*chi*ky[0,:int(Ny/8)]**2-D0*ky[0,:int(Ny/8)]**4,'k--')
+slx=slice(None,int(Nx/8),int((Nx/8)/5)) #7 kx points
+plt.plot(ky[slx,:int(0.5*Ny*0.7)].T,gam[slx,:int(0.5*Ny*0.7)].T,'.-')
+plt.plot(ky[0,:int(0.5*Ny*0.7)],0*ky[0,:int(0.5*Ny*0.7)],'k--', linewidth=1)
+# plt.plot(ky[0,:int(Ny)],-a*chi*ky[0,:int(Ny)]**2,'k--')
 plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-a\\chi k_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
@@ -122,7 +121,7 @@ plt.ylabel('$k_{y,max}$')
 plt.title('$k_{y,max}$ vs $k_x$')
 plt.tight_layout()
 plt.savefig('data/ky_vs_kx_itg2d.png',dpi=600)
-# plt.show()
+plt.show()
 
 #%% colormesh of gam and omr
 
@@ -137,7 +136,7 @@ plt.title('$\\gamma(k_x,k_y)$')
 plt.colorbar()
 plt.tight_layout()
 plt.savefig('data/gamkxky_itg2d.png',dpi=600)
-# plt.show()
+plt.show()
 
 # plt.figure()
 # plt.pcolormesh(kx_shifted, ky_shifted, np.fft.fftshift(omr, axes=0),vmax=0.2,vmin=-0.2,cmap='seismic', rasterized=True)

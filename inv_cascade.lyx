@@ -117,7 +117,7 @@ We would like to study the following system describing 2D toroidal ITG turbulenc
  equation are responsible for the instability.
 \begin_inset Formula 
 \begin{equation}
-\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\phi & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
+\begin{aligned}\partial_{t}P+\left\{ \phi,P\right\} +\left(\kappa_{n}+\kappa_{T}+\left[\tau-1\right]\gamma\kappa_{B}\right)\partial_{y}\phi-2\gamma\kappa_{B}\partial_{y}P & =\chi\nabla_{\perp}^{2}P+\nu_{P}\nabla_{\parallel}^{4}\tilde{P}\\
 \partial_{t}\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right) & +\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} +\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} \\
  & -\left(\kappa_{B}-\kappa_{n}\right)\partial_{y}\phi+\left(\kappa_{n}+\kappa_{T}\right)\partial_{y}\nabla_{\perp}^{2}\phi-\kappa_{B}\partial_{y}P\\
  & =-\chi\nabla_{\perp}^{4}\left(a\phi-bP\right)+\nu_{\phi}\nabla_{\parallel}^{4}\left(\tau\tilde{\phi}-\nabla_{\perp}^{2}\tilde{\phi}\right)
@@ -172,6 +172,56 @@ Energy spectrum,
 
 ,
  of full system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The energy flux is given as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3.png
+	lyxscale 20
+	width 75text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Energy flux,
+ 
+\begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+,
+ of full system for 
+\begin_inset Formula $\kappa_{T}=1.2$
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -859,6 +909,118 @@ status open
 
 \end_layout
 
+\begin_layout Standard
+The energy flux looks like
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Pi_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3_case4.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Pi_{k}$
+\end_inset
+
+ of system without diamagnetic stress,
+ 
+\begin_inset Formula $\boldsymbol{\nabla}_{\perp}\cdot\left\{ \boldsymbol{\nabla}_{\perp}\phi,P\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Pi_{k}$
+\end_inset
+
+ comparison for Case 4
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsection
 Case 5:
  Omit 
@@ -980,6 +1142,117 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Formula $\mathcal{E}_{k}$
+\end_inset
+
+ comparison for Case 5
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The energy flux looks like
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement h
+alignment center
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Pi_{k}$
+\end_inset
+
+ of complete system
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3_case5.png
+	lyxscale 20
+	width 48text%
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Pi_{k}$
+\end_inset
+
+ of system without 
+\begin_inset Formula $\left\{ \phi,\left(\tau\widetilde{\phi}-\nabla_{\perp}^{2}\phi\right)\right\} $
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset Formula $\Pi_{k}$
 \end_inset
 
  comparison for Case 5
@@ -1149,6 +1422,10 @@ status open
 \end_layout
 
 \begin_layout Standard
+The energy flux looks like
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement h
 alignment center
@@ -1166,7 +1443,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/pressure_spectrum_kapt_1_2_chi_0_1_H_1_0_em3.png
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3.png
 	lyxscale 20
 	width 48text%
 
@@ -1179,7 +1456,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-\begin_inset Formula $P_{k}$
+\begin_inset Formula $\Pi_{k}$
 \end_inset
 
  of complete system
@@ -1202,7 +1479,7 @@ status open
 
 \begin_layout Plain Layout
 \begin_inset Graphics
-	filename data/pressure_spectrum_kapt_1_2_chi_0_1_H_1_0_em3_case6.png
+	filename data/energy_flux_kapt_1_2_chi_0_1_H_1_0_em3_case6.png
 	lyxscale 20
 	width 48text%
 
@@ -1215,7 +1492,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-\begin_inset Formula $P_{k}$
+\begin_inset Formula $\Pi_{k}$
 \end_inset
 
  of system without 
@@ -1243,7 +1520,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-\begin_inset Formula $P_{k}$
+\begin_inset Formula $\Pi_{k}$
 \end_inset
 
  comparison for Case 6

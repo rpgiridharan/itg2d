@@ -22,7 +22,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 fil2
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_kapt_0_9_chi_0_1_H_1_0_em3.h5'
+file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
@@ -49,14 +49,18 @@ if rank == 0:
 
 #%% Functions for energy, enstrophy and entropy
 
-def K(Omk, kpsq):
+def K(Omk, ky, kpsq):
     ''' Returns the total kinetic energy of the system'''
-    E = np.sum(np.abs(-Omk)**2/kpsq).item()
+    sigk=np.sign(ky)
+    fac = sigk+kpsq
+    E = np.sum(fac*np.abs(Omk)**2/kpsq**2).item()
     return np.real(E)
 
-def K_ZF(Omk, kpsq, slbar):
+def K_ZF(Omk, ky, kpsq, slbar):
     ''' Returns the zonal kinetic energy of the system'''
-    E_ZF = np.sum(np.abs(-Omk[slbar])**2/kpsq[slbar]).item()
+    sigk=np.sign(ky)
+    fac = sigk+kpsq
+    E_ZF = np.sum(fac[slbar]*np.abs(Omk[slbar])**2/kpsq[slbar]**2).item()
     return np.real(E_ZF)
 
 def W(Omk):
@@ -147,8 +151,8 @@ with h5.File(file_name, 'r', swmr=True) as fl:
         # Calculate the consv quantities and fluxes
         P2_local[idx] = np.sum(np.abs(Pk)**2)
         P2_ZF_local[idx] = np.sum(np.abs(Pk[slbar])**2)
-        energy_local[idx] = K(Omk, kpsq)
-        energy_ZF_local[idx] = K_ZF(Omk, kpsq, slbar)
+        energy_local[idx] = K(Omk, ky, kpsq)
+        energy_ZF_local[idx] = K_ZF(Omk, ky, kpsq, slbar)
         enstrophy_local[idx] = W(Omk)
         enstrophy_ZF_local[idx] = W_ZF(Omk, slbar)
         entropy_local[idx] = S(Omk, kpsq)
@@ -204,7 +208,7 @@ if rank == 0:
     plt.semilogy(t[:nt], energy_turb_t, label = '$\\mathcal{E}_{turb}$')
     plt.xlabel('$t$')
     plt.ylabel('$\\mathcal{E}$')
-    plt.title('Kinetic Energy vs t')
+    plt.title('Total Kinetic Energy vs t')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -293,7 +297,7 @@ if rank == 0:
 
     # Plot Q vs time
     plt.figure(figsize=(8,6))
-    plt.semilogy(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
+    plt.plot(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
     plt.xlabel('$t$')
     plt.ylabel('$\\mathcal{Q}$')
     plt.title('$\\mathcal{Q}$')

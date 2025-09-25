@@ -51,7 +51,7 @@ def ES(omk, kp, k, dk):
     ''' Returns the total energy spectrum'''
     sigk=np.sign(ky)
     fac = sigk+kp**2
-    ek = 0.5*fac*np.abs(omk)**2/kp**4
+    ek = fac*np.abs(omk)**2/kp**4
 
     Ek = np.zeros(len(k))
     for i in range(len(k)):
@@ -62,7 +62,7 @@ def ES_ZF(omk, kp, k, dk, slbar):
     ''' Returns the zonal kinetic energy spectrum'''  
     sigk=np.sign(ky[slbar])
     fac = sigk+kp[slbar]**2 
-    ek_ZF = 0.5*fac*np.abs(omk[slbar])**2/kp[slbar]**4
+    ek_ZF = fac*np.abs(omk[slbar])**2/kp[slbar]**4
     
     Ek_ZF = np.zeros(len(k))
     for i in range(len(k)):
@@ -71,7 +71,7 @@ def ES_ZF(omk, kp, k, dk, slbar):
 
 def WS(omk, kp, k , dk):
     ''' Returns the enstrophy spectrum'''    
-    wk = 0.5*np.abs(omk)**2 
+    wk = np.abs(omk)**2 
 
     Wk = np.zeros(len(k))
     for i in range(len(k)):
@@ -80,7 +80,7 @@ def WS(omk, kp, k , dk):
     
 def WS_ZF(omk, kp, k, dk, slbar):
     ''' Returns the zonal enstrophy spectrum'''    
-    wk_ZF = 0.5*np.abs(omk[slbar])**2
+    wk_ZF = np.abs(omk[slbar])**2
 
     Wk_ZF = np.zeros(len(k))
     for i in range(len(k)):

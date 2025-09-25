@@ -29,7 +29,7 @@ slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-ky0=ky[:Ny/2-1]
+slky=np.s_[1:int(Ny/2)-1] # ky values for excluding ky=0
 
 #%% Functions
 
@@ -143,9 +143,9 @@ os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}_case6.h5'
 
 dtshow=0.1
-gammax=gam_max(ky0,kapt)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(100/gammax,0) #3000/gammax
+t0,t1=0.0,round(600/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
 wecontinue=True
 if not os.path.exists(filename):

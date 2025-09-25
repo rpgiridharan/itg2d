@@ -15,7 +15,7 @@ import os
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
 kapn=0.0
-kapt=0.9
+kapt=1.2
 kapb=1.0
 a=9.0/40.0
 b=67.0/160.0
@@ -25,11 +25,11 @@ HP=1e-3
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
-slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
+slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Ny/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-ky0=ky[:Ny/2-1]
+slky=np.s_[1:int(Ny/2)-1] # ky values for excluding ky=0
 
 #%% Functions
 
@@ -141,15 +141,15 @@ def round_to_nsig(number, n):
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
-
-dtshow=0.1
-gammax=gam_max(ky0,kapt)
-dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(1800/gammax,0) #round(300/gammax,0) #3000/gammax
-rtol,atol=1e-8,1e-10
 wecontinue=True
 if not os.path.exists(filename):
     wecontinue=False
+
+dtshow=0.1
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
+dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+t0,t1=0.0,round(1800/gammax,0) #1800/gammax
+rtol,atol=1e-8,1e-10
 
 #%% Run the simulation    
 
@@ -165,7 +165,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi,gammax=gammax)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
