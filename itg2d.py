@@ -14,14 +14,12 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=1.2
+kapt=0.36
 kapn=round(kapt/3,3)
 kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
-HPhi=1e-3
-HP=1e-3
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -29,7 +27,11 @@ slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Ny/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-slky=np.s_[1:int(Ny/2)-1] # ky values for excluding ky=0
+slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
+
+H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,kapn,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
+HPhi = H0
+HP = H0
 
 #%% Functions
 

@@ -6,6 +6,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
+from modules.gamma import gam_max   
 import os
 from functools import partial
 
@@ -21,7 +22,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3.h5'
+file_name = datadir+'out_kapt_0_36_chi_0_1_H_1_0_em3.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -36,11 +37,22 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     Ly = fl['params/Ly'][()]
     Npx= fl['params/Npx'][()]
     Npy= fl['params/Npy'][()]
-
+    kapn = fl['params/kapn'][()]
+    kapt = fl['params/kapt'][()]
+    kapb = fl['params/kapb'][()]
+    chi = fl['params/chi'][()]
+    a = fl['params/a'][()]
+    b = fl['params/b'][()]
+    HP = fl['params/HP'][()]
+    HPhi = fl['params/HPhi'][()]
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
+slky=np.s_[1:int(Ny/2)-1]
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HP,HPhi,slky)
+t=t*gammax
+
 print('kx shape', kx.shape)
 nt = len(t)
 print("nt: ", nt)
@@ -126,7 +138,7 @@ plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
 plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{E}_k$')
-plt.title('$\\mathcal{E}_k$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{E}_k$; $\\gamma t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -147,7 +159,7 @@ plt.loglog(k[1:-1], k[1:-1]**(1/3), 'k--', label = '$k^{1/3}$')
 plt.loglog(k[1:-1], k[1:-1]**(-1), 'r--', label = '$k^{-1}$')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{W}_k$')
-plt.title('$\\mathcal{W}_k$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{W}_k$; $\\gamma t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -168,7 +180,7 @@ plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
 plt.loglog(k[1:-1], k[1:-1]**(-4), 'r--', label = '$k^{-4}$')
 plt.xlabel('$k$')
 plt.ylabel('$P_k^2$')
-plt.title('$P^2_k$; $t = %.1f$' %t[it])
+plt.title('$P^2_k$; $\\gamma t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()

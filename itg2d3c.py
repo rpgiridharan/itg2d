@@ -15,7 +15,7 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.36
+kapt=1.2
 kapn=round(kapt/3,3)
 kapb=0.05
 a=9.0/40.0
@@ -128,7 +128,7 @@ def rhs_itg(t,y):
 
 #%% More parameters  
 
-output_dir = "data/"
+output_dir = "data_2d3c/"
 os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 

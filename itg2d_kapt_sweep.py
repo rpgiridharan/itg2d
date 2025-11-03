@@ -111,10 +111,6 @@ def rhs_itg(t,y):
 output_dir = "data_sweep/"
 os.makedirs(output_dir, exist_ok=True)
 
-H0 = 1e-3
-HPhi = H0
-HP = H0
-
 wecontinue = True
 sim_t0 = 0.0
 zk = None
@@ -124,7 +120,10 @@ for i, kapt_val in enumerate(kapt_vals):
     kapn = round(kapt/3,3)
     filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
-    dtshow = 0.1
+    H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,kapn,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
+    HPhi = H0
+    HP = H0
+
     resume_this_step = False
     skip_this_step = False
     t_start = sim_t0
@@ -157,6 +156,7 @@ for i, kapt_val in enumerate(kapt_vals):
     else:
         print(f'  Using final state from previous run as initial condition for kapt: {kapt}')
 
+    dtshow = 0.1
     gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
     dtstep, dtsavecb = round_to_nsig(0.00275/gammax,1), round_to_nsig(0.0275/gammax,1)
     t1 = round(100/gammax,0)

@@ -136,7 +136,6 @@ for i, kapt_val in enumerate(kapt_vals):
     kapn=round(kapt/3,3)
     filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
-    dtshow=0.1
     resume_this_step=False
     skip_this_step=False
     t_start=sim_t0
@@ -169,6 +168,7 @@ for i, kapt_val in enumerate(kapt_vals):
     else:
         print(f'  Using final state from previous run as initial condition for kapt: {kapt}')
 
+    dtshow=0.1
     gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
     dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
     t1=round(100/gammax,0) #100/gammax #1200/gammax

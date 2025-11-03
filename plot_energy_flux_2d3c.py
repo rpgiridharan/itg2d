@@ -7,7 +7,7 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist
 from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
-from modules.gamma import gam_max
+from modules.gamma_2d3c import gam_max
 import os
 from functools import partial
 from mpi4py import MPI
@@ -23,8 +23,8 @@ plt.rcParams['axes.linewidth'] = 3
 
 #%% Load the HDF5 file
 comm.Barrier()
-datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_case5.h5'
+datadir = 'data_2d3c/'
+file_name = datadir+'out_2d3c_kapt_0_36_chi_0_1_kz_0_1.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][it]
@@ -46,14 +46,17 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     chi = fl['params/chi'][()]
     a = fl['params/a'][()]
     b = fl['params/b'][()]
+    s = fl['params/s'][()]
+    kz = fl['params/kz'][()]
     HP = fl['params/HP'][()]
     HPhi = fl['params/HPhi'][()]
+    HV = fl['params/HV'][()]
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HP,HPhi,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
 t=t*gammax
 
 nt = len(t) - (len(t) % size)

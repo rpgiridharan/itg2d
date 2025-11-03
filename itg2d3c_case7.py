@@ -152,7 +152,7 @@ def round_to_nsig(number, n):
 
 #%% More parameters  
 
-output_dir = "data/"
+output_dir = "data_2d3c/"
 os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}_case7.h5'
 

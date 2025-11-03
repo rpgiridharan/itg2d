@@ -18,9 +18,9 @@ plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 16
 plt.rcParams['axes.linewidth'] = 3  
 
-#%% Load the HDF5 fil2
-datadir = 'data/'
+#%% Load the HDF5 file
 comm.Barrier()
+datadir = 'data/'
 file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_old.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -50,7 +50,7 @@ Nx,Ny=2*Npx//3,2*Npy//3
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HP,HPhi,slky)
 t=t*gammax
 
 nt = len(t) - (len(t) % size)
