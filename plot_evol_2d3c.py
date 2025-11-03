@@ -21,7 +21,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 fil2
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_1.h5'
+file_name = datadir+'out_2d3c_kapt_0_36_chi_0_1_kz_0_1.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
@@ -204,7 +204,7 @@ if rank == 0:
     plt.semilogy(t[:nt], P2_t, label = '$P_{turb}^2$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$P^2$')
-    plt.title('$P^2$ vs t')
+    plt.title('$P^2$ vs $\\gamma$ t')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -221,7 +221,7 @@ if rank == 0:
     plt.semilogy(t[:nt], energy_turb_t, label = '$\\mathcal{E}_{turb}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{E}$')
-    plt.title('Total Kinetic Energy vs t')
+    plt.title('Total Kinetic Energy vs $\\gamma$ t')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -236,7 +236,7 @@ if rank == 0:
     plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
-    plt.title('Zonal energy fraction vs t')
+    plt.title('Zonal energy fraction vs $\\gamma$ t')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -253,7 +253,7 @@ if rank == 0:
     plt.semilogy(t[:nt], enstrophy_turb_t, label = '$\\mathcal{W}_{turb}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{W}$')
-    plt.title('Enstrophy vs t')
+    plt.title('Enstrophy vs $\\gamma$ t')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -268,7 +268,7 @@ if rank == 0:
     plt.semilogy(t[:nt], entropy_t, label = '$\\mathcal{S}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{S}=-\\sum_{\\mathbf{k}}p_{\\mathbf{k}}\\log p_{\\mathbf{k}}$')
-    plt.title('Entropy vs t')
+    plt.title('Entropy vs $\\gamma$ t')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -283,7 +283,7 @@ if rank == 0:
     # plt.plot(t[:nt], R_t, '-', label = '$\\Pi_\\phi$')
     # plt.xlabel('$\\gamma t$')
     # plt.ylabel('$\\Pi_\\phi$')
-    # plt.title('$\\Pi_\\phi$ vs t')
+    # plt.title('$\\Pi_\\phi$ vs $\\gamma$ t')
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
@@ -298,7 +298,7 @@ if rank == 0:
     # plt.plot(t[:nt], PiP_t, '-', label = '$\\Pi_P$')
     # plt.xlabel('$\\gamma t$')
     # plt.ylabel('$\\Pi_P$')
-    # plt.title('$\\Pi_P$ vs t')
+    # plt.title('$\\Pi_P$ vs $\\gamma$ t')
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
