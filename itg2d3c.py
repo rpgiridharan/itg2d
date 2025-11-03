@@ -89,7 +89,7 @@ def fshowcb(t,y):
     Pk=zk[Nk:2*Nk]
     vx=irft2(-1j*ky*Phik)
     P=irft2(Pk)
-    Q=np.mean(vx*P) #np.vdot(-1j*ky*Phik,Pk)
+    Q=np.mean(vx*P)
     Ktot = np.sum(kpsq*np.abs(Phik)**2)
     Kbar = np.sum((kx[slbar]*np.abs(Phik[slbar]))**2)
     print(f'Ktot={Ktot:.3g}, Kbar/Ktot={Kbar/Ktot*100:.3g}%, Q={Q.get():.3g}')

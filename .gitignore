@@ -3,10 +3,9 @@
 /data_linear
 /data_scan
 /data_sweep
-/data_sweep_2d3c
+/data_2d3c_sweep
 /_tmpimg_folder
 /modules/__pycache__
 *.log
 *.lyx~
 *.lyx#
-itg2d_temp_run.py

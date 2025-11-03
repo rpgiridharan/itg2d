@@ -5,7 +5,7 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma import gam_max 
+from modules.gamma_2d3c import gam_max 
 from modules.gensolver import Gensolver,save_data
 from modules.basics import round_to_nsig, format_exp
 from functools import partial
@@ -39,27 +39,32 @@ irft = partial(original_irft,Npx=Npx,Nx=Nx)
 rft = partial(original_rft,Nx=Nx)
 
 def init_fields(kx,ky,w=10.0,A=1e-6):
-    Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
-    Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
+    Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
+    Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
+    Vk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
+
     Phik[slbar]=0
     Pk[slbar]=0
-    zk=np.hstack((Phik,Pk))
+    Vk[slbar]=0
+    zk=np.hstack((Phik,Pk,Vk))
     return zk
 
 def fsavecb(t,y,flag):
     zk=y.view(dtype=complex)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik,Pk,Vk=zk[:Nk],zk[Nk:2*Nk],zk[2*Nk:]
     Omk=-kpsq*Phik
     vy=irft2(1j*kx*Phik) 
     Om=irft2(Omk)
     P=irft2(Pk)
+    V=irft2(Vk)
     if flag=='fields':
-        save_data(fl,'fields',ext_flag=True,Omk=Omk.get(),Pk=Pk.get(),t=t)
+        save_data(fl,'fields',ext_flag=True,Omk=Omk.get(),Pk=Pk.get(),Vk=Vk.get(),t=t)
     elif flag=='zonal':
         vbar=cp.mean(vy,1)
         Ombar=cp.mean(Om,1)
         Pbar=cp.mean(P,1)
-        save_data(fl,'zonal',ext_flag=True,vbar=vbar.get(),Ombar=Ombar.get(),Pbar=Pbar.get(),t=t)
+        Vbar=cp.mean(V,1)
+        save_data(fl,'zonal',ext_flag=True,vbar=vbar.get(),Ombar=Ombar.get(),Pbar=Pbar.get(),Vbar=Vbar.get(),t=t)
     elif flag=='fluxes':
         vx=irft2(-1j*ky*Phik) #ExB flow: x comp
         wx=irft2(-1j*ky*Pk) #diamagnetic flow: x comp
@@ -71,7 +76,8 @@ def fsavecb(t,y,flag):
 
 def fshowcb(t,y):
     zk=y.view(dtype=complex)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik=zk[:Nk]
+    Pk=zk[Nk:2*Nk]
     vx=irft2(-1j*ky*Phik)
     P=irft2(Pk)
     Q=np.mean(vx*P)
@@ -124,9 +130,9 @@ for i, kapt in enumerate(kapt_vals):
     HV=H0
     HPhi=H0
 
-    output_dir = "data_sweep_2d3c/"
+    output_dir = "data_2d3c_sweep/"
     os.makedirs(output_dir, exist_ok=True)
-    filename = output_dir + f'out_sweep_2d3c_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
     dtshow=0.1
     gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)   
