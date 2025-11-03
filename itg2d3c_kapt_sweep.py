@@ -133,6 +133,7 @@ zk = None
 
 for i, kapt_val in enumerate(kapt_vals):
     kapt=round(kapt_val,3)
+    kapn=round(kapt/3,3)
     filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
     dtshow=0.1

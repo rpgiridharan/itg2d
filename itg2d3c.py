@@ -137,7 +137,7 @@ gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(100/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=True
+wecontinue=False
 if not os.path.exists(filename):
     wecontinue=False
 
