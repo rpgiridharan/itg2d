@@ -14,9 +14,9 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapn=0.0
 kapt=1.2
-kapb=1.0
+kapn=round(kapt/3,3)
+kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
@@ -96,7 +96,7 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik
+    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik
     dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
@@ -148,7 +148,7 @@ if not os.path.exists(filename):
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(1800/gammax,0) #1800/gammax
+t0,t1=0.0,round(1200/gammax,0) #100/gammax #1200/gammax
 rtol,atol=1e-8,1e-10
 
 #%% Run the simulation    

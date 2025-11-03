@@ -26,8 +26,8 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,chi,a,b,s,kz,Dphi,Dt,Dv,Hphi,Ht,Hv,nuphi,nut,nuv = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','s','kz','Dphi','Dt','Dv','Hphi','Ht','Hv','nuphi','nut','nuv']
+    kapn,kapt,kapb,tau,chi,a,b,s,kz,HP,HV,HPhi,nuP,nuV,nuPhi = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','s','kz','HP','HV','HPhi','nuP','nuV','nuPhi']
     ]
     kz = torch.ones_like(kx) * kz
     kpsq = kx**2 + ky**2
@@ -38,15 +38,15 @@ def init_linmats(pars,kx,ky):
     sigk = ky>0
     fac=tau+kpsq
     lm=torch.zeros(kx.shape+(3,3),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*chi*kpsq-1j*Dt*kpsq**2-1j*nut*kzsq**2-1j*sigk*Ht/kpsq**3
+    lm[:,:,0,0]=-1j*chi*kpsq-1j*nuP*kzsq**2-1j*sigk*HP/kpsq**3
     lm[:,:,0,1]=(5/3)*kz
     lm[:,:,0,2]=(kapn+kapt)*ky
     lm[:,:,1,0]=kz
-    lm[:,:,1,1]=-1j*s*chi*kpsq-1j*Dv*kpsq**2-1j*nuv*kzsq**2-1j*sigk*Hv/kpsq**3
+    lm[:,:,1,1]=-1j*s*chi*kpsq-1j*nuV*kzsq**2-1j*sigk*HV/kpsq**3
     lm[:,:,1,2]=kz
     lm[:,:,2,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
     lm[:,:,2,1]=kz/fac
-    lm[:,:,2,2]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*Dphi*kpsq**2-1j*nuphi*kzsq**2-1j*sigk*Hphi/kpsq**3
+    lm[:,:,2,2]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*nuPhi*kzsq**2-1j*sigk*HPhi/kpsq**3
 
     return lm
 
@@ -67,15 +67,14 @@ Npx,Npy=512,512
 Nx,Ny=2*int(Npx/3),2*int(Npy/3)
 Lx,Ly=32*np.pi,32*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
-kapn=0. #rho_i/L_n
-kapt=1.2 #rho_i/L_T
-kapb=1.0 #2*rho_i/L_B
+kapt=1.6 #rho_i/L_T
+kapn=kapt/3 #rho_i/L_n
+kapb=0.05*0 #2*rho_i/L_B
 chi=0.1
 a=9.0/40.0
 b=67.0/160.0
 s=0.9
 kz=0.1
-D0=0*1e-6
 H0=0*1e-5
 nu0=0*1e-6
 base_pars={'kapn':kapn,
@@ -87,15 +86,12 @@ base_pars={'kapn':kapn,
       'b':b,
       's':s,
       'kz':kz,
-      'Dphi':D0,
-      'Dt':D0,
-      'Dv':D0,
-      'Hphi':H0,
-      'Ht':H0,
-      'Hv':H0,
-      'nuphi':nu0,
-      'nut':nu0,
-      'nuv':nu0}
+      'HP':H0,
+      'HV':H0,
+      'HPhi':H0,
+      'nuP':nu0,
+      'nuV':nu0,
+      'nuPhi':nu0}
 
 #%% Compute om
 
@@ -118,18 +114,17 @@ omr_kx0 = omr[0,:]
 
 #%% Plots
    
-plt.figure()
-# slx=slice(None,int(Nx/32),1) 
-slx=slice(None,int(Nx/8),int((Nx/8)/8)) #9 kx points
-plt.plot(ky[slx,:int(Ny/8)].T,gam[slx,:int(Ny/8)].T,'.-')
-plt.plot(ky[0,:int(Ny/8)],0*ky[0,:int(Ny/8)]**2,'k--')
-# plt.plot(ky[0,:int(Ny/8)],-a*chi*ky[0,:int(Ny/8)]**2-D0*ky[0,:int(Ny/8)]**4,'k--')
+plt.figure(figsize=(9.71,6))
+slx=slice(None,int(Nx/8),int((Nx/8)/5)) #7 kx points
+plt.plot(ky[slx,:int(Ny/4)].T,gam[slx,:int(Ny/4)].T,'.-')
+plt.axhline(0.0, color='k', linestyle='--')
+# plt.plot(ky[0,:int(Ny)],-a*chi*ky[0,:int(Ny)]**2,'k--')
 plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-D_0k_y^4-a\\chi k_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{xi},k_y)$ vs $k_x$ for diff $k_x$')
 plt.tight_layout()
-plt.savefig(f'data/gam_vs_ky_kxvals_itg2d3c_kz_{kz:.1f}.png',dpi=600)
+plt.savefig(f'data_linear/gam_vs_ky_kxvals_itg2d3c_kz_{kz:.1f}.png',dpi=600)
 plt.show()
 
 kymax_kx= np.take_along_axis(ky[:int(Nx/4),:],np.argmax(gam[:int(Nx/4),:],axis=1,keepdims=True),axis=1).squeeze(axis=1)
@@ -139,8 +134,8 @@ plt.xlabel('$k_x$')
 plt.ylabel('$k_{y,max}$')
 plt.title('$k_{y,max}$ vs $k_x$')
 plt.tight_layout()
-plt.savefig(f'data/ky_vs_kx_itg2d3c_{kz:.1f}.png',dpi=600)
-# plt.show()
+plt.savefig(f'data_linear/ky_vs_kx_itg2d3c_{kz:.1f}.png',dpi=600)
+plt.show()
 
 #%% colormesh of gam and omr
 
@@ -154,7 +149,7 @@ plt.ylabel('$k_y$')
 plt.title('$\\gamma(k_x,k_y)$')
 plt.colorbar()
 plt.tight_layout()
-plt.savefig(f'data/gamkxky_itg2d3c_{kz:.1f}.png',dpi=600)
+plt.savefig(f'data_linear/gamkxky_itg2d3c_{kz:.1f}.png',dpi=600)
 plt.show()
 
 # plt.figure()
@@ -164,5 +159,5 @@ plt.show()
 # plt.title('$\\omega_r(k_x,k_y) = \\omega_r(k_x,k_y)$')
 # plt.colorbar()
 # plt.tight_layout()
-# plt.savefig(f'data/omrkxky_itg2d3c_{kz:.1f}.png',dpi=600)
+# plt.savefig(f'data_linear/omrkxky_itg2d3c_{kz:.1f}.png',dpi=600)
 # plt.show()

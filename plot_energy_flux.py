@@ -23,7 +23,8 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 file
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_case5.h5'
+# file_name = datadir+'out_kapt_0_36_chi_0_1_H_1_0_em3.h5'
+file_name = datadir+'out_2d3c_kapt_0_36_chi_0_1_kz_0_1.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][it]
@@ -82,11 +83,11 @@ def spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik'):
     ak = np.zeros_like(Omk)
     Ak = np.zeros(len(k))
     if flag=='Pik_Phi':
-        ak = -np.real(np.conj(Phik)*nltermOmg)
+        ak = np.real(np.conj(Phik)*nltermOmg)
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(kp<=k[i])])
     elif flag=='Pik_P':
-        ak = -np.real(np.conj(Phik)*nltermP)
+        ak = np.real(np.conj(Phik)*nltermP)
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(kp<=k[i])])
     elif flag=='fk':
@@ -135,7 +136,6 @@ if file_name.endswith('out.h5'):
 else:
     plt.savefig(datadir+"energy_flux_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
-
 
 plt.figure()
 plt.plot(k[1:-1], fk[1:-1], label = '$\\mathcal{f}_{k,total}$')

@@ -4,8 +4,8 @@ import torch
 
 def init_linmats(kx,ky,pars):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,chi,a,b,HPhi,HP = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','HPhi','HP']
+    kapn,kapt,kapb,tau,chi,a,b,HP,HPhi = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','HP','HPhi']
     ]
     kpsq = kx**2 + ky**2
     # kpsq = torch.where(kpsq==0, 1e-10, kpsq)
@@ -30,7 +30,7 @@ def linfreq(kx, ky, pars):
     torch.cuda.empty_cache()
     return lam
 
-def gam_max(kx, ky, kapn, kapt, kapb, chi, a, b, HPhi, HP, slky):
+def gam_max(kx, ky, kapn, kapt, kapb, chi, a, b, HP, HPhi, slky):
     if isinstance(ky, cp.ndarray):
         kx = kx.get()
         ky = ky.get()
@@ -42,14 +42,14 @@ def gam_max(kx, ky, kapn, kapt, kapb, chi, a, b, HPhi, HP, slky):
         'chi':chi,
         'a':a,
         'b':b,
-        'HPhi':HPhi,
-        'HP':HP}
+        'HP':HP,
+        'HPhi':HPhi}
 
     om=linfreq(kx,ky,base_pars)
     gamky=om.imag[slky,0]
     return np.max(gamky)
 
-def ky_max(kx, ky, kapn, kapt, kapb, chi, a, b, HPhi, HP, slky):
+def ky_max(kx, ky, kapn, kapt, kapb, chi, a, b, HP, HPhi, slky):
     if isinstance(ky, cp.ndarray):
         kx = kx.get()
         ky = ky.get()
@@ -60,8 +60,8 @@ def ky_max(kx, ky, kapn, kapt, kapb, chi, a, b, HPhi, HP, slky):
         'chi':chi,
         'a':a,
         'b':b,
-        'Hphi':HPhi,
-        'Ht':HP}
+        'HP':HP,
+        'HPhi':HPhi}
 
     om=linfreq(base_pars,kx,ky)
     gamky=om.imag[slky,0]

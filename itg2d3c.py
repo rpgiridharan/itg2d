@@ -5,8 +5,9 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma_2d3c import gam_max, gam_kmin 
+from modules.gamma_2d3c import gam_max
 from modules.gensolver import Gensolver,save_data
+from modules.basics import round_to_nsig, format_exp
 from functools import partial
 import os
 
@@ -14,14 +15,14 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapn=0.0
-kapt=1.6
-kapb=1.0
+kapt=0.36
+kapn=round(kapt/3,3)
+kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
 s=0.9
-kz=0.32#0.3
+kz=0.1#<=0.2
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -29,13 +30,12 @@ slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-slky=np.s_[1:int(Ny/2)-1] # ky values for excluding ky=0
+slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-H0 = 1e-3*gam_kmin(ky0,kapt,kz)/gam_kmin(ky0,1.2,kz)
-# H0=5e-1
-HPhi=H0
+H0=1e-3
 HP=H0
 HV=H0
+HPhi=H0
 
 #%% Functions
 
@@ -110,7 +110,7 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=-1j*kz*sigk*Vk/fac+1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac
+    dPhikdt[:]=-1j*kz*sigk*Vk/fac-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac
     dPkdt[:]=-(5/3)*1j*kz*sigk*Vk-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk
     dVkdt[:]=-1j*kz*sigk*(Pk+Phik)-s*chi*kpsq*Vk
 
@@ -126,32 +126,6 @@ def rhs_itg(t,y):
     dVkdt[:]+=rft2(dyphi*dxV-dxphi*dyV)
     return dzkdt.view(dtype=float)
 
-def format_exp(d):
-    dstr = f"{d:.1e}"
-    base, exp = dstr.split("e")
-    base = base.replace(".", "_")
-    if "-" in exp:
-        exp = exp.replace("-", "")
-        prefix = "em"
-    else:
-        prefix = "e"
-    exp = str(int(exp))
-    return f"{base}_{prefix}{exp}"
-
-def round_to_nsig(number, n):
-    """Rounds a number to n significant figures."""
-    if not np.isfinite(number): # Catches NaN, Inf, -Inf
-        return number 
-    if number == 0:
-        return 0.0
-    if n <= 0:
-        raise ValueError("Number of significant figures (n) must be positive.")
-    
-    order_of_magnitude = np.floor(np.log10(np.abs(number)))
-    decimals_to_round = int(n - 1 - order_of_magnitude)
-    
-    return np.round(number, decimals=decimals_to_round)
-
 #%% More parameters  
 
 output_dir = "data/"
@@ -159,11 +133,11 @@ os.makedirs(output_dir, exist_ok=True)
 filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
 dtshow=0.1
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(600/gammax,0) #1800/gammax
+t0,t1=0.0,round(100/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=False
+wecontinue=True
 if not os.path.exists(filename):
     wecontinue=False
 

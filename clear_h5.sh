@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 datadir="data/"
+# file_name="${1:-${datadir}out_kapt_1_2_chi_0_1_H_1_0_em3.h5}"
 file_name="${1:-${datadir}out_kapt_1_2_chi_0_1_H_1_0_em3.h5}"
-
 # check h5clear exists
 if ! command -v h5clear >/dev/null 2>&1; then
   echo "h5clear not found in PATH" >&2

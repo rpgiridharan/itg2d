@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import Slicelist
-from modules.gamma import gam_max   
+from modules.gamma_2d3c import gam_max   
 from mpi4py import MPI
 
 # Initialize MPI
@@ -21,7 +21,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 fil2
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_old.h5'
+file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_1.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
@@ -43,14 +43,17 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     chi = fl['params/chi'][()]
     a = fl['params/a'][()]
     b = fl['params/b'][()]
-    HPhi = fl['params/HPhi'][()]
+    s = fl['params/s'][()]
+    kz = fl['params/kz'][()]
     HP = fl['params/HP'][()]
+    HPhi = fl['params/HPhi'][()]
+    HV = fl['params/HV'][()]
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
 t=t*gammax
 
 nt = len(t) - (len(t) % size)

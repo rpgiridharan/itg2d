@@ -1,7 +1,9 @@
 /.venv
 /data
+/data_linear
 /data_scan
 /data_sweep
+/data_sweep_2d3c
 /_tmpimg_folder
 /modules/__pycache__
 *.log

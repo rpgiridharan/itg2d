@@ -28,8 +28,8 @@ def init_kspace_grid(Nx,Ny,Nz,Lx,Ly,Lz):
 
 def init_linmats(pars,kx,ky,kz):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,chi,a,b,s,Dphi,Dt,Dv,Hphi,Ht,Hv,nuphi,nut,nuv = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','s','Dphi','Dt','Dv','Hphi','Ht','Hv','nuphi','nut','nuv']
+    kapn,kapt,kapb,tau,chi,a,b,s,HP,HV,HPhi,nuP,nuV,nuPhi = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','s','HP','HV','HPhi','nuP','nuV','nuPhi']
     ]
     kpsq = kx**2 + ky**2
     kpsq[kpsq==0] = 1e-10
@@ -39,15 +39,15 @@ def init_linmats(pars,kx,ky,kz):
     sigk = ky>0
     fac=tau+kpsq
     lm=torch.zeros(kx.shape+(3,3),dtype=torch.complex64)
-    lm[:,:,:,0,0]=-1j*chi*kpsq-1j*Dt*kpsq**2-1j*nut*kzsq**2-1j*sigk*Ht/kpsq**3
+    lm[:,:,:,0,0]=-1j*chi*kpsq-1j*nuP*kzsq**2-1j*sigk*HP/kpsq**3
     lm[:,:,:,0,1]=(5/3)*kz
     lm[:,:,:,0,2]=(kapn+kapt)*ky
     lm[:,:,:,1,0]=kz
-    lm[:,:,:,1,1]=-1j*s*chi*kpsq-1j*Dv*kpsq**2-1j*nuv*kzsq**2-1j*sigk*Hv/kpsq**3
+    lm[:,:,:,1,1]=-1j*s*chi*kpsq-1j*nuV*kzsq**2-1j*sigk*HV/kpsq**3
     lm[:,:,:,1,2]=kz
     lm[:,:,:,2,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
     lm[:,:,:,2,1]=kz/fac
-    lm[:,:,:,2,2]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*Dphi*kpsq**2-1j*nuphi*kzsq**2-1j*sigk*Hphi/kpsq**3
+    lm[:,:,:,2,2]=(kapn*ky-(kapn+kapt)*ky*kpsq-kapb*ky-1j*chi*kpsq**2*a)/fac-1j*nuPhi*kzsq**2-1j*sigk*HPhi/kpsq**3
 
     return lm
 
@@ -64,18 +64,17 @@ def linfreq(pars, kx, ky, kz):
 
 #%% Initialize
 
-Npx,Npy,Npz=512,512,128
+Npx,Npy,Npz=512,512,256
 Nx,Ny,Nz=2*int(Npx/3),2*int(Npy/3),2*int(Npz/3)
 Lx,Ly,Lz=32*np.pi,32*np.pi,32*np.pi
 kx,ky,kz=init_kspace_grid(Nx,Ny,Nz,Lx,Ly,Lz)
-kapn=0. #rho_i/L_n
-kapt=1.2 #rho_i/L_T
-kapb=1.0 #2*rho_i/L_B
+kapt=1.8 #rho_i/L_T
+kapn=kapt/3 #rho_i/L_n
+kapb=0.05 #2*rho_i/L_B
 chi=0.1
 a=9.0/40.0
 b=67.0/160.0
 s=0.9
-D0=0*1e-3
 H0=0*1e-3
 nu0=0*1e-3
 base_pars={'kapn':kapn,
@@ -86,15 +85,12 @@ base_pars={'kapn':kapn,
       'a':a,
       'b':b,
       's':s,
-      'Dphi':D0,
-      'Dt':D0,
-      'Dv':D0,
-      'Hphi':H0,
-      'Ht':H0,
-      'Hv':H0,
-      'nuphi':nu0,
-      'nut':nu0,
-      'nuv':nu0}
+      'HP':H0,
+      'HV':H0,
+      'HPhi':H0,
+      'nuP':nu0,
+      'nuV':nu0,
+      'nuPhi':nu0}
 
 #%% Compute om
 
@@ -124,10 +120,10 @@ omr_kx0 = omr[0,:,:]
 
 #%% Plots
 
-plt.figure()
+plt.figure(figsize=(9.71,6))
 slz=slice(None,Nz,int(Nz/8)) #9 kz points
 plt.plot(ky[0,:int(Ny/4),slz],gam_kx0[:int(Ny/4),slz],'.-')
-plt.plot(ky[0,:int(Ny/4),0],0*ky[0,:int(Ny/4),0],'k--')
+plt.axhline(0.0, color='k', linestyle='--')
 # plt.plot(ky[0,:int(Ny/4),0],-chi*ky[0,:int(Ny/4),0]**2,'k--')
 plt.legend(['$k_z='+str(l)+'$' for l in kz[0,0,slz]]+['$-\\chi k_y^2$'])
 plt.xlabel('$k_y$')
@@ -146,10 +142,23 @@ plt.title('$k_{y,max}$ vs $k_z$')
 plt.tight_layout()
 plt.savefig('data/ky_vs_kz_itg.png',dpi=600)
 plt.show()
-    
-plt.figure()
+
+plt.figure(figsize=(9.71,6))
+sly=slice(None,int(Ny/8),int(Ny/64)) #9 ky points
+plt.plot(kz[0,sly,:int(Nz/2)].T,gam_kx0[sly,:int(Nz/2)].T,'.-')
+plt.axhline(0.0, color='k', linestyle='--')
+plt.legend(['$k_y='+str(l)+'$' for l in ky[0,sly,0]])
+plt.xlabel('$k_z$')
+plt.ylabel('$\\gamma(k_z)$')
+plt.title('$\\gamma(k_{x,max}(k_y,k_z),k_{yi},k_z)$ vs $k_z$ for diff $k_y$') 
+plt.tight_layout()
+# plt.savefig('data/gam_vs_kz_kyvals_itg.png',dpi=600)
+plt.show()
+
+plt.figure(figsize=(9.71,6))
 slx=slice(None,int(Nx/2),int((Nx/2)/8)) #9 kx points
 plt.plot(ky[slx,:int(Ny/2),0].T,gam_kz0[slx,:int(Ny/2)].T,'.-')
+plt.axhline(0.0, color='k', linestyle='--')
 # plt.plot(ky[0,:int(Ny/2),0],-chi*ky[0,:int(Ny/2),0]**2,'k--')
 plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0,0]]+['$-\\chi k_y^2$'])
 plt.xlabel('$k_y$')
@@ -181,7 +190,7 @@ plt.ylabel('$k_z$')
 plt.title('$\\gamma(k_{x,max}(k_y,k_z),k_y,k_z)$')
 plt.colorbar()
 plt.tight_layout()
-plt.savefig('data/gamkykz_itg.png',dpi=600)
+plt.savefig('data_linear/gamkykz_itg.png',dpi=600)
 plt.show()
 
 # plt.figure()
@@ -190,7 +199,7 @@ plt.show()
 # plt.ylabel('$k_z$')
 # plt.title('$\\omega_r(k_y,k_z) = \\omega_r(k_{x,max}(k_y,k_z),k_y,k_z)$')
 # plt.colorbar()
-# plt.savefig('data/omrkykz_itg.png',dpi=600)
+# plt.savefig('data_linear/omrkykz_itg.png',dpi=600)
 # plt.show()
 
 #%% colormesh of gam and omr at kz max
@@ -205,7 +214,7 @@ plt.ylabel('$k_y$')
 plt.title('$\\gamma(k_x,k_y,k_{z,max}(k_x,k_y))$')
 plt.colorbar()
 plt.tight_layout()
-plt.savefig('data/gamkxky_itg.png',dpi=600)
+plt.savefig('data_linear/gamkxky_itg.png',dpi=600)
 plt.show()
 
 # plt.figure()
@@ -214,7 +223,7 @@ plt.show()
 # plt.ylabel('$k_y$')
 # plt.title('$\\omega_r(k_x,k_y) = \\omega_r(k_x,k_y,k_{z,max}(k_x,k_y))$')
 # plt.colorbar()
-# plt.savefig('data/omrkxky_itg.png',dpi=600)
+# plt.savefig('data_linear/omrkxky_itg.png',dpi=600)
 # plt.show()
 
 #%% colormesh of kzmax
@@ -225,6 +234,6 @@ plt.show()
 # plt.ylabel('$k_y$')
 # plt.title('$k_{z,max}(k_x,k_y)$')
 # plt.colorbar()
-# plt.savefig('data/kzmax_itg.png',dpi=600)
+# plt.savefig('data_linear/kzmax_itg.png',dpi=600)
 # plt.show()
 
