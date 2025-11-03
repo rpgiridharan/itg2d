@@ -5,7 +5,7 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma_2d3c import gam_max
+from modules.gamma_2d3c import gam_max 
 from modules.gensolver import Gensolver,save_data
 from modules.basics import round_to_nsig, format_exp
 from functools import partial
@@ -15,14 +15,13 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.36
-kapn=round(kapt/3,3)
+kapt_vals=np.arange(0.3,1.6,0.1) # Scan over kapt values
 kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
 s=0.9
-kz=0.1#<=0.2
+kz=0.1 #<=0.2
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -30,12 +29,7 @@ slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
-
-H0=0*1e-3
-HP=H0
-HV=H0
-HPhi=H0
+slky=np.s_[:int(Ny/2)-1]
 
 #%% Functions
 
@@ -45,9 +39,6 @@ irft = partial(original_irft,Npx=Npx,Nx=Nx)
 rft = partial(original_rft,Nx=Nx)
 
 def init_fields(kx,ky,w=10.0,A=1e-6):
-    # Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
-    # Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
-    # Vk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
     Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
     Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
     Vk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
@@ -126,39 +117,50 @@ def rhs_itg(t,y):
     dVkdt[:]+=rft2(dyphi*dxV-dxphi*dyV)
     return dzkdt.view(dtype=float)
 
-#%% More parameters  
-
-output_dir = "data/"
-os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
-
-dtshow=0.1
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
-dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(100/gammax,0) #1800/gammax
-rtol,atol=1e-8,1e-10
-wecontinue=True
-if not os.path.exists(filename):
-    wecontinue=False
-
 #%% Run the simulation    
 
-print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
+# Initialize zk only once for the first run
+zk = None
 
-if(wecontinue):
-    fl=h5.File(filename,'r+',libver='latest')
-    fl.swmr_mode = True
-    zk=fl['last/zk'][()]
-    t0=fl['last/t'][()]
-else:
+for i, kapt in enumerate(kapt_vals):
+    kapt=round(kapt,3)
+    kapn=round(kapt/3,3)
+    H0=1e-3
+    HP=H0
+    HV=H0
+    HPhi=H0
+
+    output_dir = "data_2d3c_sweep/"
+    os.makedirs(output_dir, exist_ok=True)
+    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+
+    dtshow=0.1
+    gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)   
+    dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+    t0,t1=0.0,round(100/gammax,0) #100/gammax #1200/gammax
+    rtol,atol=1e-8,1e-10
+
+    # Create new file for each kapt value
     fl=h5.File(filename,'w',libver='latest')
     fl.swmr_mode = True
-    zk=init_fields(kx,ky)
+    
+    # Initialize fields only for the first run, use previous final state for subsequent runs
+    if i == 0:
+        zk=init_fields(kx,ky)
+        print(f'  Initialized fields for first kapt value: {kapt}')
+    else:
+        print(f'  Using final state from previous run as initial condition for kapt: {kapt}')
+    
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,s=s,kz=0.1,HP=HP,HPhi=HPhi,HV=HV)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
 
-fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
-dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
-r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
-r.run()
-fl.close()
+    fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
+    dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
+    r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
+    r.run()
+    
+    # Get the final state for use as initial condition in next run
+    zk = cp.array(r.y[:,-1].view(dtype=complex))
+    
+    fl.close()
+    print(f'  Completed sweep step {i+1}/{len(kapt_vals)} for kapt={kapt}')

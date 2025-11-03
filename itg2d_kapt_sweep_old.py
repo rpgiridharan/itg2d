@@ -7,7 +7,6 @@ from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
 from modules.gamma import gam_max
 from modules.gensolver import Gensolver,save_data
-from modules.basics import round_to_nsig, format_exp
 from functools import partial
 import os
 
@@ -28,7 +27,6 @@ kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
 ky0=ky[:Ny/2-1]
-slky=np.s_[:int(Ny/2)-1]
 
 #%% Functions
 
@@ -106,79 +104,76 @@ def rhs_itg(t,y):
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     return dzkdt.view(dtype=float)
 
+def format_exp(d):
+    dstr = f"{d:.1e}"
+    base, exp = dstr.split("e")
+    base = base.replace(".", "_")
+    if "-" in exp:
+        exp = exp.replace("-", "")
+        prefix = "em"
+    else:
+        prefix = "e"
+    exp = str(int(exp))
+    return f"{base}_{prefix}{exp}"
+
+def round_to_nsig(number, n):
+    """Rounds a number to n significant figures."""
+    if not np.isfinite(number): # Catches NaN, Inf, -Inf
+        return number 
+    if number == 0:
+        return 0.0
+    if n <= 0:
+        raise ValueError("Number of significant figures (n) must be positive.")
+    
+    order_of_magnitude = np.floor(np.log10(np.abs(number)))
+    decimals_to_round = int(n - 1 - order_of_magnitude)
+    
+    return np.round(number, decimals=decimals_to_round)
+
 #%% Run the simulation    
 
-output_dir = "data_sweep/"
-os.makedirs(output_dir, exist_ok=True)
-
-H0 = 1e-3
-HPhi = H0
-HP = H0
-
-wecontinue = True
-sim_t0 = 0.0
+# Initialize zk only once for the first run
 zk = None
 
-for i, kapt_val in enumerate(kapt_vals):
-    kapt = round(kapt_val,3)
-    kapn = round(kapt/3,3)
+for i, kapt in enumerate(kapt_vals):
+    kapt=round(kapt,3)
+    kapn=round(kapt/3,3)
+    H0 = 1e-3
+    HPhi=H0
+    HP=H0
+
+    output_dir = "data_sweep/"
+    os.makedirs(output_dir, exist_ok=True)
     filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
-    dtshow = 0.1
-    resume_this_step = False
-    skip_this_step = False
-    t_start = sim_t0
-    stored_t1 = None
+    dtshow=0.1
+    gammax=round(gam_max(ky0,kapt),3)
+    # dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
+    dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+    t0,t1=0.0,round(100/gammax,0) #3000/gammax
+    rtol,atol=1e-8,1e-10
 
-    if wecontinue and os.path.exists(filename):
-        with h5.File(filename,'r') as existing:
-            has_last = ('last' in existing and 'zk' in existing['last'] and 't' in existing['last'])
-            if 'data' in existing and 't1' in existing['data']:
-                stored_t1 = float(existing['data/t1'][()])
-            if has_last:
-                last_t = float(existing['last/t'][()])
-                if (stored_t1 is not None) and (np.isclose(last_t,stored_t1,rtol=1e-6,atol=1e-8) or last_t>stored_t1):
-                    skip_this_step = True
-                    zk = cp.array(existing['last/zk'][()])
-                else:
-                    resume_this_step = True
-                    t_start = last_t
-                    zk = cp.array(existing['last/zk'][()])
-
-    if skip_this_step:
-        print(f'  Skipping sweep step {i+1}/{len(kapt_vals)}; existing run complete for kapt={kapt}')
-        continue
-
-    if zk is None:
-        zk = init_fields(kx,ky)
+    # Create new file for each kapt value
+    fl=h5.File(filename,'w',libver='latest')
+    fl.swmr_mode = True
+    
+    # Initialize fields only for the first run, use previous final state for subsequent runs
+    if i == 0:
+        zk=init_fields(kx,ky)
         print(f'  Initialized fields for first kapt value: {kapt}')
-    elif resume_this_step:
-        print(f'  Resuming run for kapt={kapt} from t={t_start:.3g}')
     else:
         print(f'  Using final state from previous run as initial condition for kapt: {kapt}')
-
-    gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
-    dtstep, dtsavecb = round_to_nsig(0.00275/gammax,1), round_to_nsig(0.0275/gammax,1)
-    t1 = round(100/gammax,0)
-    rtol, atol = 1e-8, 1e-10
-
-    if resume_this_step and (np.isclose(t_start,t1,rtol=1e-6,atol=1e-8) or t_start>t1):
-        print(f'  Skipping sweep step {i+1}/{len(kapt_vals)}; checkpoint already at t={t1} for kapt={kapt}')
-        continue
-
-    file_mode = 'r+' if resume_this_step and os.path.exists(filename) else 'w'
-    fl = h5.File(filename,file_mode,libver='latest')
-    fl.swmr_mode = True
-
-    save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=sim_t0,t1=t1)
+    
+    save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
     save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
 
     fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
     dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
-    r=Gensolver('cupy_ivp.DOP853',rhs_itg,t_start,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
+    r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
     r.run()
-    fl.flush()
-    zk = cp.array(fl['last/zk'][()])
-
+    
+    # Get the final state for use as initial condition in next run
+    zk = cp.array(r.y[:,-1].view(dtype=complex))
+    
     fl.close()
     print(f'  Completed sweep step {i+1}/{len(kapt_vals)} for kapt={kapt}')

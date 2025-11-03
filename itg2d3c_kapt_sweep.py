@@ -119,48 +119,77 @@ def rhs_itg(t,y):
 
 #%% Run the simulation    
 
-# Initialize zk only once for the first run
+output_dir = "data_2d3c_sweep/"
+os.makedirs(output_dir, exist_ok=True)
+
+H0=0*1e-3
+HP=H0
+HV=H0
+HPhi=H0
+
+sim_t0 = 0.0
+wecontinue = True
 zk = None
 
-for i, kapt in enumerate(kapt_vals):
-    kapt=round(kapt,3)
-    kapn=round(kapt/3,3)
-    H0=1e-3
-    HP=H0
-    HV=H0
-    HPhi=H0
-
-    output_dir = "data_2d3c_sweep/"
-    os.makedirs(output_dir, exist_ok=True)
-    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+for i, kapt_val in enumerate(kapt_vals):
+    kapt=round(kapt_val,3)
+    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
     dtshow=0.1
-    gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)   
-    dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-    t0,t1=0.0,round(100/gammax,0) #100/gammax #1200/gammax
-    rtol,atol=1e-8,1e-10
+    resume_this_step=False
+    skip_this_step=False
+    t_start=sim_t0
+    stored_t1=None
 
-    # Create new file for each kapt value
-    fl=h5.File(filename,'w',libver='latest')
-    fl.swmr_mode = True
-    
-    # Initialize fields only for the first run, use previous final state for subsequent runs
-    if i == 0:
+    if wecontinue and os.path.exists(filename):
+        with h5.File(filename,'r') as existing:
+            has_last=('last' in existing and 'zk' in existing['last'] and 't' in existing['last'])
+            if 'data' in existing and 't1' in existing['data']:
+                stored_t1=float(existing['data/t1'][()])
+            if has_last:
+                last_t=float(existing['last/t'][()])
+                if (stored_t1 is not None) and (np.isclose(last_t,stored_t1,rtol=1e-6,atol=1e-8) or last_t>stored_t1):
+                    skip_this_step=True
+                    zk=cp.array(existing['last/zk'][()])
+                else:
+                    resume_this_step=True
+                    t_start=last_t
+                    zk=cp.array(existing['last/zk'][()])
+
+    if skip_this_step:
+        print(f'  Skipping sweep step {i+1}/{len(kapt_vals)}; existing run complete for kapt={kapt}')
+        continue
+
+    if zk is None:
         zk=init_fields(kx,ky)
         print(f'  Initialized fields for first kapt value: {kapt}')
+    elif resume_this_step:
+        print(f'  Resuming run for kapt={kapt} from t={t_start:.3g}')
     else:
         print(f'  Using final state from previous run as initial condition for kapt: {kapt}')
-    
-    save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
+
+    gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
+    dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+    t1=round(100/gammax,0) #100/gammax #1200/gammax
+    rtol,atol=1e-8,1e-10
+
+    if resume_this_step and (np.isclose(t_start,t1,rtol=1e-6,atol=1e-8) or t_start>t1):
+        print(f'  Skipping sweep step {i+1}/{len(kapt_vals)}; checkpoint already at t={t1} for kapt={kapt}')
+        continue
+
+    file_mode='r+' if resume_this_step and os.path.exists(filename) else 'w'
+    fl=h5.File(filename,file_mode,libver='latest')
+    fl.swmr_mode = True
+
+    save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=sim_t0,t1=t1)
     save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
 
     fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
     dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
-    r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
+    r=Gensolver('cupy_ivp.DOP853',rhs_itg,t_start,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
     r.run()
-    
-    # Get the final state for use as initial condition in next run
-    zk = cp.array(r.y[:,-1].view(dtype=complex))
-    
+    fl.flush()
+    zk = cp.array(fl['last/zk'][()])
+
     fl.close()
     print(f'  Completed sweep step {i+1}/{len(kapt_vals)} for kapt={kapt}')
