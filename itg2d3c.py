@@ -21,8 +21,7 @@ kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
-s=0.9
-kz=0.1#<=0.2
+s=0.9 
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -31,6 +30,8 @@ kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
+
+kz=round(0.05*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky),4) #<=0.2
 
 H0=0*1e-3
 HP=H0

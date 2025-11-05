@@ -31,7 +31,7 @@ plt.rcParams['ytick.minor.width'] = 1.5
 # datadir = "data/"
 # infl = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3.h5'
 datadir = "data_2d3c/"
-infl = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_1.h5'
+infl = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5'
 
 outfl = infl.replace('.h5', '.mp4')
 

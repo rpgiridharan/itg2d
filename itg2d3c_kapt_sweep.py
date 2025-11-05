@@ -15,13 +15,12 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt_vals=np.arange(0.3,1.6,0.1) # Scan over kapt values
+kapt_vals=np.arange(0.3,1.6,0.1) 
 kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
 s=0.9
-kz=0.1 #<=0.2
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -136,6 +135,8 @@ for i, kapt_val in enumerate(kapt_vals):
     kapn=round(kapt/3,3)
     filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
+    kz=round(0.05*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky),4)
+
     resume_this_step=False
     skip_this_step=False
     t_start=sim_t0
@@ -171,7 +172,7 @@ for i, kapt_val in enumerate(kapt_vals):
     dtshow=0.1
     gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
     dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-    t1=round(100/gammax,0) #100/gammax #1200/gammax
+    t1=round(300/gammax,0) #100/gammax #1200/gammax
     rtol,atol=1e-8,1e-10
 
     if resume_this_step and (np.isclose(t_start,t1,rtol=1e-6,atol=1e-8) or t_start>t1):

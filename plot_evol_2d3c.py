@@ -19,9 +19,10 @@ plt.rcParams['font.size'] = 16
 plt.rcParams['axes.linewidth'] = 3  
 
 #%% Load the HDF5 file
+
 comm.Barrier()
 datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_0_36_chi_0_1_kz_0_1.h5'
+file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_05.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]

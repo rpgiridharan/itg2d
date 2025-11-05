@@ -29,7 +29,7 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,kapn,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
+H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
 HPhi = H0
 HP = H0
 

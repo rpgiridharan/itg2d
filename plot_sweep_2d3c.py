@@ -83,8 +83,9 @@ def format_exp(d):
 
 #%% Define the quantities to be plotted
 
-datadir = 'data_sweep/'
+datadir = 'data_2d3c_sweep/'
 kapt_vals = np.arange(0.3,1.5,0.1)
+kz=0.01
 
 E_frac_scan = np.zeros(kapt_vals.shape)
 E_frac_scan_err = np.zeros(kapt_vals.shape)
@@ -97,7 +98,7 @@ for i,kapt in enumerate(kapt_vals):
     kapt = round(kapt, 3)
     print(f'Processing kappa_T = {kapt}')
 
-    pattern = datadir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(0.1).replace(".","_")}_kz_{str(0.1).replace(".","_")}.h5'
+    pattern = datadir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(0.1).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
     files = glob.glob(pattern)
     if not files:
         print(f"No file found for kappa_T = {kapt}")

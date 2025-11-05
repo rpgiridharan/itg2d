@@ -15,7 +15,7 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt_vals=np.arange(0.3,1.6,0.1) # Scan over kapt values
+kapt_vals=np.arange(0.3,1.6,0.1)
 kapb=0.05
 a=9.0/40.0
 b=67.0/160.0
@@ -120,7 +120,7 @@ for i, kapt_val in enumerate(kapt_vals):
     kapn = round(kapt/3,3)
     filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
-    H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,kapn,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
+    H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
     HPhi = H0
     HP = H0
 
