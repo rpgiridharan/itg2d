@@ -133,9 +133,9 @@ zk = None
 for i, kapt_val in enumerate(kapt_vals):
     kapt=round(kapt_val,3)
     kapn=round(kapt/3,3)
-    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
-
     kz=round(0.05*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky),4)
+
+    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
     resume_this_step=False
     skip_this_step=False
