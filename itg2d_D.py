@@ -5,7 +5,7 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma import gam_max   
+from modules.gamma_D import gam_max   
 from modules.gensolver import Gensolver,save_data
 from functools import partial
 import os
@@ -14,24 +14,22 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=1.2
+kapt=0.36
 kapn=round(kapt/3,3)
 kapb=0.05
-a=9.0/40.0
-b=67.0/160.0
-chi=0.1
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Ny/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
-kpsq=kx**2+ky**2 
+kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-Z0=round(1e-1*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
-ZPhi=Z0
-ZP=Z0
+D=round(0.1*gam_max(kx,ky,kapn,kapt,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
+H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
+HPhi = H0
+HP = H0
 
 #%% Functions
 
@@ -98,8 +96,8 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-(1-sigk)*ZPhi*kpsq**2*Phik
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-(1-sigk)*ZP*kpsq**2*Pk
+    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-D*kpsq*Phik-sigk*HPhi/(kpsq**3)*Phik
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-D*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
@@ -142,20 +140,20 @@ def round_to_nsig(number, n):
 
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_Z_{format_exp(ZPhi)}.h5'
-wecontinue=False
+filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+wecontinue=True
 if not os.path.exists(filename):
     wecontinue=False
 
 dtshow=0.1
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,ZP*kpsq**4,ZPhi*kpsq**4,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(1200/gammax,0) #100/gammax #1200/gammax
+t0,t1=0.0,round(200/gammax,0) #100/gammax #1200/gammax
 rtol,atol=1e-8,1e-10
 
 #%% Run the simulation    
 
-print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
+print(f'D={D}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
 
 if(wecontinue):
     fl=h5.File(filename,'r+',libver='latest')
@@ -167,7 +165,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,ZP=ZP,ZPhi=ZPhi,gammax=gammax)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi,gammax=gammax)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

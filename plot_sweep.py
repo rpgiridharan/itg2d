@@ -125,16 +125,16 @@ for i,kapt in enumerate(kapt_vals):
         slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
         kpsq = kx**2 + ky**2
 
-        E_frac_t = np.zeros(nt)
-        W_frac_t = np.zeros(nt)
-        Q_t = np.zeros(ntf)
-        for it in range(int(nt/2),nt):
-            Omk = fl['fields/Omk'][it]
-            Pk = fl['fields/Pk'][it]
+        E_frac_t = np.zeros(int(nt/2))
+        W_frac_t = np.zeros(int(nt/2))
+        for it in range(int(nt/2)):
+            Omk = fl['fields/Omk'][it+nt//2]
+            Pk = fl['fields/Pk'][it+nt//2]
             E_frac_t[it] = K_ZF(Omk, kpsq, slbar) / K(Omk, kpsq)
             W_frac_t[it] = W_ZF(Omk, slbar) / W(Omk)
-        for it in range(int(ntf/2),ntf):
-            Q = fl['fluxes/Q'][it]
+        Q_t = np.zeros(int(ntf/2))
+        for it in range(int(ntf/2)):
+            Q = fl['fluxes/Q'][it+ntf//2]
             Q_t[it] = np.mean(Q)
 
     E_frac_scan[i]= np.mean(E_frac_t)
@@ -161,18 +161,18 @@ plt.tight_layout()
 plt.savefig(datadir+'zonal_energy_frac_vs_kapt_sweep.png',dpi=600)
 plt.show()
 
-# Plot enstrophy vs kapt
-plt.figure(figsize=(8,6))
-plt.errorbar(kapt_vals, W_frac_scan, yerr=W_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{W}_{ZF}/\\mathcal{W}$',
-             elinewidth=2, capthick=1, capsize=4)
-plt.xlabel('$\\kappa_T$')
-plt.ylabel('$\\mathcal{W}_{ZF}/\\mathcal{W}$')
-plt.title('$\\mathcal{W}_{ZF}/\\mathcal{W}$ fraction vs $\\kappa_T$')
-plt.grid()
-plt.legend()
-plt.tight_layout()
-plt.savefig(datadir+'zonal_enstrophy_frac_vs_kapt_sweep.png',dpi=600)
-plt.show()
+# # Plot enstrophy vs kapt
+# plt.figure(figsize=(8,6))
+# plt.errorbar(kapt_vals, W_frac_scan, yerr=W_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{W}_{ZF}/\\mathcal{W}$',
+#              elinewidth=2, capthick=1, capsize=4)
+# plt.xlabel('$\\kappa_T$')
+# plt.ylabel('$\\mathcal{W}_{ZF}/\\mathcal{W}$')
+# plt.title('$\\mathcal{W}_{ZF}/\\mathcal{W}$ fraction vs $\\kappa_T$')
+# plt.grid()
+# plt.legend()
+# plt.tight_layout()
+# plt.savefig(datadir+'zonal_enstrophy_frac_vs_kapt_sweep.png',dpi=600)
+# plt.show()
 
 # Plot Q vs kapt
 plt.figure(figsize=(8,6))

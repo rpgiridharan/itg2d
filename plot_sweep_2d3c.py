@@ -6,6 +6,8 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np
+from modules.mlsarray import init_kgrid
+from modules.gamma_2d3c import gam_max
 import glob
 
 plt.rcParams['lines.linewidth'] = 4
@@ -85,7 +87,17 @@ def format_exp(d):
 
 datadir = 'data_2d3c_sweep/'
 kapt_vals = np.arange(0.3,1.5,0.1)
-kz=0.01
+kapb=0.05
+a=9.0/40.0
+b=67.0/160.0
+chi=0.1
+s=0.9
+Npx,Npy=512,512
+Nx,Ny=2*(Npx//3),2*(Npy//3)
+Lx,Ly=32*np.pi,32*np.pi
+sl=Slicelist(Nx,Ny)
+kx,ky=init_kgrid(sl,Lx,Ly)
+slky=np.s_[:int(Ny/2)-1]
 
 E_frac_scan = np.zeros(kapt_vals.shape)
 E_frac_scan_err = np.zeros(kapt_vals.shape)
@@ -96,6 +108,8 @@ Q_scan_err = np.zeros(kapt_vals.shape)
 
 for i,kapt in enumerate(kapt_vals):
     kapt = round(kapt, 3)
+    kapn = round(kapt/3,3)
+    kz=round(0.05*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky),4)
     print(f'Processing kappa_T = {kapt}')
 
     pattern = datadir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(0.1).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
@@ -126,16 +140,16 @@ for i,kapt in enumerate(kapt_vals):
         slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
         kpsq = kx**2 + ky**2
 
-        E_frac_t = np.zeros(nt)
-        W_frac_t = np.zeros(nt)
-        Q_t = np.zeros(ntf)
-        for it in range(int(nt/2),nt):
-            Omk = fl['fields/Omk'][it]
-            Pk = fl['fields/Pk'][it]
+        E_frac_t = np.zeros(int(nt/2))
+        W_frac_t = np.zeros(int(nt/2))
+        for it in range(int(nt/2)):
+            Omk = fl['fields/Omk'][it+nt//2]
+            Pk = fl['fields/Pk'][it+nt//2]
             E_frac_t[it] = K_ZF(Omk, kpsq, slbar) / K(Omk, kpsq)
             W_frac_t[it] = W_ZF(Omk, slbar) / W(Omk)
-        for it in range(int(ntf/2),ntf):
-            Q = fl['fluxes/Q'][it]
+        Q_t = np.zeros(int(ntf/2))
+        for it in range(int(ntf/2)):
+            Q = fl['fluxes/Q'][it+ntf//2]
             Q_t[it] = np.mean(Q)
 
     E_frac_scan[i]= np.mean(E_frac_t)
@@ -162,18 +176,18 @@ plt.tight_layout()
 plt.savefig(datadir+'zonal_energy_frac_vs_kapt_sweep.png',dpi=600)
 plt.show()
 
-# Plot enstrophy vs kapt
-plt.figure(figsize=(8,6))
-plt.errorbar(kapt_vals, W_frac_scan, yerr=W_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{W}_{ZF}/\\mathcal{W}$',
-             elinewidth=2, capthick=1, capsize=4)
-plt.xlabel('$\\kappa_T$')
-plt.ylabel('$\\mathcal{W}_{ZF}/\\mathcal{W}$')
-plt.title('$\\mathcal{W}_{ZF}/\\mathcal{W}$ fraction vs $\\kappa_T$')
-plt.grid()
-plt.legend()
-plt.tight_layout()
-plt.savefig(datadir+'zonal_enstrophy_frac_vs_kapt_sweep.png',dpi=600)
-plt.show()
+# # Plot enstrophy vs kapt
+# plt.figure(figsize=(8,6))
+# plt.errorbar(kapt_vals, W_frac_scan, yerr=W_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{W}_{ZF}/\\mathcal{W}$',
+#              elinewidth=2, capthick=1, capsize=4)
+# plt.xlabel('$\\kappa_T$')
+# plt.ylabel('$\\mathcal{W}_{ZF}/\\mathcal{W}$')
+# plt.title('$\\mathcal{W}_{ZF}/\\mathcal{W}$ fraction vs $\\kappa_T$')
+# plt.grid()
+# plt.legend()
+# plt.tight_layout()
+# plt.savefig(datadir+'zonal_enstrophy_frac_vs_kapt_sweep.png',dpi=600)
+# plt.show()
 
 # Plot Q vs kapt
 plt.figure(figsize=(8,6))

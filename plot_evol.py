@@ -21,7 +21,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 file
 comm.Barrier()
 datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_old.h5'
+file_name = datadir+'out_kapt_0_36_D_0_1_H_4_0_em4.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
@@ -310,7 +310,7 @@ if rank == 0:
     plt.plot(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{Q}$')
-    plt.title('$\\mathcal{Q} vs \\gamma t$')
+    plt.title('$\\mathcal{Q}$ vs $\\gamma t$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
