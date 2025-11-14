@@ -14,7 +14,7 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.36
+kapt=1.2
 kapn=round(kapt/3,3)
 kapb=0.05
 
@@ -149,7 +149,7 @@ dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(200/gammax,0) #100/gammax #1200/gammax
-rtol,atol=1e-8,1e-10
+rtol,atol=1e-7,1e-9
 
 #%% Run the simulation    
 

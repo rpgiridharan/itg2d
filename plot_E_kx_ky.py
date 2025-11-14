@@ -79,12 +79,34 @@ Omk_2d[sl] = cp.array(Omk)
 Omk_2d[-1:-int(Nx/2):-1,0] = Omk_2d[1:int(Nx/2),0].conj()
 Omk_2d = Omk_2d.get()
 
+print(kx_2d.shape, Omk_2d.shape)
+
 ek = fac_2d * np.abs(Omk_2d)**2 * oneover(kp_2d**4)
-slhalf=[np.s_[0:1,1:int(Ny/4)],np.s_[1:int(Nx/4),:int(Ny/4)],np.s_[-int(Nx/2)+1:-int(Nx/4),1:int(Ny/4)]]
-print('ek shape', ek.shape)
+slhalf=[np.s_[0:1,1:int(Ny/4)],np.s_[1:int(Nx/4),:int(Ny/4)],np.s_[-int(Nx/2)+1:-int(Nx/4)+1,1:int(Ny/4)]]
+# print('ek shape', ek.shape)
+
 #%% Plot      
 fig = plt.figure()
-plt.pcolormesh(kx_2d[-int(Nx/4):int(Nx/4)+1,:int(Ny/4)], ky_2d[-int(Nx/4):int(Nx/4)+1,:int(Ny/4)], np.ma.log(ek[-int(Nx/4):int(Nx/4)+1,:int(Ny/4)]), cmap='viridis')
+ax = fig.add_subplot(111, projection='3d')
+
+X = kx_2d
+Y = ky_2d
+Z = np.abs(Omk_2d)  # or use ek / np.log(ek+eps) if you prefer energy
+
+surf = ax.plot_surface(X, Y, Z, cmap='viridis', linewidth=0, antialiased=True, rcount=200, ccount=200)
+ax.set_xlabel('$k_x$')
+ax.set_ylabel('$k_y$')
+ax.set_zlabel('$|\\Omega_k|$')
+ax.set_title('$\\mathcal{E}_k(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+ax.view_init(elev=30, azim=-60)
+fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10)
+plt.tight_layout()
+plt.show()
+
+#%% Plot      
+fig = plt.figure()
+plt.pcolormesh(kx_2d, ky_2d, np.abs(Omk_2d), cmap='viridis')
+# plt.pcolormesh(kx_2d, ky_2d, np.log(ek+np.finfo(float).eps), cmap='viridis')
 plt.xlabel('$k_x$')
 plt.ylabel('$k_y$')
 plt.title('$\\mathcal{E}_k(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
