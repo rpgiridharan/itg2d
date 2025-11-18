@@ -260,20 +260,20 @@ if rank == 0:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=600)
     plt.show()
 
-    # Plot entropy vs time
-    plt.figure(figsize=(8,6))
-    plt.semilogy(t[:nt], entropy_t, label = '$\\mathcal{S}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{S}=-\\sum_{\\mathbf{k}}p_{\\mathbf{k}}\\log p_{\\mathbf{k}}$')
-    plt.title('Entropy vs $\\gamma$ t')
-    plt.grid()
-    plt.legend()
-    plt.tight_layout()
+    # # Plot entropy vs time
+    # plt.figure(figsize=(8,6))
+    # plt.semilogy(t[:nt], entropy_t, label = '$\\mathcal{S}$')
+    # plt.xlabel('$\\gamma t$')
+    # plt.ylabel('$\\mathcal{S}=-\\sum_{\\mathbf{k}}p_{\\mathbf{k}}\\log p_{\\mathbf{k}}$')
+    # plt.title('Entropy vs $\\gamma$ t')
+    # plt.grid()
+    # plt.legend()
+    # plt.tight_layout()
     # if file_name.endswith('out.h5'):
     #     plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
     # else:
     #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
-    plt.show()
+    # plt.show()
 
     # # Plot R vs time
     # plt.figure(figsize=(8,6))
