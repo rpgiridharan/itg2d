@@ -20,7 +20,7 @@ plt.rcParams['axes.linewidth'] = 3
 
 #%% Load the HDF5 file
 comm.Barrier()
-datadir = 'data/'
+datadir = 'data_weep/'
 file_name = datadir+'out_kapt_0_36_D_0_1_H_4_0_em4.h5'
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:
