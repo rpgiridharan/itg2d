@@ -27,6 +27,13 @@ Nk=kx.size
 ky0=ky[:Ny/2-1]
 slky=np.s_[:int(Ny/2)-1]
 
+kapt_max=np.max(kapt_vals)
+kapn_max=round(kapt_max/3,3)
+D=round(0.1*gam_max(kx,ky,kapn_max,kapt_max,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
+H0 = round(1e-3*gam_max(kx,ky,kapn_max,kapt_max,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
+HPhi = H0
+HP = H0
+
 #%% Functions
 
 irft2 = partial(original_irft2,Npx=Npx,Npy=Npy,Nx=Nx,sl=sl)
@@ -115,10 +122,6 @@ zk = None
 for i, kapt_val in enumerate(kapt_vals):
     kapt = round(kapt_val,3)
     kapn = round(kapt/3,3)
-    D=round(0.1*gam_max(kx,ky,kapn,kapt,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
-    H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
-    HPhi = H0
-    HP = H0
 
     filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
@@ -158,7 +161,7 @@ for i, kapt_val in enumerate(kapt_vals):
     gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
     dtstep, dtsavecb = round_to_nsig(0.00275/gammax,1), round_to_nsig(0.0275/gammax,1)
     t1 = round(100/gammax,0)
-    rtol, atol = 1e-8, 1e-10
+    rtol, atol = 1e-7, 1e-9
 
     if resume_this_step and (np.isclose(t_start,t1,rtol=1e-6,atol=1e-8) or t_start>t1):
         print(f'  Skipping sweep step {i+1}/{len(kapt_vals)}; checkpoint already at t={t1} for kapt={kapt}')

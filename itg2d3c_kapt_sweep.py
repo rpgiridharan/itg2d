@@ -15,8 +15,8 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt_vals=np.arange(0.3,1.6,0.1) 
-kapb=0.05
+kapt_vals=np.arange(0.1,1.6,0.1) 
+kapb=0.01
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
