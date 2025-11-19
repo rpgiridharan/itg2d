@@ -15,8 +15,9 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt_vals=np.arange(0.3,1.6,0.1)
-kapb=0.05
+kapt_vals=np.arange(0.1,1.7,0.1)
+kapb=0.01
+eta=2.0
 a=9.0/40.0
 b=67.0/160.0
 chi=0.1
@@ -117,7 +118,7 @@ zk = None
 
 for i, kapt_val in enumerate(kapt_vals):
     kapt = round(kapt_val,3)
-    kapn = round(kapt/3,3)
+    kapn = round(kapt/eta,3)
     H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
     HPhi = H0
     HP = H0

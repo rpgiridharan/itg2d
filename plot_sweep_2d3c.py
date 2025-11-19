@@ -112,7 +112,7 @@ for i,kapt in enumerate(kapt_vals):
     kz=round(0.05*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky),4)
     print(f'Processing kappa_T = {kapt}')
 
-    pattern = datadir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(0.1).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
+    pattern = datadir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".", "_")}_*.h5'
     files = glob.glob(pattern)
     if not files:
         print(f"No file found for kappa_T = {kapt}")
