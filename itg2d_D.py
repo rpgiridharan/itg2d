@@ -14,9 +14,9 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=1.2
-kapn=round(kapt/3,3)
-kapb=0.05
+kapt=0.1
+kapn=0.022
+kapb=0.02
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -26,7 +26,8 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-D=round(0.1*gam_max(kx,ky,kapn,kapt,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
+# D=round(0.1*gam_max(kx,ky,kapn,kapt,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
+D=0.1
 H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
 HPhi = H0
 HP = H0
