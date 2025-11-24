@@ -61,60 +61,85 @@ def oneover(arr):
     np.divide(1.0, arr, out=result, where=arr != 0)
     return result
 
+#%% Functions
+
+def init_kspace_grid(Nx,Ny,Lx,Ly):
+    dkx=2*np.pi/Lx
+    dky=2*np.pi/Ly
+    kxl=np.r_[np.arange(0,Nx//2),np.arange(-Nx//2,0)]*dkx
+    kyl=np.r_[np.arange(0,Ny//2+1)]*dky
+    kx,ky=np.meshgrid(kxl,kyl,indexing='ij')
+    return kx,ky
+
 #%% Plots
 
 print(Omk.shape)
 
-kxl = np.r_[0:int(Nx/2), -int(Nx/2):0]
-kyl = np.r_[0:int(Ny/2)+1]
-dkx = 2*np.pi / Lx
-dky = 2*np.pi / Ly
-kx_2d, ky_2d = np.meshgrid(kxl * dkx, kyl * dky, indexing='ij')
-kp_2d = np.sqrt(kx_2d**2 + ky_2d**2)
-sigk_2d = np.sign(np.abs(ky_2d))
-fac_2d = sigk_2d + kp_2d**2
+kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
+kx = np.fft.fftshift(kx,axes=0)
+ky = np.fft.fftshift(ky,axes=0)
+kp = np.sqrt(kx**2 + ky**2)
+sigk_2d = np.sign(np.abs(ky))
+fac_2d = sigk_2d + kp**2
 
 Omk_2d = MLSarray(Nx,Ny)
 Omk_2d[sl] = cp.array(Omk)
 Omk_2d[-1:-int(Nx/2):-1,0] = Omk_2d[1:int(Nx/2),0].conj()
 Omk_2d = Omk_2d.get()
+Omk_2d = np.fft.fftshift(Omk_2d,axes=0)
 
-print(kx_2d.shape, Omk_2d.shape)
+ek = fac_2d * np.abs(Omk_2d)**2 * oneover(kp**4)
+roi = (slice(int(Nx/4), int(3*Nx/4)), slice(0, int(Ny/4)))
 
-ek = fac_2d * np.abs(Omk_2d)**2 * oneover(kp_2d**4)
-slhalf=[np.s_[0:1,1:int(Ny/4)],np.s_[1:int(Nx/4),:int(Ny/4)],np.s_[-int(Nx/2)+1:-int(Nx/4)+1,1:int(Ny/4)]]
-# print('ek shape', ek.shape)
+#%% Surface plot of E_kx_ky      
 
-#%% Plot      
+X = kx
+Y = ky
+Z = np.log(ek+np.finfo(float).eps)  
+
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-
-X = kx_2d
-Y = ky_2d
-Z = np.abs(Omk_2d)  # or use ek / np.log(ek+eps) if you prefer energy
-
-surf = ax.plot_surface(X, Y, Z, cmap='viridis', linewidth=0, antialiased=True, rcount=200, ccount=200)
+surf = ax.plot_surface(kx[roi], ky[roi], Z[roi], cmap='viridis', linewidth=0, antialiased=True, rcount=200, ccount=200)
 ax.set_xlabel('$k_x$')
 ax.set_ylabel('$k_y$')
-ax.set_zlabel('$|\\Omega_k|$')
-ax.set_title('$\\mathcal{E}_k(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+ax.set_zlabel('$log(\\mathcal{E}_k)$')
+ax.set_title('$log(\\mathcal{E}_k)(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
 ax.view_init(elev=30, azim=-60)
-fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10)
+fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10, pad=0.15)
 plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'E_kx_ky_surf.png', dpi=600)
+else:
+    plt.savefig(datadir+"E_kx_ky_surf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
-#%% Plot      
+#%% Colormesh of log(E_kx_ky)      
+
 fig = plt.figure()
-plt.pcolormesh(kx_2d, ky_2d, np.abs(Omk_2d), cmap='viridis')
-# plt.pcolormesh(kx_2d, ky_2d, np.log(ek+np.finfo(float).eps), cmap='viridis')
+plt.pcolormesh(kx[roi], ky[roi], np.log(ek[roi]+np.finfo(float).eps), cmap='viridis', shading='auto')
+plt.xlabel('$k_x$')
+plt.ylabel('$k_y$')
+plt.title('$log(\\mathcal{E}_k)(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+plt.colorbar()
+plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'E_kx_ky.png', dpi=600)
+else:
+    plt.savefig(datadir+"E_kx_ky_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+plt.show()
+
+#%% Colormesh of E_kx_ky 
+
+roi2 = (slice(int(3*Nx/8), int(5*Nx/8)), slice(0, int(Ny/8)))
+fig = plt.figure()
+plt.pcolormesh(kx[roi2], ky[roi2], ek[roi2], cmap='Blues')
 plt.xlabel('$k_x$')
 plt.ylabel('$k_y$')
 plt.title('$\\mathcal{E}_k(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+plt.colorbar()
 plt.tight_layout()
 # if file_name.endswith('out.h5'):
-#     plt.savefig(datadir+'energy_spectrum.png', dpi=600)
+#     plt.savefig(datadir+'E_kx_ky.png', dpi=600)
 # else:
-#     plt.savefig(datadir+"energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+#     plt.savefig(datadir+"E_kx_ky_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
-
-# %%

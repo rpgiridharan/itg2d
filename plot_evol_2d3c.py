@@ -29,7 +29,6 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     Pk = fl['fields/Pk'][0]
     Ombar = fl['zonal/Ombar'][0]
     Pbar = fl['zonal/Pbar'][0]
-    PiP = fl['fluxes/PiP'][0]
     Q = fl['fluxes/Q'][0]
     t = fl['fields/t'][:]
     kx = fl['data/kx'][:]
@@ -115,8 +114,6 @@ if rank == 0:
     enstrophy_ZF_t = np.zeros(nt)
     entropy_t = np.zeros(nt)
     Ombar_t = np.zeros(nt)
-    R_t = np.zeros(nt)
-    PiP_t = np.zeros(nt)
     Q_t = np.zeros(nt)
     # Split range(nt) into 'size' sized chunks
     indices = np.array_split(range(nt), size) 
@@ -129,8 +126,6 @@ else:
     enstrophy_ZF_t = None
     entropy_t = None
     Ombar_t = None
-    R_t = None
-    PiP_t = None
     Q_t = None
     indices = None
 
@@ -145,8 +140,6 @@ enstrophy_local = np.zeros(len(local_indices), dtype=np.float64)
 enstrophy_ZF_local = np.zeros(len(local_indices), dtype=np.float64)
 entropy_local = np.zeros(len(local_indices), dtype=np.float64)
 Ombar_local = np.zeros(len(local_indices), dtype=np.float64)
-R_local = np.zeros(len(local_indices), dtype=np.float64)
-PiP_local = np.zeros(len(local_indices), dtype=np.float64)
 Q_local = np.zeros(len(local_indices), dtype=np.float64)
 
 with h5.File(file_name, 'r', swmr=True) as fl:
@@ -156,8 +149,6 @@ with h5.File(file_name, 'r', swmr=True) as fl:
         Pk = fl['fields/Pk'][i]
         Ombar = fl['zonal/Ombar'][i]
         Pbar = fl['zonal/Pbar'][i]
-        R = fl['fluxes/R'][i]
-        PiP = fl['fluxes/PiP'][i]
         Q = fl['fluxes/Q'][i]
 
         kpsq = kx**2 + ky**2
@@ -171,8 +162,6 @@ with h5.File(file_name, 'r', swmr=True) as fl:
         enstrophy_ZF_local[idx] = W_ZF(Omk, slbar)
         entropy_local[idx] = S(Omk, kpsq)
         Ombar_local[idx] = np.mean(Ombar)
-        R_local[idx] = np.mean(R)
-        PiP_local[idx] = np.mean(PiP)
         Q_local[idx] = np.mean(Q)
 
 # Gather results from all processes
@@ -184,8 +173,6 @@ comm.Gather(enstrophy_local, enstrophy_t, root=0)
 comm.Gather(enstrophy_ZF_local, enstrophy_ZF_t, root=0)
 comm.Gather(entropy_local, entropy_t, root=0)
 comm.Gather(Ombar_local, Ombar_t, root=0)
-comm.Gather(R_local, R_t, root=0)
-comm.Gather(PiP_local, PiP_t, root=0)
 comm.Gather(Q_local, Q_t, root=0)
 
 comm.Barrier()
@@ -277,36 +264,6 @@ if rank == 0:
     #     plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
     # else:
     #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
-    # plt.show()
-
-    # # Plot R vs time
-    # plt.figure(figsize=(8,6))
-    # plt.plot(t[:nt], R_t, '-', label = '$\\Pi_\\phi$')
-    # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\Pi_\\phi$')
-    # plt.title('$\\Pi_\\phi$ vs $\\gamma$ t')
-    # plt.grid()
-    # plt.legend()
-    # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'R_vs_t.png',dpi=600)
-    # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'R_vs_t_').replace('.h5', '.png'), dpi=600)
-    # plt.show()
-
-    # # Plot Pi vs time
-    # plt.figure(figsize=(8,6))
-    # plt.plot(t[:nt], PiP_t, '-', label = '$\\Pi_P$')
-    # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\Pi_P$')
-    # plt.title('$\\Pi_P$ vs $\\gamma$ t')
-    # plt.grid()
-    # plt.legend()
-    # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'PiP_vs_t.png',dpi=600)
-    # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PiP_vs_t_').replace('.h5', '.png'), dpi=600)
     # plt.show()
 
     # Plot Q vs time

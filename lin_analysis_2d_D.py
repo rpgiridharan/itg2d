@@ -61,11 +61,11 @@ Npx,Npy=512,512
 Nx,Ny=2*int(Npx/3),2*int(Npy/3)
 Lx,Ly=32*np.pi,32*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
-kapt=0.022 #rho_i/L_T
-kapn=0.022 #rho_i/L_n
+kapt=2.0 #rho_i/L_T >0.2
+kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
-D=0*0.1
-H0=0*1e-4
+D=0.1
+H0=1e-8 #0*1e-3
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,

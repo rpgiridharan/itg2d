@@ -14,8 +14,8 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.1
-kapn=0.022
+kapt=2.0
+kapn=0.2
 kapb=0.02
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
@@ -26,9 +26,9 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-# D=round(0.1*gam_max(kx,ky,kapn,kapt,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
 D=0.1
-H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
+# H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
+H0=1e-8
 HPhi = H0
 HP = H0
 
@@ -68,9 +68,9 @@ def fsavecb(t,y,flag):
         vx=irft2(-1j*ky*Phik) #ExB flow: x comp
         wx=irft2(-1j*ky*Pk) #diamagnetic flow: x comp
         Q=cp.mean(P*vx,1)
-        R=cp.mean(vy*vx,1)
-        PiP=cp.mean(vy*wx,1)
-        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),R=R.get(),PiP=PiP.get(),t=t)
+        RPhi=cp.mean(vy*vx,1)
+        RP=cp.mean(vy*wx,1)
+        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),RPhi=RPhi.get(),RP=RP.get(),t=t)
     save_data(fl,'last',ext_flag=False,zk=zk.get(),t=t)
 
 def fshowcb(t,y):
@@ -149,8 +149,8 @@ if not os.path.exists(filename):
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(200/gammax,0) #100/gammax #1200/gammax
-rtol,atol=1e-7,1e-9
+t0,t1=0.0,round(100/gammax,0) #100/gammax #1200/gammax
+rtol,atol=1e-8,1e-10
 
 #%% Run the simulation    
 

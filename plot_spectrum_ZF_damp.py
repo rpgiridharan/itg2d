@@ -72,10 +72,28 @@ def ES(omk, kp, k, dk):
     return Ek
 
 def ES_ZF(omk, kp, k, dk, slbar):
-    ''' Returns the zonal kinetic energy spectrum'''  
+    ''' Returns the zonal total energy spectrum'''  
     sigk=np.sign(ky[slbar])
     fac = sigk+kp[slbar]**2 
     ek_ZF = fac*np.abs(omk[slbar])**2/kp[slbar]**4
+    
+    Ek_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
+    return Ek_ZF
+
+def KS(omk, kp, k, dk):
+    ''' Returns the kinetic energy spectrum'''
+    ek = np.abs(omk)**2/kp**2
+
+    Ek = np.zeros(len(k))
+    for i in range(len(k)):
+        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])*dk
+    return Ek
+
+def KS_ZF(omk, kp, k, dk, slbar):
+    ''' Returns the zonal kinetic energy spectrum'''  
+    ek_ZF = np.abs(omk[slbar])**2/kp[slbar]**2
     
     Ek_ZF = np.zeros(len(k))
     for i in range(len(k)):
@@ -128,6 +146,27 @@ kp = np.sqrt(np.abs(kx)**2 + np.abs(ky)**2)
 # k = np.logspace(np.log10(np.min(kp)), np.log10(np.max(kp)), num=int(np.max(kp)/dk))
 k = np.linspace(np.min(kp), np.max(kp), num=int(np.max(kp)/dk))
 
+Pkp = PS(Pk, kp, k, dk)
+Pkp_ZF = PS_ZF(Pk, kp, k, dk, slbar)
+Pkp_turb = Pkp-Pkp_ZF
+plt.figure()
+plt.loglog(k[1:-1], Pkp[1:-1], label = '$P_{k,total}^2$')
+plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$P_{k,ZF}^2$')
+plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$P_{k,turb}^2$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-4), 'r--', label = '$k^{-4}$')
+plt.xlabel('$k$')
+plt.ylabel('$P_k^2$')
+plt.title('$P^2_k$; $\\gamma t = %.1f$' %t[it])
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'pressure_spectrum.png', dpi=600)
+else:
+    plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+plt.show()
+
 Ek = ES(Omk, kp, k, dk)
 Ek_ZF = ES_ZF(Omk, kp, k, dk, slbar)
 Ek_turb = Ek-Ek_ZF
@@ -147,6 +186,27 @@ if file_name.endswith('out.h5'):
     plt.savefig(datadir+'energy_spectrum.png', dpi=600)
 else:
     plt.savefig(datadir+"energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+plt.show()
+
+Kk = KS(Omk, kp, k, dk)
+Kk_ZF = KS_ZF(Omk, kp, k, dk, slbar)
+Kk_turb = Kk-Kk_ZF
+plt.figure()
+plt.loglog(k[1:-1], Kk[1:-1], label = '$\\mathcal{E}_{kin,k}$')
+plt.loglog(k[Kk_ZF>0][1:-1], Kk_ZF[Kk_ZF>0][1:-1], label = '$\\mathcal{E}_{kin,k,ZF}$')
+plt.loglog(k[1:-1], Kk_turb[1:-1], label = '$\\mathcal{E}_{kin,k,turb}$')
+plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
+plt.xlabel('$k$')
+plt.ylabel('$\\mathcal{E}_{kin,k}$')
+plt.title('$\\mathcal{E}_{kin,k}$; $\\gamma t = %.1f$' %t[it])
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'kinetic_energy_spectrum.png', dpi=600)
+else:
+    plt.savefig(datadir+"kinetic_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
 Wk = WS(Omk, kp, k, dk)
@@ -169,26 +229,3 @@ if file_name.endswith('out.h5'):
 else:
     plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
-
-Pkp = PS(Pk, kp, k, dk)
-Pkp_ZF = PS_ZF(Pk, kp, k, dk, slbar)
-Pkp_turb = Pkp-Pkp_ZF
-plt.figure()
-plt.loglog(k[1:-1], Pkp[1:-1], label = '$P_{k,total}^2$')
-plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$P_{k,ZF}^2$')
-plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$P_{k,turb}^2$')
-plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
-plt.loglog(k[1:-1], k[1:-1]**(-4), 'r--', label = '$k^{-4}$')
-plt.xlabel('$k$')
-plt.ylabel('$P_k^2$')
-plt.title('$P^2_k$; $\\gamma t = %.1f$' %t[it])
-plt.legend()
-plt.grid(which='both', linestyle='--', linewidth=0.5)
-plt.tight_layout()
-if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'pressure_spectrum.png', dpi=600)
-else:
-    plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
-plt.show()
-
-# %%

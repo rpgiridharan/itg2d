@@ -34,7 +34,6 @@ def init_linmats(pars,kx,ky):
     ]
     kpsq = kx**2 + ky**2
     kpsq = torch.where(kpsq==0, 1e-10, kpsq)
-    iv=1
         
     sigk = ky>0
     fac=tau*sigk+kpsq
@@ -42,7 +41,7 @@ def init_linmats(pars,kx,ky):
     lm[:,:,0,0]=-1j*D*kpsq-1j*sigk*HP/kpsq**3
     lm[:,:,0,1]=(kapn+kapt)*ky
     lm[:,:,1,0]=-kapb*ky/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-1j*D*kpsq)/fac-1j*sigk*HPhi/kpsq**3
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq)/fac-1j*D*kpsq-1j*sigk*HPhi/kpsq**3
 
     return lm
 
@@ -65,8 +64,8 @@ Lx,Ly=32*np.pi,32*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
 kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
-D=0*0.1
-H0=0*1e-5
+D=0.1
+H0=1e-8
 base_pars={'kapn':kapn,
       'kapb':kapb,
       'tau':1.,#Ti/Te
@@ -74,7 +73,7 @@ base_pars={'kapn':kapn,
       'HPhi':H0,
       'HP':H0}
 
-kapt_vals=np.round(np.arange(0.0,1.8,0.01), 2)
+kapt_vals=np.round(np.arange(0.0,2.01,0.01,), 2)
 n_kapt=len(kapt_vals)
 
 datadir='data_linear/'
@@ -83,7 +82,8 @@ os.makedirs(datadir, exist_ok=True)
 #%% Compute
 
 # Create datasets
-with h5py.File(datadir + 'gammax_vals_kapt_scan_itg2d_D.h5', 'w') as fl:
+file_name = datadir+f'gammax_vals_kapt_scan_kapn_{str(kapn).replace(".", "_")}_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+with h5py.File(file_name, 'w') as fl:
     fl.create_dataset('gammax_vals', shape=(n_kapt,), dtype=np.float64)
     fl.create_dataset('kapt_vals', data=kapt_vals, dtype=np.float64)
     fl.create_dataset('kapn', data=kapn, dtype=np.float64)
@@ -100,7 +100,7 @@ for i in range(len(kapt_vals)):
     gam=om.imag[:,:,0]
 
     # Store gammax
-    with h5py.File(datadir + 'gammax_vals_kapt_scan_itg2d_D.h5', 'a', libver='latest') as fl:
+    with h5py.File(file_name, 'a', libver='latest') as fl:
         # fl.swmr_mode = True
         fl['gammax_vals'][i] = np.max(gam)
         fl.flush()

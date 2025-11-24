@@ -22,8 +22,11 @@ plt.rcParams['ytick.minor.width'] = 1.5
 datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
 
+kapn=0.2 
+kapb=0.02
 # Load datasets
-with h5py.File(datadir + 'gammax_vals_kapt_scan_itg2d_D.h5', 'r') as fl:
+file_name = datadir+f'gammax_vals_kapt_scan_kapn_{str(kapn).replace(".", "_")}_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+with h5py.File(file_name, 'r') as fl:
     gammax_kapt = fl['gammax_vals'][:]
     kapt_vals = fl['kapt_vals'][:]
     kapb = fl['kapb'][()]
@@ -34,7 +37,7 @@ plt.figure()
 plt.plot(kapt_vals, gammax_kapt)
 plt.xlabel('$\\kappa_T$')
 plt.ylabel('$\\gamma_{max}$')
-plt.title(f"$\\gamma_{{max}}$ for $\\kappa_B$={kapb:.2f}")
-plt.savefig(datadir + 'gammax_kapt_itg2d_D.png', dpi=600)
+plt.title(f"$\\gamma_{{max}}$ for $\\kappa_n$={kapn:.2f} $\\kappa_B$={kapb:.2f}")
+plt.savefig(file_name.replace('gammax_vals_kapt', 'gammax_kapt').replace('.h5', '.png'), dpi=600)
 plt.tight_layout()
 plt.show()
