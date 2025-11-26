@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from mpi4py import MPI
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
+import glob
 
 # Initialize MPI
 comm = MPI.COMM_WORLD
@@ -29,11 +30,16 @@ plt.rcParams['ytick.minor.width'] = 1.5
 #%% Load the HDF5 file
 
 datadir = "data/"
-infl = datadir+'out_kapt_2_0_D_0_1_H_1_0_em8.h5'
 # datadir = "data_2d3c/"
-# infl = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5'
 # datadir="data_D_sweep/"
-# infl = datadir+'out_sweep_kapt_0_3_D_0_11_H_1_2_em3.h5'
+kapt=0.9
+D=0.1
+pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
+files = glob.glob(pattern)
+if not files:
+    print(f"No file found for kappa_T = {kapt}")
+else:
+    infl = files[0]
 
 outfl = infl.replace('.h5', '.mp4')
 
@@ -41,6 +47,9 @@ with h5.File(infl, "r", libver='latest', swmr=True) as fl:
     t = fl['fields/t'][:]
     Npx= fl['params/Npx'][()]
     Npy= fl['params/Npy'][()]
+    if 'gammax' in fl['params']:
+        gammax = fl['params/gammax'][()]
+        t = t*gammax
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
@@ -87,7 +96,7 @@ nt = t.shape[0]
 ax[0].axis('off')
 ax[1].axis('off')
 
-tx = fig.text(0.515, 0.925, "t=0", ha='center')
+tx = fig.text(0.515, 0.925, "$\\gamma t=0$", ha='center')
 if (comm.rank == 0):
     lt = np.arange(0,nt,1)
     lt_loc = np.array_split(lt, comm.size)
@@ -106,7 +115,7 @@ for j in lt_loc:
     qd[0].set_array(Om.T.ravel())
     qd[1].set_array(P.T.ravel())
 
-    tx.set_text('t=' + str(int(t[j]) * 1.0))
+    tx.set_text('$\\gamma t=' + str(int(t[j]) * 1.0) + "$")
     fig.savefig("_tmpimg_folder/tmpout%04i" % (j + nt0) + ".png", dpi=600)
 comm.Barrier()
 

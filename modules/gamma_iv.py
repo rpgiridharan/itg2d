@@ -4,8 +4,8 @@ import torch
 
 def init_linmats(kx,ky,pars):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,D,HP,HPhi = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','D','HP','HPhi']
+    kapn,kapt,kapb,tau,chi,a,b,HP,HPhi = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','HP','HPhi']
     ]
     kpsq = kx**2 + ky**2
     # kpsq = torch.where(kpsq==0, 1e-10, kpsq)
@@ -13,10 +13,10 @@ def init_linmats(kx,ky,pars):
     sigk = ky>0
     fac=sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,0,0]=-1j*D*kpsq-1j*sigk*HP/kpsq**3
+    lm[:,0,0]=-1j*chi*kpsq-1j*sigk*HP/kpsq**3
     lm[:,0,1]=(kapn+kapt)*ky
-    lm[:,1,0]=-kapb*ky/fac
-    lm[:,1,1]=(-(kapb-kapn)*ky-(kapn+kapt)*ky*kpsq)/fac-1j*D*kpsq-1j*sigk*HPhi/kpsq**3
+    lm[:,1,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
+    lm[:,1,1]=(-(kapb-kapn)*ky-(kapn+kapt)*ky*kpsq-1j*chi*kpsq**2*a)/fac-1j*sigk*HPhi/kpsq**3
 
     return lm
 
@@ -30,7 +30,7 @@ def linfreq(kx, ky, pars):
     torch.cuda.empty_cache()
     return lam
 
-def gam_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
+def gam_max(kx, ky, kapn, kapt, kapb, chi, a, b, HP, HPhi, slky):
     if isinstance(ky, cp.ndarray):
         kx = kx.get()
         ky = ky.get()
@@ -39,7 +39,9 @@ def gam_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
         'kapt':kapt,
         'kapb':kapb,
         'tau':1.,#Ti/Te
-        'D':D,
+        'chi':chi,
+        'a':a,
+        'b':b,
         'HP':HP,
         'HPhi':HPhi}
 
@@ -47,7 +49,7 @@ def gam_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
     gamky=om.imag[slky,0]
     return np.max(gamky)
 
-def ky_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
+def ky_max(kx, ky, kapn, kapt, kapb, chi, a, b, HP, HPhi, slky):
     if isinstance(ky, cp.ndarray):
         kx = kx.get()
         ky = ky.get()
@@ -55,8 +57,9 @@ def ky_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
     base_pars={'kapn':kapn,
         'kapt':kapt,
         'kapb':kapb,
-        'tau':1.,#Ti/Te
-        'D':D,
+        'chi':chi,
+        'a':a,
+        'b':b,
         'HP':HP,
         'HPhi':HPhi}
 

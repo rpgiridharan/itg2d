@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 datadir="data/"
-file_name="${1:-${datadir}out_kapt_0_1_D_0_1_H_1_0_em8.h5}"
+file_name="${1:-${datadir}out_kapt_2_0_D_0_1_H_1_0_em6.h5}"
 # datadir="data_2d3c/"
 # file_name="${1:-${datadir}out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5}"
 # check h5clear exists

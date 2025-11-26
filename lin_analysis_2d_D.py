@@ -37,10 +37,10 @@ def init_linmats(pars,kx,ky):
     sigk = ky>0
     fac=tau*sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*D*kpsq-1j*sigk*HP/kpsq**3
+    lm[:,:,0,0]=-1j*D*kpsq-1j*sigk*HP/kpsq**2
     lm[:,:,0,1]=(kapn+kapt)*ky
     lm[:,:,1,0]=-kapb*ky/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-1j*D*kpsq)/fac-1j*sigk*HPhi/kpsq**3
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-1j*D*kpsq)/fac-1j*sigk*HPhi/kpsq**2
 
     return lm
 
@@ -65,7 +65,7 @@ kapt=2.0 #rho_i/L_T >0.2
 kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
 D=0.1
-H0=1e-8 #0*1e-3
+H0=1e-5 #0*1e-3
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,

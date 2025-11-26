@@ -8,18 +8,17 @@ from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irf
 from modules.gamma import gam_max   
 from modules.gensolver import Gensolver,save_data
 from functools import partial
+from modules.basics import format_exp, round_to_nsig
 import os
 
 #%% Parameters
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=1.2
-kapn=round(kapt/3,3)
-kapb=0.05
-a=9.0/40.0
-b=67.0/160.0
-chi=0.1
+kapt=1.0
+kapn=0.2
+kapb=0.02
+D=0.1
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -29,9 +28,22 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-Z0=round(1e-1*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
+Z0=round(1e-1*gam_max(kx,ky,kapn,kapt,kapb,D,0,0,slky),4)
 ZPhi=Z0
 ZP=Z0
+
+dtshow=0.1
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,ZP*kpsq**4,ZPhi*kpsq**4,slky)
+dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+t0,t1=0.0,round(1200/gammax,0) #100/gammax #1200/gammax
+rtol,atol=1e-8,1e-10
+wecontinue=False
+
+output_dir = "data/"
+os.makedirs(output_dir, exist_ok=True)
+filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_Z_{format_exp(ZPhi)}.h5'
+if not os.path.exists(filename):
+    wecontinue=False
 
 #%% Functions
 
@@ -98,8 +110,8 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-(1-sigk)*ZPhi*kpsq**2*Phik
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-(1-sigk)*ZP*kpsq**2*Pk
+    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-D*kpsq*Phik-(1-sigk)*ZPhi*kpsq**2*Phik
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-D*kpsq*Pk-(1-sigk)*ZP*kpsq**2*Pk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
@@ -111,47 +123,6 @@ def rhs_itg(t,y):
 
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     return dzkdt.view(dtype=float)
-
-def format_exp(d):
-    dstr = f"{d:.1e}"
-    base, exp = dstr.split("e")
-    base = base.replace(".", "_")
-    if "-" in exp:
-        exp = exp.replace("-", "")
-        prefix = "em"
-    else:
-        prefix = "e"
-    exp = str(int(exp))
-    return f"{base}_{prefix}{exp}"
-
-def round_to_nsig(number, n):
-    """Rounds a number to n significant figures."""
-    if not np.isfinite(number): # Catches NaN, Inf, -Inf
-        return number 
-    if number == 0:
-        return 0.0
-    if n <= 0:
-        raise ValueError("Number of significant figures (n) must be positive.")
-    
-    order_of_magnitude = np.floor(np.log10(np.abs(number)))
-    decimals_to_round = int(n - 1 - order_of_magnitude)
-    
-    return np.round(number, decimals=decimals_to_round)
-
-#%% More parameters  
-
-output_dir = "data/"
-os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_Z_{format_exp(ZPhi)}.h5'
-wecontinue=False
-if not os.path.exists(filename):
-    wecontinue=False
-
-dtshow=0.1
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,ZP*kpsq**4,ZPhi*kpsq**4,slky)
-dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(1200/gammax,0) #100/gammax #1200/gammax
-rtol,atol=1e-8,1e-10
 
 #%% Run the simulation    
 
@@ -167,7 +138,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,ZP=ZP,ZPhi=ZPhi,gammax=gammax)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,ZP=ZP,ZPhi=ZPhi,gammax=gammax)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

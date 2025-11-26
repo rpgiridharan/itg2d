@@ -26,13 +26,14 @@ file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5'
 it = -1
 # it=100
 with h5.File(file_name, 'r', swmr=True) as fl:
-    Omk = np.mean(fl['fields/Omk'][-400:],axis=0)
-    Pk = np.mean(fl['fields/Pk'][-400:],axis=0)
-    Vk = np.mean(fl['fields/Vk'][-400:],axis=0)
-    Ombar = np.mean(fl['zonal/Ombar'][-400:],axis=0)
-    Pbar = np.mean(fl['zonal/Pbar'][-400:],axis=0)
-    Vbar = np.mean(fl['zonal/Vbar'][-400:],axis=0)
     t = fl['fields/t'][:]
+    nt = len(t)
+    Omk = np.mean(fl['fields/Omk'][-int(nt/2):],axis=0)
+    Pk = np.mean(fl['fields/Pk'][-int(nt/2):],axis=0)
+    Vk = np.mean(fl['fields/Vk'][-int(nt/2):],axis=0)
+    Ombar = np.mean(fl['zonal/Ombar'][-int(nt/2):],axis=0)
+    Pbar = np.mean(fl['zonal/Pbar'][-int(nt/2):],axis=0)
+    Vbar = np.mean(fl['zonal/Vbar'][-int(nt/2):],axis=0)
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
     Lx = fl['params/Lx'][()]
@@ -63,6 +64,42 @@ nt = len(t)
 print("nt: ", nt)
 
 #%% Functions for energy and enstrophy
+
+def PS(pk, kp, k, dk):
+    ''' Returns the var(P) spectrum'''
+    pk = np.abs(pk)**2
+
+    Pk = np.zeros(len(k))
+    for i in range(len(k)):
+        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
+    return Pk
+
+def PS_ZF(pk, kp, k, dk, slbar):
+    ''' Returns the zonal var(P) spectrum'''   
+    pk_ZF = np.abs(pk[slbar])**2
+    
+    Pk_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
+    return Pk_ZF
+
+def VS(vk, kp, k, dk):
+    ''' Returns the var(V) spectrum'''
+    vk = np.abs(vk)**2
+
+    Vk = np.zeros(len(k))
+    for i in range(len(k)):
+        Vk[i] = np.sum(vk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
+    return Vk
+
+def VS_ZF(vk, kp, k, dk, slbar):
+    ''' Returns the zonal var(V) spectrum'''   
+    vk_ZF = np.abs(vk[slbar])**2
+    
+    Vk_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Vk_ZF[i] = np.sum(vk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
+    return Vk_ZF
 
 def ES(omk, kp, k, dk):
     ''' Returns the total energy spectrum'''
@@ -123,6 +160,50 @@ def WS_ZF(omk, kp, k, dk, slbar):
         Wk_ZF[i] = np.sum(wk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Wk_ZF
 
+def GS(omk, pk, kp, k, dk):
+    ''' Returns the generalized energy spectrum'''
+    sigk=np.sign(ky)
+    phik=omk/kp**2
+    ek = np.abs(sigk*phik+pk)**2+kp**2*np.abs(phik+pk)**2
+
+    Ek = np.zeros(len(k))
+    for i in range(len(k)):
+        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])*dk
+    return Ek
+
+def GS_ZF(omk, pk, kp, k, dk, slbar):
+    ''' Returns the zonal generalized energy spectrum'''  
+    sigk=np.sign(ky)
+    phik=omk/kp**2
+    ek_ZF = np.abs(sigk[slbar]*phik[slbar]+pk[slbar])**2+kp[slbar]**2*np.abs(phik[slbar]+pk[slbar])**2
+    
+    Ek_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
+    return Ek_ZF
+
+def GKS(omk, pk, kp, k, dk):
+    ''' Returns the generalized kinetic energy spectrum'''
+    sigk=np.sign(ky)
+    phik=omk/kp**2
+    ek = kp**2*np.abs(phik+pk)**2
+
+    Ek = np.zeros(len(k))
+    for i in range(len(k)):
+        Ek[i] = np.sum(ek[np.where(np.logical_and(kp>k[i]-dk/2,kp<k[i]+dk/2))])*dk
+    return Ek
+
+def GKS_ZF(omk, pk, kp, k, dk, slbar):
+    ''' Returns the zonal generalized kinetic energy spectrum'''  
+    sigk=np.sign(ky)
+    phik=omk/kp**2
+    ek_ZF = kp[slbar]**2*np.abs(phik[slbar]+pk[slbar])**2
+    
+    Ek_ZF = np.zeros(len(k))
+    for i in range(len(k)):
+        Ek_ZF[i] = np.sum(ek_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
+    return Ek_ZF
+
 def HS(omk, vk, kp, k, dk):
     '''Returns the kinetic helicity spectrum'''
     hk = 2*np.abs(np.real(np.conj(vk)*omk))
@@ -141,42 +222,6 @@ def HS_ZF(omk, vk, kp, k, dk, slbar):
         Hk_ZF[i] = np.sum(hk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
     return Hk_ZF
 
-def PS(pk, kp, k, dk):
-    ''' Returns the var(P) spectrum'''
-    pk = np.abs(pk)**2
-
-    Pk = np.zeros(len(k))
-    for i in range(len(k)):
-        Pk[i] = np.sum(pk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
-    return Pk
-
-def PS_ZF(pk, kp, k, dk, slbar):
-    ''' Returns the zonal var(P) spectrum'''   
-    pk_ZF = np.abs(pk[slbar])**2
-    
-    Pk_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Pk_ZF[i] = np.sum(pk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
-    return Pk_ZF
-
-def VS(vk, kp, k, dk):
-    ''' Returns the var(V) spectrum'''
-    vk = np.abs(vk)**2
-
-    Vk = np.zeros(len(k))
-    for i in range(len(k)):
-        Vk[i] = np.sum(vk[np.where(np.logical_and(kp>=k[i]-dk/2, kp<k[i]+dk/2))])*dk
-    return Vk
-
-def VS_ZF(vk, kp, k, dk, slbar):
-    ''' Returns the zonal var(V) spectrum'''   
-    vk_ZF = np.abs(vk[slbar])**2
-    
-    Vk_ZF = np.zeros(len(k))
-    for i in range(len(k)):
-        Vk_ZF[i] = np.sum(vk_ZF[np.where(np.logical_and(kp[slbar]>=k[i]-dk/2, kp[slbar]<k[i]+dk/2))])*dk
-    return Vk_ZF
-
 #%% Plots
 
 print(Omk.shape)
@@ -190,7 +235,7 @@ Pkp = PS(Pk, kp, k, dk)
 Pkp_ZF = PS_ZF(Pk, kp, k, dk, slbar)
 Pkp_turb = Pkp-Pkp_ZF
 plt.figure()
-plt.loglog(k[1:-1], Pkp[1:-1], label = '$P_{k,total}^2$')
+plt.loglog(k[1:-1], Pkp[1:-1], label = '$P_{k}^2$')
 plt.loglog(k[Pkp_ZF>0][1:-1], Pkp_ZF[Pkp_ZF>0][1:-1], label = '$P_{k,ZF}^2$')
 plt.loglog(k[1:-1], Pkp_turb[1:-1], label = '$P_{k,turb}^2$')
 plt.loglog(k[1:-1], k[1:-1]**(-3), 'k--', label = '$k^{-3}$')
@@ -211,7 +256,7 @@ Vkp = VS(Vk, kp, k, dk)
 Vkp_ZF = VS_ZF(Vk, kp, k, dk, slbar)
 Vkp_turb = Vkp-Vkp_ZF
 plt.figure()
-plt.loglog(k[1:-1], Vkp[1:-1], label = '$V_{k,total}^2$')
+plt.loglog(k[1:-1], Vkp[1:-1], label = '$V_{k}^2$')
 plt.loglog(k[Vkp_ZF>0][1:-1], Vkp_ZF[Vkp_ZF>0][1:-1], label = '$V_{k,ZF}^2$')
 plt.loglog(k[1:-1], Vkp_turb[1:-1], label = '$V_{k,turb}^2$')
 plt.loglog(k[1:-1], k[1:-1]**(-2), 'k--', label = '$k^{-2}$')
@@ -232,7 +277,7 @@ Ek = ES(Omk, kp, k, dk)
 Ek_ZF = ES_ZF(Omk, kp, k, dk, slbar)
 Ek_turb = Ek-Ek_ZF
 plt.figure()
-plt.loglog(k[1:-1], Ek[1:-1], label = '$\\mathcal{E}_{k,total}$')
+plt.loglog(k[1:-1], Ek[1:-1], label = '$\\mathcal{E}_{k}$')
 plt.loglog(k[Ek_ZF>0][1:-1], Ek_ZF[Ek_ZF>0][1:-1], label = '$\\mathcal{E}_{k,ZF}$')
 plt.loglog(k[1:-1], Ek_turb[1:-1], label = '$\\mathcal{E}_{k,turb}$')
 plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
@@ -274,7 +319,7 @@ Wk = WS(Omk, kp, k, dk)
 Wk_ZF = WS_ZF(Omk, kp, k, dk, slbar)
 Wk_turb = Wk-Wk_ZF
 plt.figure()
-plt.loglog(k[1:-1], Wk[1:-1], label = '$\\mathcal{W}_{k,total}$')
+plt.loglog(k[1:-1], Wk[1:-1], label = '$\\mathcal{W}_{k}$')
 plt.loglog(k[Wk_ZF>0][1:-1], Wk_ZF[Wk_ZF>0][1:-1], label = '$\\mathcal{W}_{k,ZF}$')
 plt.loglog(k[1:-1], Wk_turb[1:-1], label = '$\\mathcal{W}_{k,turb}$')
 plt.loglog(k[1:-1], k[1:-1]**(1/3), 'k--', label = '$k^{1/3}$')
@@ -291,25 +336,67 @@ else:
     plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
-Hk = HS(Omk, Vk, kp, k, dk)
-Hk_ZF = HS_ZF(Omk, Vk, kp, k, dk, slbar)
-Hk_turb = Hk-Hk_ZF
+Gk = GS(Omk, Pk, kp, k, dk)
+Gk_ZF = GS_ZF(Omk, Pk, kp, k, dk, slbar)
+Gk_turb = Gk-Gk_ZF
 plt.figure()
-plt.loglog(k[1:-1], Hk[1:-1], label = '$|\\mathcal{H}_{k,total}|$')
-plt.loglog(k[Hk_ZF>0][1:-1], Hk_ZF[Hk_ZF>0][1:-1], label = '$|\\mathcal{H}_{k,ZF}|$')
-plt.loglog(k[1:-1], Hk_turb[1:-1], label = '$|\\mathcal{H}_{k,turb}|$')
-plt.loglog(k[1:-1], k[1:-1]**(-1), 'k--', label = '$k^{-1}$')
+plt.loglog(k[1:-1], Gk[1:-1], label = '$\\mathcal{G}_{k}$')
+plt.loglog(k[Gk_ZF>0][1:-1], Gk_ZF[Gk_ZF>0][1:-1], label = '$\\mathcal{G}_{k,ZF}$')
+plt.loglog(k[1:-1], Gk_turb[1:-1], label = '$\\mathcal{G}_{k,turb}$')
+plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
 plt.xlabel('$k$')
-plt.ylabel('$|\\mathcal{H}_k|$')
-plt.title('$|\\mathcal{H}_k|$; $\\gamma t = %.1f$' %t[it])
+plt.ylabel('$\\mathcal{G}_{k}$')
+plt.title('$\\mathcal{G}_{k}$; $\\gamma t = %.1f$' %t[it])
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'helicity_spectrum.png', dpi=600)
+    plt.savefig(datadir+'generalized_energy_spectrum.png', dpi=600)
 else:
-    plt.savefig(datadir+"helicity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"generalized_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
+
+GKk = GKS(Omk, Pk, kp, k, dk)
+GKk_ZF = GKS_ZF(Omk, Pk, kp, k, dk, slbar)
+GKk_turb = GKk-GKk_ZF
+plt.figure()
+plt.loglog(k[1:-1], GKk[1:-1], label = '$\\mathcal{G}_{kin,k}$')
+plt.loglog(k[GKk_ZF>0][1:-1], GKk_ZF[GKk_ZF>0][1:-1], label = '$\\mathcal{G}_{kin,k,ZF}$')
+plt.loglog(k[1:-1], GKk_turb[1:-1], label = '$\\mathcal{G}_{kin,k,turb}$')
+plt.loglog(k[1:-1], k[1:-1]**(-5/3), 'k--', label = '$k^{-5/3}$')
+plt.loglog(k[1:-1], k[1:-1]**(-3), 'r--', label = '$k^{-3}$')
+plt.xlabel('$k$')
+plt.ylabel('$\\mathcal{G}_{kin,k}$')
+plt.title('$\\mathcal{G}_{kin,k}$; $\\gamma t = %.1f$' %t[it])
+plt.legend()
+plt.grid(which='both', linestyle='--', linewidth=0.5)
+plt.tight_layout()
+if file_name.endswith('out.h5'):
+    plt.savefig(datadir+'generalized_kinetic_energy_spectrum.png', dpi=600)
+else:
+    plt.savefig(datadir+"generalized_kinetic_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+plt.show()
+
+# Hk = HS(Omk, Vk, kp, k, dk)
+# Hk_ZF = HS_ZF(Omk, Vk, kp, k, dk, slbar)
+# Hk_turb = Hk-Hk_ZF
+# plt.figure()
+# plt.loglog(k[1:-1], Hk[1:-1], label = '$|\\mathcal{H}_{k,total}|$')
+# plt.loglog(k[Hk_ZF>0][1:-1], Hk_ZF[Hk_ZF>0][1:-1], label = '$|\\mathcal{H}_{k,ZF}|$')
+# plt.loglog(k[1:-1], Hk_turb[1:-1], label = '$|\\mathcal{H}_{k,turb}|$')
+# plt.loglog(k[1:-1], k[1:-1]**(-1), 'k--', label = '$k^{-1}$')
+# plt.xlabel('$k$')
+# plt.ylabel('$|\\mathcal{H}_k|$')
+# plt.title('$|\\mathcal{H}_k|$; $\\gamma t = %.1f$' %t[it])
+# plt.legend()
+# plt.grid(which='both', linestyle='--', linewidth=0.5)
+# plt.tight_layout()
+# if file_name.endswith('out.h5'):
+#     plt.savefig(datadir+'helicity_spectrum.png', dpi=600)
+# else:
+#     plt.savefig(datadir+"helicity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+# plt.show()
 
 
 # %%

@@ -18,9 +18,6 @@ Lx,Ly=32*np.pi,32*np.pi
 kapt_vals=np.arange(0.1,1.7,0.1)
 kapb=0.01
 eta=2.0
-a=9.0/40.0
-b=67.0/160.0
-chi=0.1
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
@@ -30,6 +27,11 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 ky0=ky[:Ny/2-1]
 slky=np.s_[:int(Ny/2)-1]
+
+kapt_max=np.max(kapt_vals)
+kapn_max=round(kapt_max/eta,3)
+D=0.1
+# D=round(0.1*gam_max(kx,ky,kapn_max,kapt_max,kapb,0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,0,0.0,0.0,slky),3)
 
 #%% Functions
 
@@ -93,8 +95,8 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
+    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-D*kpsq*Phik-sigk*HPhi/(kpsq**3)*Phik
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-D*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
@@ -109,7 +111,7 @@ def rhs_itg(t,y):
 
 #%% Run the simulation    
 
-output_dir = "data_sweep/"
+output_dir = "data_D_sweep/"
 os.makedirs(output_dir, exist_ok=True)
 
 wecontinue = True
@@ -119,11 +121,11 @@ zk = None
 for i, kapt_val in enumerate(kapt_vals):
     kapt = round(kapt_val,3)
     kapn = round(kapt/eta,3)
-    H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,0.0,0.0,slky),4)
+    H0 = round(1e-3*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,D,0.0,0.0,slky),4)
     HPhi = H0
     HP = H0
 
-    filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+    filename = output_dir + f'out_sweep_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 
     resume_this_step = False
     skip_this_step = False
@@ -158,7 +160,7 @@ for i, kapt_val in enumerate(kapt_vals):
         print(f'  Using final state from previous run as initial condition for kapt: {kapt}')
 
     dtshow = 0.1
-    gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
+    gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
     dtstep, dtsavecb = round_to_nsig(0.00275/gammax,1), round_to_nsig(0.0275/gammax,1)
     t1 = round(100/gammax,0)
     rtol, atol = 1e-8, 1e-10
@@ -172,7 +174,7 @@ for i, kapt_val in enumerate(kapt_vals):
     fl.swmr_mode = True
 
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=sim_t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi)
 
     fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
     dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

@@ -7,7 +7,7 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist
 from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
-from modules.gamma import gam_max
+from modules.gamma_iv import gam_max
 import os
 from functools import partial
 from mpi4py import MPI

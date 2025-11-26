@@ -5,7 +5,7 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma import gam_max, gam_kmin   
+from modules.gamma_iv import gam_max, gam_kmin   
 from modules.gensolver import Gensolver,save_data
 from functools import partial
 import os

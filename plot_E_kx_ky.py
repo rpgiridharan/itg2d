@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist,irft2np,rft2np,irftnp,rftnp
 from modules.gamma import gam_max   
 from mpl_toolkits.mplot3d import Axes3D
+import glob
 
 plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 16
@@ -21,15 +22,22 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_0_36_chi_0_1_H_1_0_em3.h5'
-it = -1
-# it=100
+kapt=1.0
+D=0.1
+pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
+files = glob.glob(pattern)
+if not files:
+    print(f"No file found for kappa_T = {kapt}")
+else:
+    file_name = files[0]
+
 with h5.File(file_name, 'r', swmr=True) as fl:
-    Omk = np.mean(fl['fields/Omk'][-400:],axis=0)
-    Pk = np.mean(fl['fields/Pk'][-400:],axis=0)
-    Ombar = np.mean(fl['zonal/Ombar'][-400:],axis=0)
-    Pbar = np.mean(fl['zonal/Pbar'][-400:],axis=0)
     t = fl['fields/t'][:]
+    nt = len(t)
+    Omk = np.mean(fl['fields/Omk'][-int(nt/2):],axis=0)
+    Pk = np.mean(fl['fields/Pk'][-int(nt/2):],axis=0)
+    Ombar = np.mean(fl['zonal/Ombar'][-int(nt/2):],axis=0)
+    Pbar = np.mean(fl['zonal/Pbar'][-int(nt/2):],axis=0)
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
     Lx = fl['params/Lx'][()]
@@ -39,9 +47,7 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     kapn = fl['params/kapn'][()]
     kapt = fl['params/kapt'][()]
     kapb = fl['params/kapb'][()]
-    chi = fl['params/chi'][()]
-    a = fl['params/a'][()]
-    b = fl['params/b'][()]
+    D = fl['params/D'][()]
     HP = fl['params/HP'][()]
     HPhi = fl['params/HPhi'][()]
 
@@ -49,19 +55,18 @@ Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HP,HPhi,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi,slky)
 t=t*gammax
 
 print('kx shape', kx.shape, 'ky shape', ky.shape)
-nt = len(t)
 print("nt: ", nt)
+
+#%% Functions
 
 def oneover(arr):
     result = np.zeros_like(arr)
     np.divide(1.0, arr, out=result, where=arr != 0)
     return result
-
-#%% Functions
 
 def init_kspace_grid(Nx,Ny,Lx,Ly):
     dkx=2*np.pi/Lx
@@ -103,7 +108,7 @@ surf = ax.plot_surface(kx[roi], ky[roi], Z[roi], cmap='viridis', linewidth=0, an
 ax.set_xlabel('$k_x$')
 ax.set_ylabel('$k_y$')
 ax.set_zlabel('$log(\\mathcal{E}_k)$')
-ax.set_title('$log(\\mathcal{E}_k)(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+ax.set_title('$log(\\mathcal{E}_k)(k_x, k_y)$')
 ax.view_init(elev=30, azim=-60)
 fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10, pad=0.15)
 plt.tight_layout()
@@ -119,7 +124,7 @@ fig = plt.figure()
 plt.pcolormesh(kx[roi], ky[roi], np.log(ek[roi]+np.finfo(float).eps), cmap='viridis', shading='auto')
 plt.xlabel('$k_x$')
 plt.ylabel('$k_y$')
-plt.title('$log(\\mathcal{E}_k)(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+plt.title('$log(\\mathcal{E}_k)(k_x, k_y)$')
 plt.colorbar()
 plt.tight_layout()
 if file_name.endswith('out.h5'):
@@ -135,7 +140,7 @@ fig = plt.figure()
 plt.pcolormesh(kx[roi2], ky[roi2], ek[roi2], cmap='Blues')
 plt.xlabel('$k_x$')
 plt.ylabel('$k_y$')
-plt.title('$\\mathcal{E}_k(k_x, k_y)$; $\\gamma t = %.1f$' % t[it])
+plt.title('$\\mathcal{E}_k(k_x, k_y)$')
 plt.colorbar()
 plt.tight_layout()
 # if file_name.endswith('out.h5'):
