@@ -15,7 +15,7 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.5 # threshold = 0.7
+kapt=0.2 # threshold = 0.7
 kapn=0.2
 kapb=0.02
 
@@ -26,8 +26,8 @@ kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
-
 kmin = float(ky[0])
+
 D=0.1
 H0 = round(10*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)*kmin**4,10)
 HPhi = H0
@@ -36,9 +36,9 @@ HP = H0
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(100/gammax,0) #100/gammax #600/gammax
+t0,t1=0.0,round(600/gammax,0) #100/gammax #600/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=True
+wecontinue=False
 
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
@@ -139,7 +139,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi,gammax=gammax)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

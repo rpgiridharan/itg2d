@@ -17,7 +17,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 file
 
 datadir = 'data/'
-kapt=2.0
+kapt=0.4
 D=0.1
 pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
 files = glob.glob(pattern)

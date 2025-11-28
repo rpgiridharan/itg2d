@@ -5,29 +5,29 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma_iv import gam_max, gam_kmin   
+from modules.gamma import gam_max
 from modules.gensolver import Gensolver,save_data
 from functools import partial
+from modules.basics import format_exp, round_to_nsig
 import os
 
 #%% Parameters
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapn=0.0
-kapt_vals=np.arange(0.3,1.6,0.1)  # Scan over kapt values
-kapb=1.0
-a=9.0/40.0
-b=67.0/160.0
-chi=0.1
+kapt_vals=np.arange(0.2,1.35,0.05)  # Scan over kapt values
+kapn=0.2
+kapb=0.02
+D=0.1
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
-slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
+slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Ny/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-ky0=ky[:Ny/2-1]
+slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
+kmin = float(ky[0])
 
 #%% Functions
 
@@ -37,8 +37,11 @@ irft = partial(original_irft,Npx=Npx,Nx=Nx)
 rft = partial(original_rft,Nx=Nx)
 
 def init_fields(kx,ky,w=10.0,A=1e-6):
-    Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
-    Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
+    # Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
+    # Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
+    Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
+    Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
+    
     Phik[slbar]=0
     Pk[slbar]=0
     zk=np.hstack((Phik,Pk))
@@ -62,9 +65,9 @@ def fsavecb(t,y,flag):
         vx=irft2(-1j*ky*Phik) #ExB flow: x comp
         wx=irft2(-1j*ky*Pk) #diamagnetic flow: x comp
         Q=cp.mean(P*vx,1)
-        R=cp.mean(vy*vx,1)
-        PiP=cp.mean(vy*wx,1)
-        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),R=R.get(),PiP=PiP.get(),t=t)
+        RPhi=cp.mean(vy*vx,1)
+        RP=cp.mean(vy*wx,1)
+        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),RPhi=RPhi.get(),RP=RP.get(),t=t)
     save_data(fl,'last',ext_flag=False,zk=zk.get(),t=t)
 
 def fshowcb(t,y):
@@ -91,11 +94,11 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=1j*ky*(kapb-kapn)*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-chi*kpsq**2*(a*Phik-b*Pk)/fac-sigk*HPhi/(kpsq**3)*Phik
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-chi*kpsq*Pk-sigk*HP/(kpsq**3)*Pk
+    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-D*kpsq*Phik-sigk*HPhi/(kpsq**2)*Phik
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-D*kpsq*Pk-sigk*HP/(kpsq**2)*Pk
 
-    dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
-    dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
+    # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
+    # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
 
     nl_term1_num = 1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg)
     dPhikdt[:] += nl_term1_num / fac
@@ -105,53 +108,28 @@ def rhs_itg(t,y):
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
     return dzkdt.view(dtype=float)
 
-def format_exp(d):
-    dstr = f"{d:.1e}"
-    base, exp = dstr.split("e")
-    base = base.replace(".", "_")
-    if "-" in exp:
-        exp = exp.replace("-", "")
-        prefix = "em"
-    else:
-        prefix = "e"
-    exp = str(int(exp))
-    return f"{base}_{prefix}{exp}"
-
-def round_to_nsig(number, n):
-    """Rounds a number to n significant figures."""
-    if not np.isfinite(number): # Catches NaN, Inf, -Inf
-        return number 
-    if number == 0:
-        return 0.0
-    if n <= 0:
-        raise ValueError("Number of significant figures (n) must be positive.")
-    
-    order_of_magnitude = np.floor(np.log10(np.abs(number)))
-    decimals_to_round = int(n - 1 - order_of_magnitude)
-    
-    return np.round(number, decimals=decimals_to_round)
-
 #%% Run the simulation    
 
 for kapt in kapt_vals:
     kapt=round(kapt,3)
-    H0 = 1e-3*gam_kmin(ky0,kapt)/gam_kmin(ky0,1.2)
+    H0 = round(10*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)*kmin**4,10)
     HPhi=H0
     HP=H0
 
-    output_dir = "data/"
-    os.makedirs(output_dir, exist_ok=True)
-    filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
-
     dtshow=0.1
-    gammax=round(gam_max(ky0,kapt),3)
-    # dtstep,dtsavecb=round(0.00275/gammax,3),round(0.0275/gammax,3)
+    gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
     dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-    t0,t1=0.0,round(100/gammax,0) #3000/gammax
+    t0,t1=0.0,round(600/gammax,0) #100/gammax #600/gammax
     rtol,atol=1e-8,1e-10
-    wecontinue=False
+    wecontinue=True
 
-    print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
+    output_dir = "data_scan/"
+    os.makedirs(output_dir, exist_ok=True)
+    filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+    if not os.path.exists(filename):
+        wecontinue=False
+
+    print(f'D={D}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
 
     if(wecontinue):
         fl=h5.File(filename,'r+',libver='latest')
@@ -163,7 +141,7 @@ for kapt in kapt_vals:
         fl.swmr_mode = True
         zk=init_fields(kx,ky)
         save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-        save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,chi=chi,a=a,b=b,HP=HP,HPhi=HPhi)
+        save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi,gammax=gammax)
 
     fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
     dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

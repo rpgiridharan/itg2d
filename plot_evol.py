@@ -21,8 +21,8 @@ plt.rcParams['axes.linewidth'] = 3
 
 #%% Load the HDF5 file
 comm.Barrier()
-datadir = 'data/'
-kapt=0.2
+datadir = 'data_scan/'
+kapt=0.8
 D=0.1
 pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
 files = glob.glob(pattern)
@@ -145,9 +145,9 @@ if rank == 0:
     entropy_t = np.zeros(nt)
     Ombar_t = np.zeros(nt)
     Q_t = np.zeros(nt)
-    electric_reynolds_work_t = np.zeros(nt)
-    diamagnetic_reynolds_work_t = np.zeros(nt)
-    reynolds_work_t = np.zeros(nt)
+    electric_reynolds_power_t = np.zeros(nt)
+    diamagnetic_reynolds_power_t = np.zeros(nt)
+    reynolds_power_t = np.zeros(nt)
     # Split range(nt) into 'size' sized chunks
     indices = np.array_split(range(nt), size) 
 else:
@@ -164,9 +164,9 @@ else:
     entropy_t = None
     Ombar_t = None
     Q_t = None
-    electric_reynolds_work_t = None
-    diamagnetic_reynolds_work_t = None
-    reynolds_work_t = None
+    electric_reynolds_power_t = None
+    diamagnetic_reynolds_power_t = None
+    reynolds_power_t = None
     indices = None
 
 local_indices = comm.scatter(indices, root=0)
@@ -185,9 +185,9 @@ gen_energy_ZF_local = np.zeros(len(local_indices), dtype=np.float64)
 entropy_local = np.zeros(len(local_indices), dtype=np.float64)
 Ombar_local = np.zeros(len(local_indices), dtype=np.float64)
 Q_local = np.zeros(len(local_indices), dtype=np.float64)
-electric_reynolds_work_local = np.zeros(len(local_indices), dtype=np.float64)
-diamagnetic_reynolds_work_local = np.zeros(len(local_indices), dtype=np.float64)
-reynolds_work_local = np.zeros(len(local_indices), dtype=np.float64)
+electric_reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
+diamagnetic_reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
+reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
 
 with h5.File(file_name, 'r', swmr=True) as fl:
     for idx, i in enumerate(local_indices):
@@ -216,9 +216,9 @@ with h5.File(file_name, 'r', swmr=True) as fl:
         entropy_local[idx] = S(Omk, kpsq)
         Ombar_local[idx] = np.mean(Ombar)
         Q_local[idx] = np.mean(Q)
-        electric_reynolds_work_local[idx] = np.mean(RPhi * Ombar)
-        diamagnetic_reynolds_work_local[idx] = np.mean(RP * Ombar)
-        reynolds_work_local[idx] = np.mean((RPhi + RP) * Ombar)
+        electric_reynolds_power_local[idx] = np.mean(RPhi * Ombar)
+        diamagnetic_reynolds_power_local[idx] = np.mean(RP * Ombar)
+        reynolds_power_local[idx] = np.mean((RPhi + RP) * Ombar)
 
 # Gather results from all processes
 comm.Gather(P2_local, P2_t, root=0)
@@ -234,9 +234,9 @@ comm.Gather(gen_energy_ZF_local, gen_energy_ZF_t, root=0)
 comm.Gather(entropy_local, entropy_t, root=0)
 comm.Gather(Ombar_local, Ombar_t, root=0)
 comm.Gather(Q_local, Q_t, root=0)
-comm.Gather(electric_reynolds_work_local, electric_reynolds_work_t, root=0)
-comm.Gather(diamagnetic_reynolds_work_local, diamagnetic_reynolds_work_t, root=0)
-comm.Gather(reynolds_work_local, reynolds_work_t, root=0)
+comm.Gather(electric_reynolds_power_local, electric_reynolds_power_t, root=0)
+comm.Gather(diamagnetic_reynolds_power_local, diamagnetic_reynolds_power_t, root=0)
+comm.Gather(reynolds_power_local, reynolds_power_t, root=0)
 
 comm.Barrier()
 
@@ -380,19 +380,19 @@ if rank == 0:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=600)
     plt.show()
 
-    # Plot Reynolds work vs time
+    # Plot Reynolds power vs time
     plt.figure(figsize=(8,6))
-    plt.plot(t[:nt], electric_reynolds_work_t, '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
-    plt.plot(t[:nt], diamagnetic_reynolds_work_t, '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
-    plt.plot(t[:nt], reynolds_work_t, '-', label = '$<R \\partial_x \\bar{v}_y>$')
+    plt.plot(t[:nt], electric_reynolds_power_t, '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
+    plt.plot(t[:nt], diamagnetic_reynolds_power_t, '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
+    plt.plot(t[:nt], reynolds_power_t, '-', label = '$<R \\partial_x \\bar{v}_y>$')
     plt.xlabel('$\\gamma t$')
-    plt.ylabel('Reynolds Work')
-    plt.title('Reynolds Work vs $\\gamma t$')
+    plt.ylabel('Reynolds power')
+    plt.title('Reynolds power vs $\\gamma t$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'reynolds_work_vs_t.png',dpi=600)
+        plt.savefig(datadir+'reynolds_power_vs_t.png',dpi=600)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'reynolds_work_vs_t_').replace('.h5', '.png'), dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'reynolds_power_vs_t_').replace('.h5', '.png'), dpi=600)
     plt.show()

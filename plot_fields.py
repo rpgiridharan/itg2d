@@ -9,6 +9,7 @@ from functools import partial
 from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
 from modules.mlsarray import Slicelist
 import cupy as cp
+import glob
 
 plt.rcParams['lines.linewidth'] = 4
 plt.rcParams['font.size'] = 16
@@ -22,7 +23,14 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 #%% Load the HDF5 file
 datadir = 'data_scan/'
-file_name = datadir+'out_kapt_0_8_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+kapt=0.2
+D=0.1
+pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
+files = glob.glob(pattern)
+if not files:
+    print(f"No file found for kappa_T = {kapt}")
+else:
+    file_name = files[0]
 
 it = -1
 with h5.File(file_name, 'r', swmr=True) as fl:

@@ -7,10 +7,11 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist
 from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
-from modules.gamma_iv import gam_max
+from modules.gamma import gam_max
 import os
 from functools import partial
 from mpi4py import MPI
+import glob
 
 # Initialize MPI
 comm = MPI.COMM_WORLD
@@ -23,17 +24,26 @@ plt.rcParams['axes.linewidth'] = 3
 
 #%% Load the HDF5 file
 comm.Barrier()
-datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_H_1_0_em3_case5.h5'
+datadir='data_scan/'
+kapt=0.85
+D=0.1
+pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
+files = glob.glob(pattern)
+if not files:
+    print(f"No file found for kappa_T = {kapt}")
+else:
+    file_name = files[0]
 it = -1
+
 with h5.File(file_name, 'r', swmr=True) as fl:
-    Omk = fl['fields/Omk'][it]
-    Pk = fl['fields/Pk'][it]
-    Ombar = fl['zonal/Ombar'][it]
-    Pbar = fl['zonal/Pbar'][it]
-    PiP = fl['fluxes/PiP'][it]
-    Q = fl['fluxes/Q'][it]
     t = fl['fields/t'][:]
+    nt= len(t)
+    Omk = np.mean(fl['fields/Omk'][-(int(nt/2)):],axis=0)
+    Pk = np.mean(fl['fields/Pk'][-(int(nt/2)):],axis=0)
+    Ombar = np.mean(fl['zonal/Ombar'][-(int(nt/2)):],axis=0)
+    Pbar = np.mean(fl['zonal/Pbar'][-(int(nt/2)):],axis=0)
+    PiP = np.mean(fl['fluxes/RP'][-(int(nt/2)):],axis=0)
+    Q = np.mean(fl['fluxes/Q'][-(int(nt/2)):],axis=0)
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
     Lx = fl['params/Lx'][()]
@@ -43,9 +53,7 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     kapn = fl['params/kapn'][()]
     kapt = fl['params/kapt'][()]
     kapb = fl['params/kapb'][()]
-    chi = fl['params/chi'][()]
-    a = fl['params/a'][()]
-    b = fl['params/b'][()]
+    D = fl['params/D'][()]
     HP = fl['params/HP'][()]
     HPhi = fl['params/HPhi'][()]
 
@@ -53,7 +61,7 @@ Nx,Ny=2*Npx//3,2*Npy//3
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HP,HPhi,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi,slky)
 t=t*gammax
 
 nt = len(t) - (len(t) % size)
@@ -85,20 +93,20 @@ def spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik'):
 
     ak = np.zeros_like(Omk)
     Ak = np.zeros(len(k))
-    if flag=='Pik_Phi':
+    if flag=='Pik_phi':
         ak = np.real(np.conj(Phik)*nltermOmg)
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(kp<=k[i])])
-    elif flag=='Pik_P':
+    elif flag=='Pik_d':
         ak = np.real(np.conj(Phik)*nltermP)
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(kp<=k[i])])
     elif flag=='fk':
-        ak = np.real(np.conj(Phik)*((kapb-kapn)*1j*ky*Phik+(kapn+kapt)*1j*ky*kpsq*Phik+kapb*1j*ky*Pk))
+        ak = np.real(np.conj(Phik)*(-kapn*1j*ky*Phik+(kapn+kapt)*1j*ky*kpsq*Phik+kapb*1j*ky*Pk))
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
     elif flag=='dk':
-        ak = np.real(np.conj(Phik)*(chi*kpsq**2*(a*Phik-b*Pk)+HPhi*(1+kpsq)/kpsq**3*Phik))
+        ak = np.real(np.conj(Phik)*(D*kpsq*Phik+HPhi*(1+kpsq)/kpsq**2*Phik))
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
     return Ak
@@ -111,9 +119,9 @@ delk = ky[1]-ky[0]
 kp = np.sqrt(np.abs(kx)**2 + np.abs(ky)**2)
 k = np.linspace(np.min(kp), np.max(kp), num=int(np.max(kp)/delk))
 
-Pik_Phi = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_Phi')
-Pik_P = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_P')
-Pik = Pik_Phi + Pik_P
+Pik_phi = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_phi')
+Pik_d = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_d')
+Pik = Pik_phi + Pik_d
 
 fk = spectrum(Omk, Pk, kx, ky, k, delk, flag='fk')
 k_max_fk = k[np.argmax(fk)]
@@ -124,13 +132,13 @@ dk = spectrum(Omk, Pk, kx, ky, k, delk, flag='dk')
 
 plt.figure()
 plt.plot(k[1:-1], Pik[1:-1], label = '$\\Pi_{k}$')
-plt.plot(k[1:-1], Pik_Phi[1:-1], label = '$\\Pi_{k,\\phi}$')
-plt.plot(k[1:-1], Pik_P[1:-1], label = '$\\Pi_{k,P}$')
+plt.plot(k[1:-1], Pik_phi[1:-1], label = '$\\Pi_{k,\\phi}$')
+plt.plot(k[1:-1], Pik_d[1:-1], label = '$\\Pi_{k,d}$')
 plt.axvline(x=k_max_fk, color='k', linestyle=':', linewidth=2)
 plt.xscale('log')
 plt.xlabel('$k$')
 plt.ylabel('$\\Pi_k$')
-plt.title('$\\Pi_k$; $t = %.1f$' %t[it])
+plt.title('$\\Pi_k$')
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -146,7 +154,7 @@ plt.axvline(x=k_max_fk, color='k', linestyle=':', linewidth=2, label=f'$k_{{max}
 plt.xscale('log')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{f}_k$')
-plt.title('$\\mathcal{f}_k$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{f}_k$')
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
@@ -161,7 +169,7 @@ plt.plot(k[1:-1], dk[1:-1], label = '$\\mathcal{d}_{k,total}$')
 plt.xscale('log')
 plt.xlabel('$k$')
 plt.ylabel('$\\mathcal{d}_k$')
-plt.title('$\\mathcal{d}_k$; $t = %.1f$' %t[it])
+plt.title('$\\mathcal{d}_k$')
 plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
