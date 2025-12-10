@@ -15,7 +15,7 @@ import os
 
 Npx,Npy=512,512
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.2 # threshold = 0.7
+kapt=0.5 # threshold = 0.7
 kapn=0.2
 kapb=0.02
 
@@ -35,14 +35,14 @@ HP = H0
 
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
-dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+dtstep,dtsavecb=round_to_nsig((512/Npx)*0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(600/gammax,0) #100/gammax #600/gammax
 rtol,atol=1e-8,1e-10
 wecontinue=False
 
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}_{Npx}x{Npy}.h5'
 if not os.path.exists(filename):
     wecontinue=False
 

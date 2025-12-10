@@ -239,9 +239,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'P2_vs_t.png',dpi=600)
+        plt.savefig(datadir+'P2_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot total energy vs time
@@ -256,9 +256,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'energy_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot zonal energy fraction vs time
@@ -271,9 +271,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=600)
+        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot generalized energy vs time
@@ -288,9 +288,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'generalized_energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'generalized_energy_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # # Plot hyd. entropy vs time
@@ -303,9 +303,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=100)
     # plt.show()
 
     # # Plot kinetic energy vs time
@@ -320,9 +320,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'kinetic_energy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'kinetic_energy_vs_t.png',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     # plt.show()
 
     # # Plot enstrophy vs time
@@ -337,9 +337,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'enstrophy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'enstrophy_vs_t.png',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=100)
     # plt.show()
 
     # Plot Q vs time
@@ -352,7 +352,7 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'Q_vs_t.png',dpi=600)
+        plt.savefig(datadir+'Q_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=100)
     plt.show()

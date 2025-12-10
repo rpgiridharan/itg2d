@@ -30,7 +30,7 @@ def linfreq(kx, ky, pars):
     torch.cuda.empty_cache()
     return lam
 
-def gam_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
+def gam_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi):
     if isinstance(ky, cp.ndarray):
         kx = kx.get()
         ky = ky.get()
@@ -44,10 +44,10 @@ def gam_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
         'HPhi':HPhi}
 
     om=linfreq(kx,ky,base_pars)
-    gamky=om.imag[slky,0]
-    return np.max(gamky)
+    gam=om.imag[:,0]
+    return np.max(gam)
 
-def ky_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
+def ky_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi):
     if isinstance(ky, cp.ndarray):
         kx = kx.get()
         ky = ky.get()
@@ -60,6 +60,6 @@ def ky_max(kx, ky, kapn, kapt, kapb, D, HP, HPhi, slky):
         'HP':HP,
         'HPhi':HPhi}
 
-    om=linfreq(base_pars,kx,ky)
-    gamky=om.imag[slky,0]
-    return ky[slky,np.argmax(gamky)]
+    om=linfreq(kx, ky, base_pars)
+    gam=om.imag[:,0]
+    return ky[np.argmax(gam)]

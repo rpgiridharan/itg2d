@@ -15,21 +15,39 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-plt.rcParams['lines.linewidth'] = 4
-plt.rcParams['font.size'] = 16
-plt.rcParams['axes.linewidth'] = 3  
+plt.rcParams.update({
+    'lines.linewidth': 4,
+    'axes.linewidth': 3,
+    'xtick.major.width': 3,
+    'ytick.major.width': 3,
+    'xtick.minor.visible': True,
+    'ytick.minor.visible': True,
+    'xtick.minor.width': 1.5,
+    'ytick.minor.width': 1.5,
+    'savefig.dpi': 100,
+    'font.size': 20,
+    'axes.titlesize': 22,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16
+})
 
 #%% Load the HDF5 file
-comm.Barrier()
-datadir = 'data_scan/'
-kapt=0.8
-D=0.1
-pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
-files = glob.glob(pattern)
-if not files:
-    print(f"No file found for kappa_T = {kapt}")
-else:
-    file_name = files[0]
+
+datadir='data/'
+# file_name = datadir + 'out_kapt_2_0_D_0_01_H_0_0_e0_NZ_1024x1024.h5'
+file_name = datadir + 'out_kapt_2_0_D_0_01_H_1_1_em5_NZ_1024x1024.h5'
+
+# kapt=2.0
+# D=1e-2
+# Np=1024
+# pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*_{Np}x{Np}.h5'
+# files = glob.glob(pattern)
+# if not files:
+#     print(f"No file found for kappa_T = {kapt}")
+# else:
+#     file_name = files[0]
 
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
@@ -54,13 +72,8 @@ with h5.File(file_name, 'r', swmr=True) as fl:
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi)
 t=t*gammax
-
-nt = len(t) - (len(t) % size)
-if rank == 0:
-    print("nt: ", nt)
 
 #%% Functions for energy, enstrophy and entropy
 
@@ -131,42 +144,12 @@ def sigma(Omk, kpsq):
 
 #%% Calculate and plot quantities vs time
 
+# MPI parallelization
+nt = len(t) - (len(t) % size)
 if rank == 0:
-    P2_t = np.zeros(nt)
-    P2_ZF_t = np.zeros(nt)
-    energy_t = np.zeros(nt)
-    energy_ZF_t = np.zeros(nt)
-    kin_energy_t = np.zeros(nt)
-    kin_energy_ZF_t = np.zeros(nt)
-    enstrophy_t = np.zeros(nt)
-    enstrophy_ZF_t = np.zeros(nt)
-    gen_energy_t = np.zeros(nt)
-    gen_energy_ZF_t = np.zeros(nt)
-    entropy_t = np.zeros(nt)
-    Ombar_t = np.zeros(nt)
-    Q_t = np.zeros(nt)
-    electric_reynolds_power_t = np.zeros(nt)
-    diamagnetic_reynolds_power_t = np.zeros(nt)
-    reynolds_power_t = np.zeros(nt)
     # Split range(nt) into 'size' sized chunks
     indices = np.array_split(range(nt), size) 
 else:
-    P2_t = None
-    P2_ZF_t = None
-    energy_t = None
-    energy_ZF_t = None
-    kin_energy_t = None
-    kin_energy_ZF_t = None
-    enstrophy_t = None
-    enstrophy_ZF_t = None
-    gen_energy_t = None
-    gen_energy_ZF_t = None
-    entropy_t = None
-    Ombar_t = None
-    Q_t = None
-    electric_reynolds_power_t = None
-    diamagnetic_reynolds_power_t = None
-    reynolds_power_t = None
     indices = None
 
 local_indices = comm.scatter(indices, root=0)
@@ -221,6 +204,26 @@ with h5.File(file_name, 'r', swmr=True) as fl:
         reynolds_power_local[idx] = np.mean((RPhi + RP) * Ombar)
 
 # Gather results from all processes
+P2_t = P2_ZF_t = energy_t = energy_ZF_t = kin_energy_t = kin_energy_ZF_t = enstrophy_t = enstrophy_ZF_t = gen_energy_t = gen_energy_ZF_t = entropy_t = Ombar_t = Q_t = electric_reynolds_power_t = diamagnetic_reynolds_power_t = reynolds_power_t = None
+
+if rank == 0:
+    P2_t = np.zeros(nt)
+    P2_ZF_t = np.zeros(nt)
+    energy_t = np.zeros(nt)
+    energy_ZF_t = np.zeros(nt)
+    kin_energy_t = np.zeros(nt)
+    kin_energy_ZF_t = np.zeros(nt)
+    enstrophy_t = np.zeros(nt)
+    enstrophy_ZF_t = np.zeros(nt)
+    gen_energy_t = np.zeros(nt)
+    gen_energy_ZF_t = np.zeros(nt)
+    entropy_t = np.zeros(nt)
+    Ombar_t = np.zeros(nt)
+    Q_t = np.zeros(nt)
+    electric_reynolds_power_t = np.zeros(nt)
+    diamagnetic_reynolds_power_t = np.zeros(nt)
+    reynolds_power_t = np.zeros(nt)
+
 comm.Gather(P2_local, P2_t, root=0)
 comm.Gather(P2_ZF_local, P2_ZF_t, root=0)
 comm.Gather(energy_local, energy_t, root=0)
@@ -238,10 +241,10 @@ comm.Gather(electric_reynolds_power_local, electric_reynolds_power_t, root=0)
 comm.Gather(diamagnetic_reynolds_power_local, diamagnetic_reynolds_power_t, root=0)
 comm.Gather(reynolds_power_local, reynolds_power_t, root=0)
 
-comm.Barrier()
-
 if rank == 0:
     print("Gathered")
+
+#%% Calculate and plot quantities vs time
 
 if rank == 0:
     P2_turb_t = P2_t - P2_ZF_t
@@ -262,9 +265,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'P2_vs_t.png',dpi=600)
+        plt.savefig(datadir+'P2_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot total energy vs time
@@ -279,9 +282,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'energy_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot zonal energy fraction vs time
@@ -294,9 +297,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=600)
+        plt.savefig(datadir+'zonal_energy_fraction_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # # Plot kinetic energy vs time
@@ -311,9 +314,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'kinetic_energy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'kinetic_energy_vs_t.pdf',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
     # plt.show()
 
     # # Plot enstrophy vs time
@@ -328,9 +331,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'enstrophy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'enstrophy_vs_t.pdf',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.pdf'), dpi=100)
     # plt.show()
 
     # Plot generalized energy vs time
@@ -345,9 +348,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'generalized_energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'generalized_energy_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # # Plot hyd. entropy vs time
@@ -360,9 +363,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'entropy_vs_t.pdf',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.pdf'), dpi=100)
     # plt.show()
 
     # Plot Q vs time
@@ -375,9 +378,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'Q_vs_t.png',dpi=600)
+        plt.savefig(datadir+'Q_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     # Plot Reynolds power vs time
@@ -392,7 +395,24 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'reynolds_power_vs_t.png',dpi=600)
+        plt.savefig(datadir+'reynolds_power_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'reynolds_power_vs_t_').replace('.h5', '.png'), dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'reynolds_power_vs_t_').replace('.h5', '.pdf'), dpi=100)
+    plt.show()
+
+    # Plot Cumulative Reynolds power vs time
+    plt.figure(figsize=(8,6))
+    plt.plot(t[:nt], np.cumsum(electric_reynolds_power_t), '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
+    plt.plot(t[:nt], np.cumsum(diamagnetic_reynolds_power_t), '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
+    plt.plot(t[:nt], np.cumsum(reynolds_power_t), '-', label = '$<R \\partial_x \\bar{v}_y>$')
+    plt.xlabel('$\\gamma t$')
+    plt.ylabel('Cumulative Reynolds power')
+    plt.title('Cumulative Reynolds power vs $\\gamma t$')
+    plt.grid()
+    plt.legend()
+    plt.tight_layout()
+    # if file_name.endswith('out.h5'):
+    #     plt.savefig(datadir+'cum_reynolds_power_vs_t.pdf',dpi=100)
+    # else:
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'cum_reynolds_power_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()

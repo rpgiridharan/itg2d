@@ -32,9 +32,14 @@ plt.rcParams['ytick.minor.width'] = 1.5
 datadir = "data/"
 # datadir = "data_2d3c/"
 # datadir="data_D_sweep/"
-kapt=0.2
-D=0.1
-pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
+
+# infl = datadir + 'out_kapt_0_2_D_0_001_H_7_9_em5_NZ_1024x1024.h5'
+# infl = datadir + 'out_kapt_2_0_D_0_001_H_1_1_em4_NZ_1024x1024.h5'
+
+kapt=2.0
+D=1e-3
+Np=1024
+pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*_{Np}x{Np}.h5'
 files = glob.glob(pattern)
 if not files:
     print(f"No file found for kappa_T = {kapt}")

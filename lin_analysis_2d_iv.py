@@ -27,8 +27,8 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,D,HPhi,HP = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','D','HPhi','HP']
+    kapn,kapt,kapb,tau,chi,a,b,HPhi,HP = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','HPhi','HP']
     ]
     kpsq = kx**2 + ky**2
     kpsq = torch.where(kpsq==0, 1e-10, kpsq)
@@ -37,10 +37,10 @@ def init_linmats(pars,kx,ky):
     sigk = ky>0
     fac=tau*sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*D*kpsq-1j*sigk*HP/kpsq**2
+    lm[:,:,0,0]=-1j*chi*kpsq-1j*sigk*HP/kpsq**3
     lm[:,:,0,1]=(kapn+kapt)*ky
-    lm[:,:,1,0]=-kapb*ky/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-1j*D*kpsq)/fac-1j*sigk*HPhi/kpsq**2
+    lm[:,:,1,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-1j*chi*kpsq**2*a)/fac-1j*sigk*HPhi/kpsq**3
 
     return lm
 
@@ -61,16 +61,20 @@ Npx,Npy=512,512
 Nx,Ny=2*int(Npx/3),2*int(Npy/3)
 Lx,Ly=32*np.pi,32*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
-kapt=2.0 #rho_i/L_T >0.2
+kapt=0.2 #rho_i/L_T
 kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
-D=0.1
-H0=1e-5 #0*1e-3
+chi=0.1
+a=9.0/40.0
+b=67.0/160.0
+H0=0*5e-3
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
       'tau':1.,#Ti/Te
-      'D':D,
+      'chi':chi,
+      'a':a,
+      'b':b,
       'HPhi':H0,
       'HP':H0}
 
@@ -100,13 +104,13 @@ plt.figure(figsize=(9.71,6))
 slx=slice(None,int(Nx/8),int((Nx/8)/5)) #7 kx points
 plt.plot(ky[slx,:int(Ny/4)].T,gam[slx,:int(Ny/4)].T,'.-')
 plt.axhline(0,color='k', linestyle='--', linewidth=1)
-# plt.plot(ky[0,:int(Ny)],-D*ky[0,:int(Ny)]**2,'k--')
-plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-D k_y^2$'])
+# plt.plot(ky[0,:int(Ny)],-a*chi*ky[0,:int(Ny)]**2,'k--')
+plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-a\\chi k_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{xi},k_y)$ vs $k_x$ for diff $k_x$')
 plt.tight_layout()
-plt.savefig('data_linear/gam_vs_ky_kxvals_itg2d.png',dpi=600)
+plt.savefig('data_linear/gam_vs_ky_kxvals_itg2d.pdf',dpi=600)
 plt.show()
 
 kymax_kx= np.take_along_axis(ky[:int(Nx/4),:],np.argmax(gam[:int(Nx/4),:],axis=1,keepdims=True),axis=1).squeeze(axis=1)
@@ -116,7 +120,7 @@ plt.xlabel('$k_x$')
 plt.ylabel('$k_{y,max}$')
 plt.title('$k_{y,max}$ vs $k_x$')
 plt.tight_layout()
-plt.savefig('data_linear/ky_vs_kx_itg2d.png',dpi=600)
+plt.savefig('data_linear/ky_vs_kx_itg2d.pdf',dpi=600)
 plt.show()
 
 #%% colormesh of gam and omr
@@ -131,7 +135,7 @@ plt.ylabel('$k_y$')
 plt.title('$\\gamma(k_x,k_y)$')
 plt.colorbar()
 plt.tight_layout()
-plt.savefig('data_linear/gamkxky_itg2d.png',dpi=600)
+plt.savefig('data_linear/gamkxky_itg2d.pdf',dpi=600)
 plt.show()
 
 # plt.figure()
@@ -141,5 +145,5 @@ plt.show()
 # plt.title('$\\omega_r(k_x,k_y) = \\omega_r(k_x,k_y)$')
 # plt.colorbar()
 # plt.tight_layout()
-# plt.savefig('data_linear/omrkxky_itg2d.png',dpi=600)
+# plt.savefig('data_linear/omrkxky_itg2d.pdf',dpi=600)
 # plt.show()

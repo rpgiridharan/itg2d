@@ -161,9 +161,9 @@ plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'pressure_spectrum.png', dpi=600)
+    plt.savefig(datadir+'pressure_spectrum.png', dpi=100)
 else:
-    plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=100)
 plt.show()
 
 Ek = ES(Omk, kp, k, dk)
@@ -182,9 +182,9 @@ plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'energy_spectrum.png', dpi=600)
+    plt.savefig(datadir+'energy_spectrum.png', dpi=100)
 else:
-    plt.savefig(datadir+"energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=100)
 plt.show()
 
 Kk = KS(Omk, kp, k, dk)
@@ -203,9 +203,9 @@ plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'kinetic_energy_spectrum.png', dpi=600)
+    plt.savefig(datadir+'kinetic_energy_spectrum.png', dpi=100)
 else:
-    plt.savefig(datadir+"kinetic_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"kinetic_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=100)
 plt.show()
 
 Wk = WS(Omk, kp, k, dk)
@@ -224,7 +224,7 @@ plt.legend()
 plt.grid(which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'enstrophy_spectrum.png', dpi=600)
+    plt.savefig(datadir+'enstrophy_spectrum.png', dpi=100)
 else:
-    plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=100)
 plt.show()

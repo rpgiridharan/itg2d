@@ -54,9 +54,9 @@ plt.legend()
 symmetrize_y_axis(plt.gca())
 plt.tight_layout(pad=0.5)  # Reduce padding
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'Pi.png', dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+'Pi.png', dpi=100, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Pi_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Pi_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 
 plt.figure(figsize=(8, 5))  # Set specific figure size
 plt.plot(x[:,0],Q,label='$\\mathcal{Q}$')
@@ -70,9 +70,9 @@ plt.legend()
 # symmetrize_y_axis(plt.gca())
 plt.tight_layout(pad=0.5)  # Reduce padding
 if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'Q.png', dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+'Q.png', dpi=100, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # %%

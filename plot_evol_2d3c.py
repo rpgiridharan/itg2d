@@ -14,15 +14,29 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-plt.rcParams['lines.linewidth'] = 4
-plt.rcParams['font.size'] = 16
-plt.rcParams['axes.linewidth'] = 3  
+plt.rcParams.update({
+    'lines.linewidth': 4,
+    'axes.linewidth': 3,
+    'xtick.major.width': 3,
+    'ytick.major.width': 3,
+    'xtick.minor.visible': True,
+    'ytick.minor.visible': True,
+    'xtick.minor.width': 1.5,
+    'ytick.minor.width': 1.5,
+    'savefig.dpi': 100,
+    'font.size': 20,
+    'axes.titlesize': 22,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16
+})
 
 #%% Load the HDF5 file
 
 comm.Barrier()
 datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_1_2_chi_0_1_kz_0_05.h5'
+file_name = datadir+'out_2d3c_kapt_2_0_D_0_05_kz_0_0127.h5'
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
     Pk = fl['fields/Pk'][0]
@@ -38,20 +52,17 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     kapn = fl['params/kapn'][()]
     kapt = fl['params/kapt'][()]
     kapb = fl['params/kapb'][()]
-    chi = fl['params/chi'][()]
-    a = fl['params/a'][()]
-    b = fl['params/b'][()]
-    s = fl['params/s'][()]
+    if 'D' in fl['params']:
+        D = fl['params/D'][()]
+    elif 'chi' in fl['params']:
+        chi = fl['params/chi'][()]
+        D = chi
     kz = fl['params/kz'][()]
-    HP = fl['params/HP'][()]
-    HPhi = fl['params/HPhi'][()]
-    HV = fl['params/HV'][()]
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,kz)
 t=t*gammax
 
 nt = len(t) - (len(t) % size)
@@ -246,9 +257,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'P2_vs_t.png',dpi=600)
+        plt.savefig(datadir+'P2_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot variance(V) vs time
@@ -263,9 +274,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'V2_vs_t.png',dpi=600)
+        plt.savefig(datadir+'V2_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'V2_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'V2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot kinetic energy vs time
@@ -280,9 +291,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'energy_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot zonal energy fraction vs time
@@ -295,9 +306,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=600)
+        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot kinetic energy vs time
@@ -312,9 +323,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'kinetic_energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'kinetic_energy_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot enstrophy vs time
@@ -329,9 +340,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'enstrophy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'enstrophy_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=100)
     plt.show()
 
     # Plot generalized energy vs time
@@ -346,9 +357,9 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'generalized_energy_vs_t.png',dpi=600)
+        plt.savefig(datadir+'generalized_energy_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # # Plot entropy vs time
@@ -361,9 +372,9 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=600)
+    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=600)
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=100)
     # plt.show()
 
     # Plot Q vs time
@@ -376,7 +387,7 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'Q_vs_t.png',dpi=600)
+        plt.savefig(datadir+'Q_vs_t.png',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=600)
+        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=100)
     plt.show()

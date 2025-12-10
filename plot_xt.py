@@ -16,8 +16,8 @@ plt.rcParams['axes.linewidth'] = 3
 
 #%% Load the HDF5 file
 
-datadir = 'data/'
-kapt=0.4
+datadir = 'data_scan/'
+kapt=0.2
 D=0.1
 pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
 files = glob.glob(pattern)
@@ -49,8 +49,7 @@ with h5.File(file_name, 'r', swmr=True) as fl:
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi)
 t=t*gammax
 nt = len(t)
 
@@ -125,7 +124,7 @@ plt.tight_layout()
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'R_and_P_xt_plots.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'R_and_P_xt_plots_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'R_and_P_xt_plots_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -138,7 +137,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'vbar_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'vbar_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'vbar_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5)) 
@@ -151,7 +150,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'Ombar_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Ombar_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Ombar_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -164,7 +163,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'RPhi_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'RPhi_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'RPhi_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -177,7 +176,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'RP_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'RP_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'RP_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -190,7 +189,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'R_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'R_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'R_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -203,7 +202,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'RP_frac_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'RP_frac_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'RP_frac_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -216,7 +215,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'PPhi_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PPhi_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PPhi_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -229,7 +228,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'PP_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PP_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PP_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -242,7 +241,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'P_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 plt.figure(figsize=(6, 5))  
@@ -255,7 +254,7 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'PP_frac_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PP_frac_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'PP_frac_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 Q_lim = np.mean(np.abs(Q_t))
@@ -269,5 +268,5 @@ plt.tight_layout(pad=0.5)
 if file_name.endswith('out.h5'):
     plt.savefig(datadir+'Q_xt.png', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_xt_').replace('.h5', '.png'), dpi=600, bbox_inches='tight')
+    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 # plt.show()

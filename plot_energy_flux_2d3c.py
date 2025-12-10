@@ -7,10 +7,12 @@ matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
 from modules.mlsarray import MLSarray,Slicelist
 from modules.mlsarray import irft2np as original_irft2np, rft2np as original_rft2np, irftnp as original_irftnp, rftnp as original_rftnp
-from modules.gamma_2d3c import gam_max
+from modules.gamma_2d3c import gam_max, ky_max
 import os
 from functools import partial
 from mpi4py import MPI
+import glob
+from scipy.stats import gaussian_kde
 
 # Initialize MPI
 comm = MPI.COMM_WORLD
@@ -22,18 +24,21 @@ plt.rcParams['font.size'] = 16
 plt.rcParams['axes.linewidth'] = 3  
 
 #%% Load the HDF5 file
-comm.Barrier()
-datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_0_36_chi_0_1_kz_0_1.h5'
-it = -1
+
+datadir='data_2d3c/'
+file_name = datadir + 'out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5'
+kapt=0.3
+# chi=0.1
+# pattern = datadir + f'out_2d3c_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}*.h5'
+# files = glob.glob(pattern)
+# if not files:
+#     print(f"No file found for kappa_T = {kapt}")
+# else:
+#     file_name = files[0]
+
 with h5.File(file_name, 'r', swmr=True) as fl:
-    Omk = fl['fields/Omk'][it]
-    Pk = fl['fields/Pk'][it]
-    Ombar = fl['zonal/Ombar'][it]
-    Pbar = fl['zonal/Pbar'][it]
-    PiP = fl['fluxes/PiP'][it]
-    Q = fl['fluxes/Q'][it]
     t = fl['fields/t'][:]
+    nt= len(t)
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
     Lx = fl['params/Lx'][()]
@@ -43,25 +48,18 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     kapn = fl['params/kapn'][()]
     kapt = fl['params/kapt'][()]
     kapb = fl['params/kapb'][()]
-    chi = fl['params/chi'][()]
-    a = fl['params/a'][()]
-    b = fl['params/b'][()]
-    s = fl['params/s'][()]
+    D = fl['params/chi'][()]
     kz = fl['params/kz'][()]
     HP = fl['params/HP'][()]
-    HPhi = fl['params/HPhi'][()]
     HV = fl['params/HV'][()]
+    HPhi = fl['params/HPhi'][()]
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-slky=np.s_[1:int(Ny/2)-1]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,kz,HPhi,HP,HV,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,kz,HP,HV,HPhi)
 t=t*gammax
-
-nt = len(t) - (len(t) % size)
-if rank == 0:
-    print("nt: ", nt)
+k_lin = ky_max(kx,ky,kapn,kapt,kapb,D,kz,HP,HV,HPhi)
 
 #%% Functions for energy, enstrophy and entropy
 
@@ -83,93 +81,197 @@ def spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik'):
     dxnOmg=irft2np(1j*kx*fac*Phik)
     dynOmg=irft2np(1j*ky*fac*Phik)
 
-    nltermOmg=-kx**2*(rft2np(dxphi*dyP))+kx*ky*(rft2np(dxphi*dxP))-kx*ky*(rft2np(dyphi*dyP))+ky**2*(rft2np(dyphi*dxP))
-    nltermP=rft2np(dxphi*dynOmg-dyphi*dxnOmg)
+    nltermOmg=rft2np(dxphi*dynOmg-dyphi*dxnOmg)
+    nltermP=-kx**2*(rft2np(dxphi*dyP))+kx*ky*(rft2np(dxphi*dxP))-kx*ky*(rft2np(dyphi*dyP))+ky**2*(rft2np(dyphi*dxP))
 
     ak = np.zeros_like(Omk)
     Ak = np.zeros(len(k))
-    if flag=='Pik_Phi':
+    if flag=='Pik_phi':
         ak = np.real(np.conj(Phik)*nltermOmg)
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(kp<=k[i])])
-    elif flag=='Pik_P':
+    elif flag=='Pik_d':
         ak = np.real(np.conj(Phik)*nltermP)
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(kp<=k[i])])
     elif flag=='fk':
-        ak = np.real(np.conj(Phik)*((kapb-kapn)*1j*ky*Phik+(kapn+kapt)*1j*ky*kpsq*Phik+kapb*1j*ky*Pk))
+        ak = np.real(np.conj(Phik)*(-kapn*1j*ky*Phik+(kapn+kapt)*1j*ky*kpsq*Phik+kapb*1j*ky*Pk))
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
     elif flag=='dk':
-        ak = np.real(np.conj(Phik)*(chi*kpsq**2*(a*Phik-b*Pk)+HPhi*(1+kpsq)/kpsq**3*Phik))
+        ak = np.real(np.conj(Phik)*(D*kpsq*Phik+HPhi*(1+kpsq)/kpsq**2*Phik))
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
     return Ak
     
 #%% Calculate quantities
 
-print(Omk.shape)
-
 delk = ky[1]-ky[0]
 kp = np.sqrt(np.abs(kx)**2 + np.abs(ky)**2)
 k = np.linspace(np.min(kp), np.max(kp), num=int(np.max(kp)/delk))
 
-Pik_Phi = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_Phi')
-Pik_P = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_P')
-Pik = Pik_Phi + Pik_P
+# MPI parallelization
 
-fk = spectrum(Omk, Pk, kx, ky, k, delk, flag='fk')
-k_max_fk = k[np.argmax(fk)]
+nt2 = int(nt/2)
+nt2 = nt2 - (nt2 % size)
+if rank == 0:
+    indices = np.array_split(range(nt2), size)
+else:
+    indices = None
 
-dk = spectrum(Omk, Pk, kx, ky, k, delk, flag='dk')
+local_indices = comm.scatter(indices, root=0)
+count_local = len(local_indices)
+
+Pik_phi_t_local = np.zeros((count_local, len(k)))
+Pik_d_t_local = np.zeros((count_local, len(k)))
+fk_t_local = np.zeros((count_local, len(k)))
+dk_t_local = np.zeros((count_local, len(k)))
+
+with h5.File(file_name, 'r', swmr=True) as fl:
+    for idx, it in enumerate(local_indices):
+        print(f"Rank {rank} processing time step {it}")
+        Omk = fl['fields/Omk'][it+nt//2]
+        Pk = fl['fields/Pk'][it+nt//2]
+        Pik_phi_t_local[idx,:] = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_phi')
+        Pik_d_t_local[idx,:] = spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik_d')
+        fk_t_local[idx,:] = spectrum(Omk, Pk, kx, ky, k, delk, flag='fk')
+        dk_t_local[idx,:] = spectrum(Omk, Pk, kx, ky, k, delk, flag='dk')
+
+# Gather results at root
+Pik_phi_t = None
+Pik_d_t = None
+fk_t = None
+dk_t = None
+if rank == 0:
+    Pik_phi_t = np.zeros((nt2, len(k)))
+    Pik_d_t = np.zeros((nt2, len(k)))
+    fk_t = np.zeros((nt2, len(k)))
+    dk_t = np.zeros((nt2, len(k)))
+
+comm.Gather(Pik_phi_t_local, Pik_phi_t, root=0)
+comm.Gather(Pik_d_t_local, Pik_d_t, root=0)
+comm.Gather(fk_t_local, fk_t, root=0)
+comm.Gather(dk_t_local, dk_t, root=0)
+
+if rank == 0:
+    Pik_phi = np.mean(Pik_phi_t, axis=0)
+    Pik_d = np.mean(Pik_d_t, axis=0)
+    fk = np.mean(fk_t, axis=0)
+    dk = np.mean(dk_t, axis=0)
+    Pik = Pik_phi + Pik_d
+    idx_k = np.argmax(fk)
+    k_f = k[idx_k]
+
+    # PDF of fluxes at k_f
+    Pik_phi_series = Pik_phi_t[:, idx_k]
+    Pik_d_series = Pik_d_t[:, idx_k]
+    Pik_series = Pik_phi_series + Pik_d_series
+
+    Pik_phi_series_norm = (Pik_phi_series - np.mean(Pik_phi_series)) / np.std(Pik_phi_series)
+    Pik_d_series_norm = (Pik_d_series - np.mean(Pik_d_series)) / np.std(Pik_d_series)
+    Pik_series_norm = (Pik_series - np.mean(Pik_series)) / np.std(Pik_series)
+
+    # PDF of fluxes at k=kymax
+    idx_k = np.argmin(np.abs(k - k_lin))
+    Pik_phi_series_max = Pik_phi_t[:, idx_k]
+    Pik_d_series_max = Pik_d_t[:, idx_k]
+    Pik_series_max = Pik_phi_series_max + Pik_d_series_max
+
+    Pik_phi_series_max_norm = (Pik_phi_series_max - np.mean(Pik_phi_series_max)) / np.std(Pik_phi_series_max)
+    Pik_d_series_max_norm = (Pik_d_series_max - np.mean(Pik_d_series_max)) / np.std(Pik_d_series_max)
+    Pik_series_max_norm = (Pik_series_max - np.mean(Pik_series_max)) / np.std(Pik_series_max)
 
 #%% Plots
+if rank == 0:
+    plt.figure()
+    plt.plot(k[1:-1], Pik[1:-1], label = '$\\Pi_{k}$')
+    plt.plot(k[1:-1], Pik_phi[1:-1], label = '$\\Pi_{k,\\phi}$')
+    plt.plot(k[1:-1], Pik_d[1:-1], label = '$\\Pi_{k,d}$')
+    plt.axhline(0,color='k', linestyle='-', linewidth=1)
+    plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
+    plt.axvline(x=k_lin, color='k', linestyle='-.', linewidth=2, label=f'$k_{{lin}}={k_lin:.2f}$')
+    plt.xscale('log')
+    plt.xlabel('$k$')
+    plt.ylabel('$\\Pi_k$')
+    plt.title(f'$\\Pi_k$ for $\\kappa_T={kapt:.2f}$')
+    plt.legend()
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    if file_name.endswith('out.h5'):
+        plt.savefig(datadir+'energy_flux.pdf', dpi=100)
+    else:
+        plt.savefig(datadir+"energy_flux_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+    plt.show()
 
-plt.figure()
-plt.plot(k[1:-1], Pik[1:-1], label = '$\\Pi_{k}$')
-plt.plot(k[1:-1], Pik_Phi[1:-1], label = '$\\Pi_{k,\\phi}$')
-plt.plot(k[1:-1], Pik_P[1:-1], label = '$\\Pi_{k,P}$')
-plt.axvline(x=k_max_fk, color='k', linestyle=':', linewidth=2)
-plt.xscale('log')
-plt.xlabel('$k$')
-plt.ylabel('$\\Pi_k$')
-plt.title('$\\Pi_k$; $t = %.1f$' %t[it])
-plt.legend()
-plt.grid(which='both', linestyle='--', linewidth=0.5)
-plt.tight_layout()
-if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'energy_flux.png', dpi=600)
-else:
-    plt.savefig(datadir+"energy_flux_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
-plt.show()
+    plt.figure()
+    plt.plot(k[1:-1], fk[1:-1], label = '$\\mathcal{f}_{k,total}$')
+    plt.axhline(0,color='k', linestyle='-', linewidth=1)
+    plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
+    plt.xscale('log')
+    plt.xlabel('$k$')
+    plt.ylabel('$\\mathcal{f}_k$')
+    plt.title(f'$\\mathcal{{f}}_k$ for $\\kappa_T={kapt:.2f}$')
+    plt.legend()
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    if file_name.endswith('out.h5'):
+        plt.savefig(datadir+'energy_injection.pdf', dpi=100)
+    else:
+        plt.savefig(datadir+"energy_injection_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+    plt.show()
 
-plt.figure()
-plt.plot(k[1:-1], fk[1:-1], label = '$\\mathcal{f}_{k,total}$')
-plt.axvline(x=k_max_fk, color='k', linestyle=':', linewidth=2, label=f'$k_{{max}}={k_max_fk:.2f}$')
-plt.xscale('log')
-plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{f}_k$')
-plt.title('$\\mathcal{f}_k$; $t = %.1f$' %t[it])
-plt.legend()
-plt.grid(which='both', linestyle='--', linewidth=0.5)
-plt.tight_layout()
-if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'energy_injection.png', dpi=600)
-else:
-    plt.savefig(datadir+"energy_injection_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
-plt.show()
+    plt.figure()
+    plt.plot(k[1:-1], dk[1:-1], label = '$\\mathcal{d}_{k,total}$')
+    plt.axhline(0,color='k', linestyle='-', linewidth=1)
+    plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
+    plt.xscale('log')
+    plt.xlabel('$k$')
+    plt.ylabel('$\\mathcal{d}_k$')
+    plt.title(f'$\\mathcal{{d}}_k$ for $\\kappa_T={kapt:.2f}$')
+    plt.legend()
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    if file_name.endswith('out.h5'):
+        plt.savefig(datadir+'dissipation.pdf', dpi=100)
+    else:
+        plt.savefig(datadir+"dissipation_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+    plt.show()
 
-plt.figure()
-plt.plot(k[1:-1], dk[1:-1], label = '$\\mathcal{d}_{k,total}$')
-plt.xscale('log')
-plt.xlabel('$k$')
-plt.ylabel('$\\mathcal{d}_k$')
-plt.title('$\\mathcal{d}_k$; $t = %.1f$' %t[it])
-plt.legend()
-plt.grid(which='both', linestyle='--', linewidth=0.5)
-plt.tight_layout()
-if file_name.endswith('out.h5'):
-    plt.savefig(datadir+'dissipation.png', dpi=600)
-else:
-    plt.savefig(datadir+"dissipation_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
-plt.show()
+    plt.figure()
+    for series, label in zip([Pik_series_norm, Pik_phi_series_norm, Pik_d_series_norm], 
+                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$']):
+        kde = gaussian_kde(series)
+        x_range = np.linspace(series.min(), series.max(), 200)
+        plt.hist(series, bins=50, density=True, alpha=0.3, color='gray')
+        plt.plot(x_range, kde(x_range), label=label)
+    plt.xlabel('$\\frac{\\left(\\Pi_k-<\\Pi_k>\\right)}{\\sigma}$')
+    plt.ylabel('PDF')
+    plt.title(f'PDF of $\\Pi_k$ at $k_f={k_f:.2f}$')
+    plt.legend()
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    if file_name.endswith('out.h5'):
+        plt.savefig(datadir+'energy_flux_pdf_.pdf', dpi=100)
+    else:
+        plt.savefig(datadir+"energy_flux_pdf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+    plt.show()
+
+    plt.figure()
+    for series, label in zip([Pik_series_max_norm, Pik_phi_series_max_norm, Pik_d_series_max_norm], 
+                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$']):
+        kde = gaussian_kde(series)
+        x_range = np.linspace(series.min(), series.max(), 200)
+        plt.hist(series, bins=50, density=True, alpha=0.3, color='gray')
+        plt.plot(x_range, kde(x_range), label=label)
+    plt.xlabel('$\\frac{\\left(\\Pi_k-<\\Pi_k>\\right)}{\\sigma}$')
+    plt.ylabel('PDF')
+    plt.title(f'PDF of $\\Pi_k$ at $k_{{lin}}={k_lin:.2f}$')
+    plt.legend()
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    if file_name.endswith('out.h5'):
+        plt.savefig(datadir+'energy_flux_kymax_pdf_.pdf', dpi=100)
+    else:
+        plt.savefig(datadir+"energy_flux_kymax_pdf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+    plt.show()
+

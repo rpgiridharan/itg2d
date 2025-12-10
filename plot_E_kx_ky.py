@@ -21,8 +21,8 @@ plt.rcParams['xtick.minor.width'] = 1.5
 plt.rcParams['ytick.minor.width'] = 1.5 
 
 #%% Load the HDF5 file
-datadir = 'data/'
-kapt=1.0
+datadir = 'data_scan/'
+kapt=0.2
 D=0.1
 pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
 files = glob.glob(pattern)

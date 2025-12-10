@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import torch 
 
 plt.rcParams['lines.linewidth'] = 4
-plt.rcParams['font.size'] = 16
 plt.rcParams['axes.linewidth'] = 3  
 plt.rcParams['xtick.major.width'] = 3
 plt.rcParams['ytick.major.width'] = 3
@@ -13,7 +12,15 @@ plt.rcParams['xtick.minor.visible'] = True
 plt.rcParams['ytick.minor.visible'] = True
 plt.rcParams['xtick.minor.width'] = 1.5 
 plt.rcParams['ytick.minor.width'] = 1.5 
-
+plt.rcParams['savefig.dpi'] = 100
+plt.rcParams.update({
+    "font.size": 22,          # default text
+    "axes.titlesize": 30,     # figure title
+    "axes.labelsize": 26,     # x/y labels
+    "xtick.labelsize": 20,
+    "ytick.labelsize": 20,
+    "legend.fontsize": 22
+})
 
 #%% Define Functions
 
@@ -27,20 +34,19 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,chi,a,b,HPhi,HP = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','chi','a','b','HPhi','HP']
+    kapn,kapt,kapb,tau,D,HPhi,HP = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','D','HPhi','HP']
     ]
     kpsq = kx**2 + ky**2
     kpsq = torch.where(kpsq==0, 1e-10, kpsq)
-    iv=1
         
     sigk = ky>0
     fac=tau*sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*chi*kpsq-1j*sigk*HP/kpsq**3
+    lm[:,:,0,0]=-1j*sigk*D*kpsq-1j*sigk*HP/kpsq**2
     lm[:,:,0,1]=(kapn+kapt)*ky
-    lm[:,:,1,0]=(-kapb*ky+1j*chi*kpsq**2*b)/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq-1j*chi*kpsq**2*a)/fac-1j*sigk*HPhi/kpsq**3
+    lm[:,:,1,0]=-kapb*ky/fac
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*HPhi/kpsq**2
 
     return lm
 
@@ -57,24 +63,21 @@ def linfreq(pars, kx, ky):
 
 #%% Initialize
 
-Npx,Npy=512,512
+Npx,Npy=4096,4096
 Nx,Ny=2*int(Npx/3),2*int(Npy/3)
-Lx,Ly=32*np.pi,32*np.pi
+# Lx,Ly=32*np.pi,32*np.pi #sim for 512x512
+Lx,Ly=256*np.pi,256*np.pi 
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
-kapt=0.2 #rho_i/L_T
+kapt=0.4 #rho_i/L_T >0.2
 kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
-chi=0.1
-a=9.0/40.0
-b=67.0/160.0
-H0=0*5e-3
+D=1e-3 #0.1
+H0= 0*4.2581e-06 # 4.2581e-06 for kapt=0.5
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
       'tau':1.,#Ti/Te
-      'chi':chi,
-      'a':a,
-      'b':b,
+      'D':D,
       'HPhi':H0,
       'HP':H0}
 
@@ -83,10 +86,11 @@ base_pars={'kapn':kapn,
 om=linfreq(base_pars,kx,ky)
 omr=om.real[:,:,0]
 gam=om.imag[:,:,0]
+gammax=np.max(gam)
 
-#%% Compute max quantities
+#%% Compute quantities
 
-print('gammax:',np.max(gam),'1/gammax:',1/np.max(gam))
+print('gammax:',gammax,'1/gammax:',1/gammax)
 print('max index:', np.unravel_index(np.argmax(gam[:,:]), gam.shape))
 print('max kx:', kx[np.unravel_index(np.argmax(gam[:,:]), gam.shape)])
 print('max ky:', ky[np.unravel_index(np.argmax(gam[:,:]), gam.shape)])
@@ -94,48 +98,80 @@ print('max ky:', ky[np.unravel_index(np.argmax(gam[:,:]), gam.shape)])
 ind_kxmax = np.argmax(gam, axis=0,keepdims=True) 
 gam_kxmax = np.take_along_axis(gam, ind_kxmax, axis=0).squeeze(axis=0)  #select gam at the max kx index
 omr_kxmax = np.take_along_axis(omr, ind_kxmax, axis=0).squeeze(axis=0) 
+kxmax_ky= np.take_along_axis(kx, ind_kxmax, axis=0).squeeze(axis=0) #select kx at the max kx index
 gam_kx0 = gam[0,:]
 omr_kx0 = omr[0,:]
 
+# Shift to center around kx=0 for plotting
+kx_shifted = np.fft.fftshift(kx, axes=0)
+ky_shifted = np.fft.fftshift(ky, axes=0)
+gam_shifted = np.fft.fftshift(gam, axes=0)
+
 #%% Plots
-   
+
+plt.figure(figsize=(9.71,6))
+plt.plot(ky[0,:int(Ny/8)].T,gam_kxmax[:int(Ny/8)].T,'.-',label='$k_x=k_{x,max}$')
+plt.plot(ky[0,:int(Ny/8)].T,gam_kx0[:int(Ny/8)].T,'.-',label='$k_x=0$')
+plt.axhline(0,color='k', linestyle='-', linewidth=1)
+plt.plot(ky[0,:int(Ny/8)],-D*ky[0,:int(Ny/8)]**2,'k--',label='$-Dk_y^2$')
+plt.legend()
+plt.grid(which='major', linestyle='--', linewidth=0.5)
+plt.xlabel('$k_y$')
+plt.ylabel('$\\gamma(k_y)$')
+plt.title('$\\gamma(k_y)$ for $k_x=k_{x,max}(k_y)$')
+plt.tight_layout()
+plt.savefig(f'data_linear/gam_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+plt.show()
+
 plt.figure(figsize=(9.71,6))
 # slx=slice(None,int(Nx/32),1) 
 slx=slice(None,int(Nx/8),int((Nx/8)/5)) #7 kx points
 plt.plot(ky[slx,:int(Ny/4)].T,gam[slx,:int(Ny/4)].T,'.-')
-plt.axhline(0,color='k', linestyle='--', linewidth=1)
-# plt.plot(ky[0,:int(Ny)],-a*chi*ky[0,:int(Ny)]**2,'k--')
-plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-a\\chi k_y^2$'])
+plt.axhline(0,color='k', linestyle='-', linewidth=1)
+plt.plot(ky[0,:int(Ny/4)],-D*ky[0,:int(Ny/4)]**2,'k--')
+plt.grid(which='major', linestyle='--', linewidth=0.5)
+plt.legend(['$k_x='+str(l)+'$' for l in kx[slx,0]]+['$-Dk_y^2$'])
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{xi},k_y)$ vs $k_x$ for diff $k_x$')
 plt.tight_layout()
-plt.savefig('data_linear/gam_vs_ky_kxvals_itg2d.png',dpi=600)
+plt.savefig(f'data_linear/gam_vs_ky_kxvals_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
 plt.show()
 
-kymax_kx= np.take_along_axis(ky[:int(Nx/4),:],np.argmax(gam[:int(Nx/4),:],axis=1,keepdims=True),axis=1).squeeze(axis=1)
-plt.figure()
-plt.plot(kx[:int(Nx/4),0],kymax_kx,'.-')
-plt.xlabel('$k_x$')
-plt.ylabel('$k_{y,max}$')
-plt.title('$k_{y,max}$ vs $k_x$')
-plt.tight_layout()
-plt.savefig('data_linear/ky_vs_kx_itg2d.png',dpi=600)
-plt.show()
+# plt.figure()
+# plt.plot(ky[0,:int(Ny/4)],kxmax_ky[:int(Ny/4)],'.-')
+# plt.xlabel('$k_y$')
+# plt.ylabel('$k_{x,max}$')
+# plt.title('$k_{x,max}$ vs $k_y$')
+# plt.tight_layout()
+# plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+# plt.show()
+
+# kymax_kx= np.take_along_axis(ky[:int(Nx/4),:],np.argmax(gam[:int(Nx/4),:],axis=1,keepdims=True),axis=1).squeeze(axis=1)
+# plt.figure()
+# plt.plot(kx[:int(Nx/4),0],kymax_kx,'.-')
+# plt.xlabel('$k_x$')
+# plt.ylabel('$k_{y,max}$')
+# plt.title('$k_{y,max}$ vs $k_x$')
+# plt.tight_layout()
+# plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+# plt.show()
 
 #%% colormesh of gam and omr
 
-kx_shifted = np.fft.fftshift(kx[:,:],axes=0)
-ky_shifted = np.fft.fftshift(ky[:,:],axes=0)
+# Now slice the central half
+kx_central = kx_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
+ky_central = ky_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
+gam_central = gam_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
 
-plt.figure()
-plt.pcolormesh(kx_shifted, ky_shifted, np.fft.fftshift(gam, axes=0),vmax=0.3,vmin=-0.3,cmap='seismic', rasterized=True)
+plt.figure(figsize=(9.71,6))
+plt.pcolormesh(kx_central, ky_central, gam_central,vmax=gammax,vmin=-gammax,cmap='seismic', rasterized=True)
 plt.xlabel('$k_x$')
 plt.ylabel('$k_y$')
 plt.title('$\\gamma(k_x,k_y)$')
 plt.colorbar()
 plt.tight_layout()
-plt.savefig('data_linear/gamkxky_itg2d.png',dpi=600)
+plt.savefig(f'data_linear/gamkxky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
 plt.show()
 
 # plt.figure()
@@ -145,5 +181,5 @@ plt.show()
 # plt.title('$\\omega_r(k_x,k_y) = \\omega_r(k_x,k_y)$')
 # plt.colorbar()
 # plt.tight_layout()
-# plt.savefig('data_linear/omrkxky_itg2d.png',dpi=600)
+# plt.savefig(f'data_linear/omrkxky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
 # plt.show()
