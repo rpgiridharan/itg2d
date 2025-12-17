@@ -27,8 +27,8 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-D=0.1 #0.1 for 512x512
-kz=round(0.5*gam_max(kx,ky,kapn,kapt,kapb,D,0),4) #<=0.2
+D=round(0.1*(512/Npx)**2,2) #0.1 for 512x512
+kz=0.1 #<=0.2
 
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,kz)
@@ -39,7 +39,7 @@ wecontinue=False
 
 output_dir = "data_2d3c/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_D_{str(D).replace(".","_")}_kz_{str(kz).replace(".","_")}_classic.h5'
+filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_D_{str(D).replace(".","_")}_kz_{str(kz).replace(".","_")}_{Npx}x{Npy}_classic.h5'
 if not os.path.exists(filename):
     wecontinue=False
 

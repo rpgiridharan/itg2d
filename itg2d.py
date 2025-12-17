@@ -28,6 +28,7 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 kmin = float(ky[0])
 
+# D=round(0.1*(512/Npx)**2,2) #0.1 for 512x512
 D=0.02 #0.1 for 512x512
 H0 = round(20*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0)*kmin**4,10) #10*gam*kmin**4
 # H0=0.0
