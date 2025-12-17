@@ -5,45 +5,41 @@ import cupy as cp
 import h5py as h5
 from modules.mlsarray import Slicelist,init_kgrid
 from modules.mlsarray import irft2 as original_irft2, rft2 as original_rft2, irft as original_irft, rft as original_rft
-from modules.gamma import gam_max   
+from modules.gamma_2d3c import gam_max
 from modules.gensolver import Gensolver,save_data
+from modules.basics import round_to_nsig, format_exp
 from functools import partial
-from modules.basics import format_exp, round_to_nsig
 import os
 
 #%% Parameters
 
-# Npx,Npy=512,512
 Npx,Npy=1024,1024
 Lx,Ly=32*np.pi,32*np.pi
-kapt=2.0 # threshold = 0.7
+kapt=2.0
 kapn=0.2
 kapb=0.02
 
 Nx,Ny=2*(Npx//3),2*(Npy//3)
 sl=Slicelist(Nx,Ny)
-slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Ny/2)]
+slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-kmin = float(ky[0])
+slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-D=1e-2 #0.1 for 512x512
-# H0 = round(10*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0)*kmin**4,10) #10*gam*kmin**4
-H0=0.0
-HPhi = H0
-HP = H0
+D=0.1 #0.1 for 512x512
+kz=round(0.5*gam_max(kx,ky,kapn,kapt,kapb,D,0),4) #<=0.2
 
 dtshow=0.1
-gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP)
-dtstep,dtsavecb=round_to_nsig((512/Npx)*0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(600/gammax,0) #100/gammax #600/gammax
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,kz)
+dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+t0,t1=0.0,round(100/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=True
+wecontinue=False
 
-output_dir = "data/"
+output_dir = "data_2d3c/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}_NZ_{Npx}x{Npy}.h5'
+filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_D_{str(D).replace(".","_")}_kz_{str(kz).replace(".","_")}_classic.h5'
 if not os.path.exists(filename):
     wecontinue=False
 
@@ -57,40 +53,46 @@ rft = partial(original_rft,Nx=Nx)
 def init_fields(kx,ky,w=10.0,A=1e-6):
     # Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
     # Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
+    # Vk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.exp(1j*2*np.pi*cp.random.rand(kx.size).reshape(kx.shape))
     Phik=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
     Pk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
-    
+    Vk=A*cp.exp(-kx**2/2/w**2-ky**2/2/w**2)*cp.array(np.exp(1j*2*np.pi*np.random.rand(kx.size).reshape(kx.shape)))
+
     Phik[slbar]=0
     Pk[slbar]=0
-    zk=np.hstack((Phik,Pk))
+    Vk[slbar]=0
+    zk=np.hstack((Phik,Pk,Vk))
     return zk
 
 def fsavecb(t,y,flag):
     zk=y.view(dtype=complex)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik,Pk,Vk=zk[:Nk],zk[Nk:2*Nk],zk[2*Nk:]
     Omk=-kpsq*Phik
     vy=irft2(1j*kx*Phik) 
     Om=irft2(Omk)
     P=irft2(Pk)
+    V=irft2(Vk)
     if flag=='fields':
-        save_data(fl,'fields',ext_flag=True,Omk=Omk.get(),Pk=Pk.get(),t=t)
+        save_data(fl,'fields',ext_flag=True,Omk=Omk.get(),Pk=Pk.get(),Vk=Vk.get(),t=t)
     elif flag=='zonal':
         vbar=cp.mean(vy,1)
         Ombar=cp.mean(Om,1)
         Pbar=cp.mean(P,1)
-        save_data(fl,'zonal',ext_flag=True,vbar=vbar.get(),Ombar=Ombar.get(),Pbar=Pbar.get(),t=t)
+        Vbar=cp.mean(V,1)
+        save_data(fl,'zonal',ext_flag=True,vbar=vbar.get(),Ombar=Ombar.get(),Pbar=Pbar.get(),Vbar=Vbar.get(),t=t)
     elif flag=='fluxes':
         vx=irft2(-1j*ky*Phik) #ExB flow: x comp
         wx=irft2(-1j*ky*Pk) #diamagnetic flow: x comp
         Q=cp.mean(P*vx,1)
-        RPhi=cp.mean(vy*vx,1)
-        RP=cp.mean(vy*wx,1)
-        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),RPhi=RPhi.get(),RP=RP.get(),t=t)
+        R=cp.mean(vy*vx,1)
+        PiP=cp.mean(vy*wx,1)
+        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),R=R.get(),PiP=PiP.get(),t=t)
     save_data(fl,'last',ext_flag=False,zk=zk.get(),t=t)
 
 def fshowcb(t,y):
     zk=y.view(dtype=complex)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik=zk[:Nk]
+    Pk=zk[Nk:2*Nk]
     vx=irft2(-1j*ky*Phik)
     P=irft2(Pk)
     Q=np.mean(vx*P)
@@ -101,29 +103,31 @@ def fshowcb(t,y):
 def rhs_itg(t,y):
     zk=y.view(dtype=complex)
     dzkdt=cp.zeros_like(zk)
-    Phik,Pk=zk[:Nk],zk[Nk:]
+    Phik,Pk,Vk=zk[:Nk],zk[Nk:2*Nk],zk[2*Nk:]
 
-    dPhikdt,dPkdt=dzkdt[:Nk],dzkdt[Nk:]
+    dPhikdt,dPkdt,dVkdt=dzkdt[:Nk],dzkdt[Nk:2*Nk],dzkdt[2*Nk:]
     dxphi=irft2(1j*kx*Phik)
     dyphi=irft2(1j*ky*Phik)
     dxP=irft2(1j*kx*Pk)
     dyP=irft2(1j*ky*Pk)
+    dxV=irft2(1j*kx*Vk)
+    dyV=irft2(1j*ky*Vk)
     sigk=cp.sign(ky)
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-sigk*D*kpsq*Phik-sigk*HPhi/(kpsq**2)*Phik
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-sigk*D*kpsq*Pk-sigk*HP/(kpsq**2)*Pk
+    dPhikdt[:]=-1j*kz*sigk*Vk/fac-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-sigk*D*kpsq*Phik
+    dPkdt[:]=-(5/3)*1j*kz*sigk*Vk-1j*ky*(kapn+kapt)*Phik-sigk*D*kpsq*Pk
+    dVkdt[:]=-1j*kz*sigk*(Pk+Phik)-sigk*D*kpsq*Vk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
 
     nl_term1_num = 1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg)
     dPhikdt[:] += nl_term1_num / fac
-    nl_term2_num = kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP)
-    dPhikdt[:] += nl_term2_num / fac
 
     dPkdt[:]+=rft2(dyphi*dxP-dxphi*dyP)
+    dVkdt[:]+=rft2(dyphi*dxV-dxphi*dyV)
     return dzkdt.view(dtype=float)
 
 #%% Run the simulation    
@@ -140,12 +144,10 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,kz=kz)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
 r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
 r.run()
 fl.close()
-
-# %%

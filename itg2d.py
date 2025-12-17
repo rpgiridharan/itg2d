@@ -13,9 +13,10 @@ import os
 
 #%% Parameters
 
-Npx,Npy=512,512
+# Npx,Npy=512,512
+Npx,Npy=1024,1024
 Lx,Ly=32*np.pi,32*np.pi
-kapt=0.5 # threshold = 0.7
+kapt=2.0 # threshold = 0.7
 kapn=0.2
 kapb=0.02
 
@@ -25,20 +26,20 @@ slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Ny/2)]
 kx,ky=init_kgrid(sl,Lx,Ly)
 kpsq=kx**2+ky**2
 Nk=kx.size
-slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 kmin = float(ky[0])
 
-D=0.1
-H0 = round(10*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0,slky)*kmin**4,10)
+D=0.02 #0.1 for 512x512
+H0 = round(20*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0)*kmin**4,10) #10*gam*kmin**4
+# H0=0.0
 HPhi = H0
 HP = H0
 
 dtshow=0.1
-gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP,slky)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP)
 dtstep,dtsavecb=round_to_nsig((512/Npx)*0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(600/gammax,0) #100/gammax #600/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=False
+wecontinue=True
 
 output_dir = "data/"
 os.makedirs(output_dir, exist_ok=True)
@@ -111,8 +112,8 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-D*kpsq*Phik-sigk*HPhi/(kpsq**2)*Phik
-    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-D*kpsq*Pk-sigk*HP/(kpsq**2)*Pk
+    dPhikdt[:]=-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-sigk*D*kpsq*Phik-sigk*HPhi/(kpsq**2)*Phik
+    dPkdt[:]=-1j*ky*(kapn+kapt)*Phik-sigk*D*kpsq*Pk-sigk*HP/(kpsq**2)*Pk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac
@@ -146,3 +147,5 @@ dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
 r=Gensolver('cupy_ivp.DOP853',rhs_itg,t0,zk.view(dtype=float),t1,fsave=fsave,fshow=fshowcb,dtstep=dtstep,dtshow=dtshow,dtsave=dtsave,dense=False,rtol=rtol,atol=atol)
 r.run()
 fl.close()
+
+# %%

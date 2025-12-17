@@ -33,18 +33,24 @@ datadir = "data/"
 # datadir = "data_2d3c/"
 # datadir="data_D_sweep/"
 
-# infl = datadir + 'out_kapt_0_2_D_0_001_H_7_9_em5_NZ_1024x1024.h5'
+# infl = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_NZ_1024x1024.h5'
 # infl = datadir + 'out_kapt_2_0_D_0_001_H_1_1_em4_NZ_1024x1024.h5'
 
-kapt=2.0
-D=1e-3
-Np=1024
-pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*_{Np}x{Np}.h5'
-files = glob.glob(pattern)
-if not files:
-    print(f"No file found for kappa_T = {kapt}")
-else:
-    infl = files[0]
+# file_name = datadir + 'out_kapt_2_0_D_0_01_H_1_1_em5_1024x1024.h5'
+# infl = datadir + 'out_kapt_2_0_D_0_02_H_1_0_em5_1024x1024.h5'
+infl = datadir + 'out_kapt_2_0_D_0_05_H_9_7_em6_1024x1024.h5'
+# file_name = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
+# file_name = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
+
+# kapt=2.0
+# D=1e-3
+# Np=1024
+# pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*_{Np}x{Np}.h5'
+# files = glob.glob(pattern)
+# if not files:
+#     print(f"No file found for kappa_T = {kapt}")
+# else:
+#     infl = files[0]
 
 outfl = infl.replace('.h5', '.mp4')
 

@@ -37,7 +37,7 @@ size = comm.Get_size()
 #%% Load the HDF5 file
 datadir = 'data/'
 # file_name = datadir + 'out_kapt_2_0_D_0_01_H_0_0_e0_NZ_1024x1024.h5'
-file_name = datadir + 'out_kapt_2_0_D_0_01_H_1_1_em5_NZ_1024x1024.h5'
+file_name = datadir + 'out_kapt_2_0_D_0_02_H_1_0_em5_NZ_1024x1024.h5'
 
 # kapt=2.0
 # D=1e-3
@@ -76,7 +76,8 @@ gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi)
 t=t*gammax
 
 nt = len(t)
-print(f"nt: {nt}")
+if rank == 0:
+    print(f"nt: {nt}")
 
 #%% Functions for energy and enstrophy
 

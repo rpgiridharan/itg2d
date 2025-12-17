@@ -39,17 +39,18 @@ plt.rcParams.update({
 
 #%% Load the HDF5 file
 
-datadir='data_scan/'
-kapt=1.0
-D=0.1
+datadir='data/'
+# kapt=1.0
+# D=0.1
 # Np=1024
 # pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*_{Np}x{Np}.h5'
-pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*.h5'
-files = glob.glob(pattern)
-if not files:
-    print(f"No file found for kappa_T = {kapt}")
-else:
-    file_name = files[0]
+# files = glob.glob(pattern)
+# if not files:
+#     print(f"No file found for kappa_T = {kapt}")
+# else:
+#     file_name = files[0]
+
+file_name = datadir + 'out_kapt_2_0_D_0_02_H_1_0_em5_1024x1024.h5'
 
 with h5.File(file_name, 'r', swmr=True) as fl:
     t = fl['fields/t'][:]

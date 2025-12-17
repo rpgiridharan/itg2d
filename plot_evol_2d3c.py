@@ -36,7 +36,7 @@ plt.rcParams.update({
 
 comm.Barrier()
 datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_2_0_D_0_05_kz_0_0127.h5'
+file_name = datadir+'out_2d3c_kapt_2_0_D_0_1_kz_0_0282.h5'
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
     Pk = fl['fields/Pk'][0]
@@ -257,7 +257,7 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'P2_vs_t.png',dpi=100)
+        plt.savefig(datadir+'P2_vs_t.pdf')
     else:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
@@ -274,12 +274,12 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'V2_vs_t.png',dpi=100)
+        plt.savefig(datadir+'V2_vs_t.pdf')
     else:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'V2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
-    # Plot kinetic energy vs time
+    # Plot energy vs time
     plt.figure(figsize=(8,6))
     plt.semilogy(t[:nt], energy_t, label = '$\\mathcal{E}_{total}$')
     plt.semilogy(t[:nt], energy_ZF_t, label = '$\\mathcal{E}_{ZF}$')
@@ -291,7 +291,7 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'energy_vs_t.png',dpi=100)
+        plt.savefig(datadir+'energy_vs_t.pdf')
     else:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
@@ -306,44 +306,44 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'zonal_energy_fraction_vs_t.png',dpi=100)
+        plt.savefig(datadir+'zonal_energy_fraction_vs_t.pdf')
     else:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
-    # Plot kinetic energy vs time
-    plt.figure(figsize=(8,6))
-    plt.semilogy(t[:nt], kin_energy_t, label = '$\\mathcal{E}_{kin,total}$')
-    plt.semilogy(t[:nt], kin_energy_ZF_t, label = '$\\mathcal{E}_{kin,ZF}$')
-    plt.semilogy(t[:nt], kin_energy_turb_t, label = '$\\mathcal{E}_{kin,turb}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{E}_{kin}$')
-    plt.title('Kinetic Energy vs $\\gamma$ t')
-    plt.grid()
-    plt.legend()
-    plt.tight_layout()
-    if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'kinetic_energy_vs_t.png',dpi=100)
-    else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=100)
-    plt.show()
+    # # Plot kinetic energy vs time
+    # plt.figure(figsize=(8,6))
+    # plt.semilogy(t[:nt], kin_energy_t, label = '$\\mathcal{E}_{kin,total}$')
+    # plt.semilogy(t[:nt], kin_energy_ZF_t, label = '$\\mathcal{E}_{kin,ZF}$')
+    # plt.semilogy(t[:nt], kin_energy_turb_t, label = '$\\mathcal{E}_{kin,turb}$')
+    # plt.xlabel('$\\gamma t$')
+    # plt.ylabel('$\\mathcal{E}_{kin}$')
+    # plt.title('Kinetic Energy vs $\\gamma$ t')
+    # plt.grid()
+    # plt.legend()
+    # plt.tight_layout()
+    # if file_name.endswith('out.h5'):
+    #     plt.savefig(datadir+'kinetic_energy_vs_t.pdf')
+    # else:
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=100)
+    # plt.show()
 
-    # Plot enstrophy vs time
-    plt.figure(figsize=(8,6))
-    plt.semilogy(t[:nt], enstrophy_t, label = '$\\mathcal{W}_{total}$')
-    plt.semilogy(t[:nt], enstrophy_ZF_t, label = '$\\mathcal{W}_{ZF}$')
-    plt.semilogy(t[:nt], enstrophy_turb_t, label = '$\\mathcal{W}_{turb}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{W}$')
-    plt.title('Enstrophy vs $\\gamma$ t')
-    plt.grid()
-    plt.legend()
-    plt.tight_layout()
-    if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'enstrophy_vs_t.png',dpi=100)
-    else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=100)
-    plt.show()
+    # # Plot enstrophy vs time
+    # plt.figure(figsize=(8,6))
+    # plt.semilogy(t[:nt], enstrophy_t, label = '$\\mathcal{W}_{total}$')
+    # plt.semilogy(t[:nt], enstrophy_ZF_t, label = '$\\mathcal{W}_{ZF}$')
+    # plt.semilogy(t[:nt], enstrophy_turb_t, label = '$\\mathcal{W}_{turb}$')
+    # plt.xlabel('$\\gamma t$')
+    # plt.ylabel('$\\mathcal{W}$')
+    # plt.title('Enstrophy vs $\\gamma$ t')
+    # plt.grid()
+    # plt.legend()
+    # plt.tight_layout()
+    # if file_name.endswith('out.h5'):
+    #     plt.savefig(datadir+'enstrophy_vs_t.pdf')
+    # else:
+    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=100)
+    # plt.show()
 
     # Plot generalized energy vs time
     plt.figure(figsize=(8,6))
@@ -357,12 +357,12 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'generalized_energy_vs_t.png',dpi=100)
+        plt.savefig(datadir+'generalized_energy_vs_t.pdf')
     else:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
-    # # Plot entropy vs time
+    # # Plot hyd. entropy vs time
     # plt.figure(figsize=(8,6))
     # plt.semilogy(t[:nt], entropy_t, label = '$\\mathcal{S}$')
     # plt.xlabel('$\\gamma t$')
@@ -372,7 +372,7 @@ if rank == 0:
     # plt.legend()
     # plt.tight_layout()
     # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'entropy_vs_t.png',dpi=100)
+    #     plt.savefig(datadir+'entropy_vs_t.pdf')
     # else:
     #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=100)
     # plt.show()
@@ -387,7 +387,7 @@ if rank == 0:
     plt.legend()
     plt.tight_layout()
     if file_name.endswith('out.h5'):
-        plt.savefig(datadir+'Q_vs_t.png',dpi=100)
+        plt.savefig(datadir+'Q_vs_t.pdf')
     else:
         plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=100)
     plt.show()
