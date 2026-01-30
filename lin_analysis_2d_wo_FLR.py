@@ -46,7 +46,7 @@ def init_linmats(pars,kx,ky):
     lm[:,:,0,0]=-1j*sigk*D*kpsq-1j*sigk*HP/kpsq**2
     lm[:,:,0,1]=(kapn+kapt)*ky
     lm[:,:,1,0]=-kapb*ky/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*HPhi/kpsq**2
+    lm[:,:,1,1]=(kapn*ky-0*(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*HPhi/kpsq**2
 
     return lm
 
@@ -120,7 +120,7 @@ plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_y)$ for $k_x=k_{x,max}(k_y)$')
 plt.tight_layout()
-plt.savefig(f'data_linear/gam_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+plt.savefig(f'data_linear/gam_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 plt.show()
 
 plt.figure(figsize=(9.71,6))
@@ -135,7 +135,7 @@ plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
 plt.title('$\\gamma(k_{xi},k_y)$ vs $k_x$ for diff $k_x$')
 plt.tight_layout()
-plt.savefig(f'data_linear/gam_vs_ky_kxvals_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+plt.savefig(f'data_linear/gam_vs_ky_kxvals_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 plt.show()
 
 # plt.figure()
@@ -144,7 +144,7 @@ plt.show()
 # plt.ylabel('$k_{x,max}$')
 # plt.title('$k_{x,max}$ vs $k_y$')
 # plt.tight_layout()
-# plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+# plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 # plt.show()
 
 # kymax_kx= np.take_along_axis(ky[:int(Nx/4),:],np.argmax(gam[:int(Nx/4),:],axis=1,keepdims=True),axis=1).squeeze(axis=1)
@@ -154,7 +154,7 @@ plt.show()
 # plt.ylabel('$k_{y,max}$')
 # plt.title('$k_{y,max}$ vs $k_x$')
 # plt.tight_layout()
-# plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+# plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 # plt.show()
 
 #%% colormesh of gam and omr
@@ -171,7 +171,7 @@ plt.ylabel('$k_y$')
 plt.title('$\\gamma(k_x,k_y)$')
 plt.colorbar()
 plt.tight_layout()
-plt.savefig(f'data_linear/gamkxky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+plt.savefig(f'data_linear/gamkxky_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 plt.show()
 
 # plt.figure()
@@ -181,5 +181,5 @@ plt.show()
 # plt.title('$\\omega_r(k_x,k_y) = \\omega_r(k_x,k_y)$')
 # plt.colorbar()
 # plt.tight_layout()
-# plt.savefig(f'data_linear/omrkxky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+# plt.savefig(f'data_linear/omrkxky_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 # plt.show()

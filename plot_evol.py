@@ -38,9 +38,8 @@ plt.rcParams.update({
 datadir='data/'
 
 # file_name = datadir + 'out_kapt_2_0_D_0_01_H_1_1_em5_1024x1024.h5'
-file_name = datadir + 'out_kapt_2_0_D_0_02_H_1_0_em5_1024x1024.h5'
 # file_name = datadir + 'out_kapt_2_0_D_0_05_H_9_7_em6_1024x1024.h5'
-# file_name = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
+file_name = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
 # file_name = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
 
 # kapt=2.0

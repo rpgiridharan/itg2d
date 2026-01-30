@@ -29,7 +29,7 @@ Nk=kx.size
 kmin = float(ky[0])
 
 # D=round(0.1*(512/Npx)**2,2) #0.1 for 512x512
-D=0.02 #0.1 for 512x512
+D=0.1
 H0 = round(20*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0)*kmin**4,10) #10*gam*kmin**4
 # H0=0.0
 HPhi = H0
@@ -37,7 +37,8 @@ HP = H0
 
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HPhi,HP)
-dtstep,dtsavecb=round_to_nsig((512/Npx)*0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+# dtstep,dtsavecb=round_to_nsig((512/Npx)*0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
+dtstep,dtsavecb=round_to_nsig((512/Npx)*0.002/gammax,1),round_to_nsig(0.02/gammax,1)
 t0,t1=0.0,round(600/gammax,0) #100/gammax #600/gammax
 rtol,atol=1e-8,1e-10
 wecontinue=True
@@ -103,8 +104,8 @@ def rhs_itg(t,y):
     zk=y.view(dtype=complex)
     dzkdt=cp.zeros_like(zk)
     Phik,Pk=zk[:Nk],zk[Nk:]
-
     dPhikdt,dPkdt=dzkdt[:Nk],dzkdt[Nk:]
+    
     dxphi=irft2(1j*kx*Phik)
     dyphi=irft2(1j*ky*Phik)
     dxP=irft2(1j*kx*Pk)
@@ -141,7 +142,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,HP=HP,HPhi=HPhi,gammax=gammax)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

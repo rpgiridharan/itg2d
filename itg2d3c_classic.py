@@ -33,9 +33,9 @@ kz=0.1 #<=0.2
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,kz)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(100/gammax,0) #1800/gammax
+t0,t1=0.0,round(300/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
-wecontinue=False
+wecontinue=True
 
 output_dir = "data_2d3c/"
 os.makedirs(output_dir, exist_ok=True)
@@ -144,7 +144,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,kz=kz)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,kz=kz,gammax=gammax)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]

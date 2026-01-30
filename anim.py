@@ -31,16 +31,11 @@ plt.rcParams['ytick.minor.width'] = 1.5
 
 datadir = "data/"
 # datadir = "data_2d3c/"
-# datadir="data_D_sweep/"
+# datadir="data_sweep/"
 
-# infl = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_NZ_1024x1024.h5'
-# infl = datadir + 'out_kapt_2_0_D_0_001_H_1_1_em4_NZ_1024x1024.h5'
-
-# file_name = datadir + 'out_kapt_2_0_D_0_01_H_1_1_em5_1024x1024.h5'
-# infl = datadir + 'out_kapt_2_0_D_0_02_H_1_0_em5_1024x1024.h5'
-infl = datadir + 'out_kapt_2_0_D_0_05_H_9_7_em6_1024x1024.h5'
-# file_name = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
-# file_name = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
+# infl = datadir + 'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024_classic.h5'
+infl = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
+# infl = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
 
 # kapt=2.0
 # D=1e-3

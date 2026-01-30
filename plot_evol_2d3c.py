@@ -36,7 +36,7 @@ plt.rcParams.update({
 
 comm.Barrier()
 datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_2_0_D_0_1_kz_0_0282.h5'
+file_name = datadir+'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024.h5'
 with h5.File(file_name, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
     Pk = fl['fields/Pk'][0]

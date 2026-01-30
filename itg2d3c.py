@@ -27,7 +27,8 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-D=round(0.1*(512/Npx)**2,3) #0.1 for 512x512
+# D=round(0.1*(512/Npx)**2,3) #0.1 for 512x512
+D=0.1
 kz=0.1 #<=0.2
 
 dtshow=0.1
@@ -146,7 +147,7 @@ else:
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
-    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,kz=kz)
+    save_data(fl,'params',ext_flag=False,Npx=Npx,Npy=Npy,Lx=Lx,Ly=Ly,kapn=kapn,kapt=kapt,kapb=kapb,D=D,kz=kz,gammax=gammax)
 
 fsave = [partial(fsavecb,flag='fields'), partial(fsavecb,flag='zonal'), partial(fsavecb,flag='fluxes')]
 dtsave=[10*dtsavecb,dtsavecb,dtsavecb]
