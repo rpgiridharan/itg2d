@@ -1,67 +1,47 @@
 import math
-from typing import Optional
 import numpy as np
 
 def make_triad(
     *,
-    kx: float,
-    ky: float,
-    require_nonzero_y: bool = True,
-    y_eps: float = 1e-12,
-    qmag_min_frac: float = 0.05,
-    qmag_max_frac: float = 0.95,
-    max_tries: int = 100_000,
-    rng: Optional[np.random.Generator] = None,
-    seed: Optional[int] = None,
-) -> tuple[float, float, float, float, float, float]:
+    kx,
+    ky,
+    qmag_min=0.05,
+    qmag_max=0.95,
+    max_tries=100_000,
+    seed=None,
+):
     """Construct a triad in continuous k-space (not constrained to any grid).
 
     Enforces exact algebraic closure:
         k + p + q = 0
 
     Also enforces:
-        - nonzero y-components for q,k,p (if require_nonzero_y)
+        - nonzero y-components for q,k,p
         - |q| < |k| < |p|
 
     Notes
     -----
     - `q` is sampled by choosing a magnitude and angle.
     - Use `seed` (or pass `rng`) for reproducibility.
-    Returns
-    -------
-    (qx, qy, kx, ky, px, py)
-        The triad components satisfying k + p + q = 0.
     """
 
-    kx = float(kx)
-    ky = float(ky)
-    k2 = kx * kx + ky * ky
-    if k2 == 0.0:
-        raise ValueError("k cannot be zero")
-    if require_nonzero_y and abs(ky) <= y_eps:
-        raise ValueError("ky ~ 0; choose a nonzonal k or relax y_eps")
+    k2 = kx**2 + ky**2
+    if abs(ky) <= 1e-6:
+        raise ValueError("ky ~ 0; choose a nonzonal k")
 
-    if not (0.0 < qmag_min_frac < qmag_max_frac < 1.0):
-        raise ValueError("Require 0 < qmag_min_frac < qmag_max_frac < 1")
-
-    if rng is None:
-        rng = np.random.default_rng(seed)
-
-    kmag = math.sqrt(k2)
-    qmag_min = qmag_min_frac * kmag
-    qmag_max = qmag_max_frac * kmag
+    rng = np.random.default_rng(seed)
 
     for _ in range(int(max_tries)):
-        qmag = float(rng.uniform(qmag_min, qmag_max))
-        theta = float(rng.uniform(0.0, 2 * math.pi))
+        qmag = rng.uniform(qmag_min, qmag_max)
+        theta = rng.uniform(0.0, 2 * math.pi)
         qx = qmag * math.cos(theta)
         qy = qmag * math.sin(theta)
-        if require_nonzero_y and abs(qy) <= y_eps:
+        if abs(qy) <= 1e-6:
             continue
 
         px = -(kx + qx)
         py = -(ky + qy)
-        if require_nonzero_y and abs(py) <= y_eps:
+        if abs(py) <= 1e-6:
             continue
 
         q2 = qx * qx + qy * qy
@@ -72,6 +52,5 @@ def make_triad(
         return (qx, qy, kx, ky, px, py)
 
     raise RuntimeError(
-        "Failed to find a continuous triad with |q|<|k|<|p| and nonzero y. "
-        "Try changing k, relaxing y_eps, or adjusting qmag_min_frac/qmag_max_frac."
+        "Failed to find a continuous triad with |q|<|k|<|p| and nonzero y"
     )
