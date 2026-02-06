@@ -15,6 +15,7 @@ import os
 
 # Npx,Npy=512,512
 Npx,Npy=1024,1024
+Npx,Npy=4096,4096
 Lx,Ly=32*np.pi,32*np.pi
 kapt=2.0 # threshold = 0.7
 kapn=0.2
@@ -28,8 +29,8 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 kmin = float(ky[0])
 
-# D=round(0.1*(512/Npx)**2,2) #0.1 for 512x512
-D=0.1
+D=round(0.1*(512/Npx)**2,3) #0.1 for 512x512
+# D=0.1
 H0 = round(20*gam_max(kx,ky,kapn,kapt,kapb,D,0.0,0.0)*kmin**4,10) #10*gam*kmin**4
 # H0=0.0
 HPhi = H0

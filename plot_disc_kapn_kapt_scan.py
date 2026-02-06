@@ -29,7 +29,8 @@ datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
 
 kapb=0.02
-file_name = datadir + f'discmax_vals_itg2d_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}.h5'
+file_name = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+# file_name = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
 
 # Load datasets
 with h5py.File(file_name, 'r') as fl:
@@ -49,7 +50,7 @@ kapt_pos = kapt_vals[positive_any.any(axis=1)]
 #%% Colormesh of discriminant max over (kapn, kapt)
 
 Kapn, Kapt = np.meshgrid(kapn_vals, kapt_vals)
-plt.figure(figsize=(12,9))
+plt.figure(figsize=(16,9))
 # max(-Δ): negative (stable everywhere), positive (Δ<0 somewhere)
 data = negdiscmax_kapn_kapt.T
 vmax = float(np.nanmax(np.abs(data))) if np.isfinite(data).all() else 1.0
@@ -68,5 +69,5 @@ try:
 except Exception:
     pass
 plt.tight_layout()
-plt.savefig(datadir + f'negdiscmax_itg2d_kapn_kapt_kapb_{str(kapb).replace(".", "_")}.pdf')
+plt.savefig(file_name.replace('.h5', '.pdf'))
 plt.show()

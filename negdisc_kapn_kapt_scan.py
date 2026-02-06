@@ -26,8 +26,8 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
     return kx,ky
 
 def compute_discriminant(kpsq, kapn, kapt, kapb):
-    A = kapn + kapt
-    return (kapn - A * kpsq)**2 - 4.0 * kapb * (1.0 + kpsq) * A
+    kapp = kapn + kapt
+    return (kapn - kapp * kpsq)**2 - 4.0 * kapb * (1.0 + kpsq) * kapp
 
 # This script intentionally does not compute gamma; only discriminant
 
@@ -40,9 +40,9 @@ Lx,Ly=256*np.pi,256*np.pi
 kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
 kapt=0.4 #rho_i/L_T >0.2
 kapn=0.2 #rho_i/L_n
-kapb=0.04 #2*rho_i/L_B
-D=0*0.1 #0.1
-H0= 0 # 
+kapb=0.02 #2*rho_i/L_B
+D=0.1 #0.1
+H0=1e-6 # 
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
@@ -58,7 +58,8 @@ n_kapt=len(kapt_vals)
 
 datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
-file_name = datadir + f'discmax_vals_itg2d_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}.h5'
+file_name = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+# file_name = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
 
 #%% Compute
 

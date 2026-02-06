@@ -29,8 +29,8 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,D,HPhi,HP = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','D','HPhi','HP']
+    kapn,kapt,kapb,D,H = [
+        torch.tensor(pars[l], device=kx.device, dtype=kx.dtype) for l in ['kapn','kapt','kapb','D','H']
     ]
     kpsq = kx**2 + ky**2
     kpsq = torch.where(kpsq==0, 1e-10, kpsq)
@@ -38,20 +38,31 @@ def init_linmats(pars,kx,ky):
     sigk = ky>0
     fac=sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*sigk*D*kpsq-1j*sigk*HP/kpsq**2
+    lm[:,:,0,0]=-1j*sigk*D*kpsq-1j*sigk*H/kpsq**2
     lm[:,:,0,1]=(kapn+kapt)*ky
     lm[:,:,1,0]=-kapb*ky/fac
-    lm[:,:,1,1]=(kapn*ky-0*(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*HPhi/kpsq**2
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*H/kpsq**2
 
     return lm
 
-def linfreq(pars, kx, ky):
+def eigvals_2x2(lm):
+    a = lm[..., 0, 0]
+    b = lm[..., 0, 1]
+    c = lm[..., 1, 0]
+    d = lm[..., 1, 1]
+    tr = a + d
+    disc = (a - d) ** 2 / 4 + b * c
+    root = torch.sqrt(disc)
+    lam1 = tr / 2 + root
+    lam2 = tr / 2 - root
+    return torch.stack((lam1, lam2), dim=-1)
+
+def linfreq(pars, kx, ky):    
     lm = init_linmats(pars, torch.from_numpy(kx), torch.from_numpy(ky)).cuda()
-    # print(lm.device)
-    w = torch.linalg.eigvals(lm)
+    # w = torch.linalg.eigvals(lm)
+    w = eigvals_2x2(lm)
     iw = torch.argsort(-w.imag, -1)
     lam = torch.gather(w, -1, iw).cpu().numpy()
-    # vi = torch.gather(v, -1, iw.unsqueeze(-2).expand_as(v)).cpu().numpy()
     del lm, w, iw
     torch.cuda.empty_cache()
     return lam
@@ -66,24 +77,28 @@ kx,ky=init_kspace_grid(Nx,Ny,Lx,Ly)
 kapt=0.4 #rho_i/L_T >0.2
 kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
-D=0*0.1 #0.1
-H0= 0 # 
+D=0.1 #0.1
+H=1e-6 # 
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
       'D':D,
-      'HPhi':H0,
-      'HP':H0}
+      'H':H}
 
-kapn_vals=np.round(np.arange(0.,1.5,0.05),2)
-kapt_vals=np.round(np.arange(0.,1.5,0.05),2)
+kapn_vals=np.round(np.arange(-0.5,1.0,0.02),2)
+kapt_vals=np.round(np.arange(-0.5,1.0,0.02),2)
 
 n_kapn=len(kapn_vals)
 n_kapt=len(kapt_vals)
 
 datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
-file_name = datadir + f'gammax_vals_kapn_kapt_scan_itg2d_kapb_{str(kapb).replace(".", "_")}.h5'
+file_name = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+# file_name = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
+
+def one_over(x):
+    out = np.zeros_like(x)
+    return np.divide(1.0, x, out=out, where=x != 0)
 
 #%% Compute
 
@@ -92,6 +107,7 @@ file_name = datadir + f'gammax_vals_kapn_kapt_scan_itg2d_kapb_{str(kapb).replace
 with h5py.File(file_name, 'w') as fl:
     shape = (n_kapn, n_kapt)
     fl.create_dataset('gammax_vals', shape, dtype=np.float64)
+    fl.create_dataset('Dturbmax_vals', shape, dtype=np.float64)
     fl.create_dataset('kapt_vals', data=kapt_vals, dtype=np.float64)
     fl.create_dataset('kapn_vals', data=kapn_vals, dtype=np.float64)
     fl.create_dataset('kapb', data=kapb, dtype=np.float64)
@@ -106,10 +122,12 @@ for i in range(len(kapn_vals)):
         om=linfreq(base_pars,kx,ky)
         omr=om.real[:,:,0]
         gam=om.imag[:,:,0]
+        Dturb=gam*one_over(kx**2+ky**2)
 
         # Store gammax
         with h5py.File(file_name, 'a', libver='latest') as fl:
             # fl.swmr_mode = True
             fl['gammax_vals'][i, j] = np.max(gam)
+            fl['Dturbmax_vals'][i, j] = np.max(Dturb)
             fl.flush()
         gc.collect()

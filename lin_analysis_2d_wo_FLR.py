@@ -86,7 +86,10 @@ base_pars={'kapn':kapn,
 om=linfreq(base_pars,kx,ky)
 omr=om.real[:,:,0]
 gam=om.imag[:,:,0]
+chi=gam/(kx**2+ky**2)
+chi[0,0]=0.0 #set chi at k=0 to zero to avoid nan
 gammax=np.max(gam)
+chimax=np.max(chi)
 
 #%% Compute quantities
 
@@ -102,10 +105,21 @@ kxmax_ky= np.take_along_axis(kx, ind_kxmax, axis=0).squeeze(axis=0) #select kx a
 gam_kx0 = gam[0,:]
 omr_kx0 = omr[0,:]
 
+ind_kxmax_chi = np.argmax(chi, axis=0, keepdims=True)
+chi_kxmax = np.take_along_axis(chi, ind_kxmax_chi, axis=0).squeeze(axis=0)
+kxmax_ky_chi = np.take_along_axis(kx, ind_kxmax_chi, axis=0).squeeze(axis=0)
+chi_kx0 = chi[0,:]
+
+print('chimax:',chimax,'1/chimax:',1/chimax)
+print('max index:', np.unravel_index(np.argmax(chi[:,:]), chi.shape))
+print('max kx:', kx[np.unravel_index(np.argmax(chi[:,:]), chi.shape)])
+print('max ky:', ky[np.unravel_index(np.argmax(chi[:,:]), chi.shape)])
+
 # Shift to center around kx=0 for plotting
 kx_shifted = np.fft.fftshift(kx, axes=0)
 ky_shifted = np.fft.fftshift(ky, axes=0)
 gam_shifted = np.fft.fftshift(gam, axes=0)
+chi_shifted = np.fft.fftshift(chi, axes=0)
 
 #%% Plots
 
@@ -157,12 +171,27 @@ plt.show()
 # plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
 # plt.show()
 
+plt.figure(figsize=(9.71,6))
+plt.plot(ky[0,:int(Ny/8)].T,chi_kxmax[:int(Ny/8)].T,'.-',label='$k_x= \\arg\\max_{k_x} \\left(\\frac{\\gamma}{k_\\perp^2}\\right)$')
+plt.plot(ky[0,:int(Ny/8)].T,chi_kx0[:int(Ny/8)].T,'.-',label='$k_x=0$')
+plt.axhline(0,color='k', linestyle='-', linewidth=1)
+plt.plot(ky[0,:int(Ny/8)],-D*ky[0,:int(Ny/8)]**2,'k--',label='$-D$')
+plt.legend()
+plt.grid(which='major', linestyle='--', linewidth=0.5)
+plt.xlabel('$k_y$')
+plt.ylabel('$\\left(\\frac{\\gamma}{k_y^2}\\right)$')
+plt.title('$\\left(\\frac{\\gamma}{k_y^2}\\right)$ vs $k_y$')
+plt.tight_layout()
+plt.savefig(f'data_linear/chi_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d_wo_FLR.pdf',dpi=100)
+plt.show()
+
 #%% colormesh of gam and omr
 
 # Now slice the central half
 kx_central = kx_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
 ky_central = ky_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
 gam_central = gam_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
+chi_central = chi_shifted[int(3*Nx/8):int(5*Nx/8), :int(Ny/8)]
 
 plt.figure(figsize=(9.71,6))
 plt.pcolormesh(kx_central, ky_central, gam_central,vmax=gammax,vmin=-gammax,cmap='seismic', rasterized=True)

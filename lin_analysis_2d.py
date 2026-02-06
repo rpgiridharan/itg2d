@@ -34,8 +34,8 @@ def init_kspace_grid(Nx,Ny,Lx,Ly):
 
 def init_linmats(pars,kx,ky):    
     # Initializing the linear matrices
-    kapn,kapt,kapb,tau,D,HPhi,HP = [
-        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','D','HPhi','HP']
+    kapn,kapt,kapb,tau,D,H = [
+        torch.tensor(pars[l]).cpu() for l in ['kapn','kapt','kapb','tau','D','H']
     ]
     kpsq = kx**2 + ky**2
     kpsq = torch.where(kpsq==0, 1e-10, kpsq)
@@ -43,10 +43,10 @@ def init_linmats(pars,kx,ky):
     sigk = ky>0
     fac=tau*sigk+kpsq
     lm=torch.zeros(kx.shape+(2,2),dtype=torch.complex64)
-    lm[:,:,0,0]=-1j*sigk*D*kpsq-1j*sigk*HP/kpsq**2
+    lm[:,:,0,0]=-1j*sigk*D*kpsq-1j*sigk*H/kpsq**2
     lm[:,:,0,1]=(kapn+kapt)*ky
     lm[:,:,1,0]=-kapb*ky/fac
-    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*HPhi/kpsq**2
+    lm[:,:,1,1]=(kapn*ky-(kapn+kapt)*ky*kpsq)/fac-1j*sigk*D*kpsq-1j*sigk*H/kpsq**2
 
     return lm
 
@@ -61,6 +61,10 @@ def linfreq(pars, kx, ky):
     torch.cuda.empty_cache()
     return lam
 
+def one_over(x):
+    out = np.zeros_like(x)
+    return np.divide(1.0, x, out=out, where=x != 0)
+
 #%% Initialize
 
 Npx,Npy=4096,4096
@@ -72,21 +76,22 @@ kapt=0.4 #rho_i/L_T >0.2
 kapn=0.2 #rho_i/L_n
 kapb=0.02 #2*rho_i/L_B
 D=1e-3 #0.1
-H0= 0*4.2581e-06 # 4.2581e-06 for kapt=0.5
+H= 0*1e-06 # 4.2581e-06 for kapt=0.5
 base_pars={'kapn':kapn,
       'kapt':kapt,
       'kapb':kapb,
       'tau':1.,#Ti/Te
       'D':D,
-      'HPhi':H0,
-      'HP':H0}
+      'H':H}
 
 #%% Compute om
 
 om=linfreq(base_pars,kx,ky)
 omr=om.real[:,:,0]
 gam=om.imag[:,:,0]
+Dturb=gam*one_over(kx**2+ky**2)
 gammax=np.max(gam)
+Dturbmax=np.max(Dturb)
 
 #%% Compute quantities
 
@@ -95,14 +100,23 @@ print('max index:', np.unravel_index(np.argmax(gam[:,:]), gam.shape))
 print('max kx:', kx[np.unravel_index(np.argmax(gam[:,:]), gam.shape)])
 print('max ky:', ky[np.unravel_index(np.argmax(gam[:,:]), gam.shape)])
 
-ind_kxmax = np.argmax(gam, axis=0,keepdims=True) 
+ind_kxmax = np.argmax(gam, axis=0, keepdims=True) 
 gam_kxmax = np.take_along_axis(gam, ind_kxmax, axis=0).squeeze(axis=0)  #select gam at the max kx index
 omr_kxmax = np.take_along_axis(omr, ind_kxmax, axis=0).squeeze(axis=0) 
 kxmax_ky= np.take_along_axis(kx, ind_kxmax, axis=0).squeeze(axis=0) #select kx at the max kx index
 gam_kx0 = gam[0,:]
 omr_kx0 = omr[0,:]
 
-# Shift to center around kx=0 for plotting
+ind_kxmax_Dturb = np.argmax(Dturb, axis=0, keepdims=True)
+Dturb_kxmax = np.take_along_axis(Dturb, ind_kxmax_Dturb, axis=0).squeeze(axis=0)
+kxmax_ky_Dturb = np.take_along_axis(kx, ind_kxmax_Dturb, axis=0).squeeze(axis=0)
+Dturb_kx0 = Dturb[0,:]
+
+print('Dturbmax:',Dturbmax,'1/Dturbmax:',1/Dturbmax)
+print('max index:', np.unravel_index(np.argmax(Dturb[:,:]), Dturb.shape))
+print('max kx:', kx[np.unravel_index(np.argmax(Dturb[:,:]), Dturb.shape)])
+print('max ky:', ky[np.unravel_index(np.argmax(Dturb[:,:]), Dturb.shape)])
+
 kx_shifted = np.fft.fftshift(kx, axes=0)
 ky_shifted = np.fft.fftshift(ky, axes=0)
 gam_shifted = np.fft.fftshift(gam, axes=0)
@@ -110,7 +124,7 @@ gam_shifted = np.fft.fftshift(gam, axes=0)
 #%% Plots
 
 plt.figure(figsize=(9.71,6))
-plt.plot(ky[0,:int(Ny/8)].T,gam_kxmax[:int(Ny/8)].T,'.-',label='$k_x=k_{x,max}$')
+plt.plot(ky[0,:int(Ny/8)].T,gam_kxmax[:int(Ny/8)].T,'.-',label='$k_x= \\arg\\max_{k_x} \\left(\\gamma\\right)$')
 plt.plot(ky[0,:int(Ny/8)].T,gam_kx0[:int(Ny/8)].T,'.-',label='$k_x=0$')
 plt.axhline(0,color='k', linestyle='-', linewidth=1)
 plt.plot(ky[0,:int(Ny/8)],-D*ky[0,:int(Ny/8)]**2,'k--',label='$-Dk_y^2$')
@@ -118,7 +132,7 @@ plt.legend()
 plt.grid(which='major', linestyle='--', linewidth=0.5)
 plt.xlabel('$k_y$')
 plt.ylabel('$\\gamma(k_y)$')
-plt.title('$\\gamma(k_y)$ for $k_x=k_{x,max}(k_y)$')
+plt.title('$\\gamma(k_y)$ vs $k_y$')
 plt.tight_layout()
 plt.savefig(f'data_linear/gam_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
 plt.show()
@@ -156,6 +170,20 @@ plt.show()
 # plt.tight_layout()
 # plt.savefig(f'data_linear/ky_vs_kx_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
 # plt.show()
+
+plt.figure(figsize=(9.71,6))
+plt.plot(ky[0,:int(Ny/8)].T,Dturb_kxmax[:int(Ny/8)].T,'.-',label='$k_x= \\arg\\max_{k_x} \\left(\\frac{\\gamma}{k_\\perp^2}\\right)$')
+plt.plot(ky[0,:int(Ny/8)].T,Dturb_kx0[:int(Ny/8)].T,'.-',label='$k_x=0$')
+plt.axhline(0,color='k', linestyle='-', linewidth=1)
+plt.plot(ky[0,:int(Ny/8)],-D*np.ones_like(ky[0,:int(Ny/8)]),'k--',label='$-D$')
+plt.legend()
+plt.grid(which='major', linestyle='--', linewidth=0.5)
+plt.xlabel('$k_y$')
+plt.ylabel('$\\left(\\frac{\\gamma}{k_y^2}\\right)$')
+plt.title('$\\left(\\frac{\\gamma}{k_y^2}\\right)$ vs $k_y$')
+plt.tight_layout()
+plt.savefig(f'data_linear/chi_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d.pdf',dpi=100)
+plt.show()
 
 #%% colormesh of gam and omr
 

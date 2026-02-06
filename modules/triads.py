@@ -22,7 +22,7 @@ def make_triad(
     Notes
     -----
     - `q` is sampled by choosing a magnitude and angle.
-    - Use `seed` (or pass `rng`) for reproducibility.
+    - Use `seed` for reproducibility.
     """
 
     k2 = kx**2 + ky**2
