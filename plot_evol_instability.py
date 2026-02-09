@@ -33,7 +33,7 @@ def mode_label(i: int, kx: float, ky: float) -> str:
 #%% Load HDF5 file
 
 datadir = "data_instability/"
-case = "0_1_0"
+case = "1_1_0"
 pump_mode = 1
 delta = 0.5*np.pi
 file_name = os.path.join(datadir, f"out_instability_{case}_pump_{pump_mode}_delta_{str(round(delta/np.pi,2)).replace('.', '_')}_pi.h5")
@@ -59,18 +59,12 @@ with h5.File(file_name, "r", swmr=True) as fl:
 nt=len(t)
 
 Phi0 = Phik[pump_mode, 0]
-gam=0
-if pump_mode == 0 and Lpqk*Lkpq > 0:
-    gam = np.abs(Phi0)*np.sqrt(Lpqk*Lkpq)
-    gam_exp = "$\\Lambda^p_{qk}\\Lambda^k_{pq}$"
-
-if pump_mode == 1 and Lqkp*Lpqk > 0:
+if pump_mode == 1:
     gam = np.abs(Phi0)*np.sqrt(Lqkp*Lpqk)
-    gam_exp = "$\\Lambda^q_{kp}\\Lambda^p_{qk}$"
-
-if pump_mode == 2 and Lkpq*Lqkp > 0:
-    gam = np.abs(Phi0)*np.sqrt(Lkpq*Lqkp)
-    gam_exp = "$\\Lambda^k_{pq}\\Lambda^q_{kp}$"
+    gam_exp = r"$\left|\phi_0\right|\Lambda^q_{kp}\Lambda^p_{qk}$"
+else:
+    gam = 0
+    gam_exp = "$0$"
     
 # Store wavenumbers by mode
 modes = [(qx, qy), (kx, ky), (px, py)]
@@ -101,7 +95,7 @@ fig = plt.figure(figsize=(16,9))
 for i in [0,2]:
     kx_i, ky_i = modes[i]
     plt.semilogy(t[:int(nt/2)], np.abs(Phik)[i, :int(nt/2)], label=mode_label(i, kx_i, ky_i))
-plt.semilogy(t[:int(nt/2)], 1e-6 * np.exp(gam*t[:int(nt/2)]), 'k--', label=r'$\gamma$ = '+gam_exp+f'={gam:.3g}')
+plt.semilogy(t[:int(nt/2)], 1e-6 * np.exp(gam*t[:int(nt/2)]), 'k--', label=r'$\gamma$ = '+gam_exp)
 plt.xlabel("t")
 plt.ylabel(r"$|\phi_k|$")
 plt.title(r"Triad amplitudes: $|\phi_k|$ vs time (fit)")
@@ -159,3 +153,4 @@ os.makedirs(datadir, exist_ok=True)
 fig.savefig(file_name.replace("out_instability_", "phi_minus_P_phase_vs_t_qkp_").replace(".h5", ".pdf"), bbox_inches="tight")
 plt.show()
 plt.close(fig)
+# %%

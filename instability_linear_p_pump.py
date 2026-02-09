@@ -52,13 +52,16 @@ kdp = (kx * px + ky * py)
 qdk = (kx * qx + ky * qy)
 pdq = (px * qx + py * qy)
 
+print(f"M={0.5 * cross}, Lqkp={Lqkp_base}, Lkpq={Lkpq_base}, Lpqk={Lpqk_base}, Nqkp={Nqkp_base}, Nkpq={Nkpq_base}, Npqk={Npqk_base}")
+
 datadir = "data_instability/"
 os.makedirs(datadir, exist_ok=True)
 
 Phi0 = np.exp(1j * 2 * np.pi * np.random.random())
 
 #%% Compute growth rate
-
+tr_cases = []
+det_cases = []
 lam_vals = np.zeros((len(cases), len(delta_vals)))
 for case_idx, (zero_m, zero_l, zero_n) in enumerate(cases):
     M = zero_m * 0.5 * cross
@@ -70,20 +73,20 @@ for case_idx, (zero_m, zero_l, zero_n) in enumerate(cases):
     Npqk = zero_n * Npqk_base
 
     P0 = np.exp(1j * delta_vals) * Phi0
+    
+    mat = np.zeros((len(delta_vals), 4, 4), dtype=complex)
+    mat[:, 0, 2] = M * Phi0.conj()
+    mat[:, 0, 3] = -M * P0.conj()
+    mat[:, 1, 2] = -Nqkp * qdk * Phi0.conj()
+    mat[:, 1, 3] = Lqkp * Phi0.conj() - Nqkp * pdq * P0.conj()
+    mat[:, 2, 0] = -M * Phi0
+    mat[:, 2, 1] = M * P0
+    mat[:, 3, 0] = -Npqk * kdp * Phi0
+    mat[:, 3, 1] = Lpqk * Phi0 + Npqk * pdq * P0
 
-    if pump_mode==0:
-        tr = np.abs(Phi0)**2*(Lkpq*Lpqk - M**2) - np.abs(P0)**2*Nkpq*Npqk*kdp**2 + Phi0*P0.conj()*(M*Npqk*pdq + Nkpq*Lpqk*kdp) + Phi0.conj()*P0*(Nkpq*M*qdk - Lkpq*Npqk*kdp)
-        det = -M**2*Phi0**2*(Lkpq*Phi0.conj() + Nkpq*P0.conj()*(kdp-qdk))*(Lpqk*Phi0 - Npqk*P0*(kdp-pdq))
-    elif pump_mode==1:
-        tr = np.abs(Phi0)**2*(Lqkp*Lpqk - M**2) - np.abs(P0)**2*Nqkp*Npqk*pdq**2 + Phi0*P0.conj()*(M*Npqk*kdp - Nqkp*Lpqk*pdq) + Phi0.conj()*P0*(Nqkp*M*qdk + Lqkp*Npqk*pdq)
-        det = -M**2*Phi0**2*(Lqkp*Phi0.conj() + Nqkp*P0.conj()*(qdk - pdq))*(Lpqk*Phi0 - Npqk*P0*(kdp - pdq))
-    elif pump_mode==2:
-        tr = np.abs(Phi0)**2*(Lqkp*Lkpq - M**2) - np.abs(P0)**2*Nqkp*Nkpq*qdk**2 + Phi0*P0.conj()*(M*Nkpq*pdq + Nqkp*Lkpq*qdk) + Phi0.conj()*P0*(Nqkp*M*kdp - Lqkp*Nkpq*qdk)
-        det = -M**2*Phi0**2*(Lqkp*Phi0.conj() + Nqkp*P0.conj()*(pdq - qdk))*(Lkpq*Phi0 - Nkpq*P0*(kdp - qdk))
+    eigvals = np.linalg.eigvals(mat)
+    lam_vals[case_idx, :] = np.max(np.real(eigvals), axis=1)
 
-    lam1 = np.real(np.sqrt(tr + np.sqrt(tr**2 - 4 * det)) / np.sqrt(2))
-    lam2 = np.real(np.sqrt(tr - np.sqrt(tr**2 - 4 * det)) / np.sqrt(2))
-    lam_vals[case_idx, :] = np.maximum.reduce([lam1, lam2, -lam1, -lam2])
 
 #%% Plot
 
@@ -100,9 +103,10 @@ for i, (zero_m, zero_l, zero_n) in enumerate(cases):
     )
 plt.xlabel(r'$\delta / \pi$')
 plt.ylabel(r'Growth rate $\lambda$')
-plt.title(r'$\lambda$ vs $\delta$')
+plt.title(r'$\lambda$ vs $\delta$; pump = '+str(pump_mode))
 plt.grid(True)
 plt.legend(loc="best")
 plt.tight_layout()
 plt.savefig(datadir+f"growth_rate_vs_delta_pump_mode_{pump_mode}.pdf", bbox_inches="tight")
 plt.show()
+# %%

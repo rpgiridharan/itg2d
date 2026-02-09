@@ -65,6 +65,11 @@ def one_over(x):
     out = np.zeros_like(x)
     return np.divide(1.0, x, out=out, where=x != 0)
 
+def format_sci_plain(value):
+    if value == 0:
+        return '0'
+    return f"{value:.0e}"
+
 #%% Initialize
 
 Npx,Npy=4096,4096
@@ -84,11 +89,13 @@ base_pars={'kapn':kapn,
 
 #%% Compute om
 
+D0 = 1e-1
+H0 = 2e-5
 cases = [
     {'D': 0.0, 'H': 0.0, 'label': '$D=0, H=0$'},
-    {'D': 1e-2, 'H': 0.0, 'label': '$D=10^{-2}, H=0$'},
-    {'D': 0.0, 'H': 2e-5, 'label': '$D=0, H=2\\times10^{-5}$'},
-    {'D': 1e-2, 'H': 2e-5, 'label': '$D=10^{-2}, H=2\\times10^{-5}$'},
+    {'D': D0, 'H': 0.0, 'label': f'$D={format_sci_plain(D0)}, H=0$'},
+    {'D': 0.0, 'H': H0, 'label': f'$D=0, H={format_sci_plain(H0)}$'},
+    {'D': D0, 'H': H0, 'label': f'$D={format_sci_plain(D0)}, H={format_sci_plain(H0)}$'},
 ]
 
 results = []
@@ -137,7 +144,7 @@ slny16 = slice(1, int(Ny/16))
 plt.figure(figsize=(16,9))
 for item in results:
     plt.plot(ky[0,slny16].T, item['gam_kxmax'][slny16].T, '.-', label=item['case']['label'])
-plt.plot(ky[0,slny16], -0.01*ky[0,slny16]**2, 'k--', label=f'$-Dk_y^2$')
+plt.plot(ky[0,slny16], -D0*ky[0,slny16]**2, 'k--', label=f'$-Dk_y^2$')
 plt.axhline(0,color='k', linestyle='-', linewidth=1)
 plt.legend()
 plt.grid(which='major', linestyle='--', linewidth=0.5)
@@ -152,14 +159,14 @@ plt.show()
 plt.figure(figsize=(16,9))
 for item in results:
     plt.plot(ky[0,slny16].T, item['Dturb_kxmax'][slny16].T, '.-', label=item['case']['label'])
-plt.plot(ky[0,slny16], -0.01*np.ones_like(ky[0,slny16]), 'k--', label=f'$-D$')
+plt.plot(ky[0,slny16], -D0*np.ones_like(ky[0,slny16]), 'k--', label=f'$-D$')
 plt.axhline(0,color='k', linestyle='-', linewidth=1)
 plt.legend()
 plt.grid(which='major', linestyle='--', linewidth=0.5)
 plt.xlabel('$k_y$')
 plt.ylabel('$\\left(\\frac{\\gamma}{k_y^2}\\right)$')
 plt.title('$\\left(\\frac{\\gamma}{k_y^2}\\right)$ vs $k_y$')
-plt.ylim(-0.1*results[2]['Dturbmax'], 1.5*results[2]['Dturbmax'])
+plt.ylim(-1.5*D0, 1.75*results[2]['Dturbmax'])
 plt.tight_layout()
 plt.savefig(f'data_linear/Dturb_vs_ky_kapt_{str(kapt).replace(".", "_")}_itg2d_comp.pdf',dpi=100)
 plt.show()
