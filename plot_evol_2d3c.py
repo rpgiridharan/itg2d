@@ -29,7 +29,8 @@ plt.rcParams.update({
     'axes.labelsize': 20,
     'xtick.labelsize': 16,
     'ytick.labelsize': 16,
-    'legend.fontsize': 16
+    'legend.fontsize': 16,
+    'legend.edgecolor': 'black'
 })
 
 #%% Load the HDF5 file

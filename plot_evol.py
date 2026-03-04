@@ -31,7 +31,8 @@ plt.rcParams.update({
     'axes.labelsize': 20,
     'xtick.labelsize': 16,
     'ytick.labelsize': 16,
-    'legend.fontsize': 16
+    'legend.fontsize': 16,
+    'legend.edgecolor': 'black'
 })
 
 #%% Load the HDF5 file
@@ -40,8 +41,8 @@ plt.rcParams.update({
 Npx=1024
 datadir=f'data/{Npx}/'
 
-# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
-fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
+fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
 # fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5.h5'
 
 # kapt=2.0
@@ -174,7 +175,7 @@ gen_energy_local = np.zeros(len(local_indices), dtype=np.float64)
 gen_energy_ZF_local = np.zeros(len(local_indices), dtype=np.float64)
 entropy_local = np.zeros(len(local_indices), dtype=np.float64)
 Ombar_local = np.zeros(len(local_indices), dtype=np.float64)
-Q_local = np.zeros(len(local_indices), dtype=np.float64)
+Qbox_local = np.zeros(len(local_indices), dtype=np.float64)
 electric_reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
 diamagnetic_reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
 reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
@@ -193,7 +194,7 @@ with h5.File(fname, 'r', swmr=True) as fl:
         vy   = irft2(1j*kx*Phik)
         wx   = irft2(-1j*ky*Pk)
         Ombar = np.mean(Om, axis=1)
-        Q_x     = np.mean(P*vx, axis=1)
+        Q     = np.mean(P*vx, axis=1)
         RPhi  = np.mean(vy*vx, axis=1)
         RP    = np.mean(vy*wx, axis=1)
 
@@ -210,13 +211,13 @@ with h5.File(fname, 'r', swmr=True) as fl:
         gen_energy_ZF_local[idx] = G_ZF(Omk, ky, kpsq, slbar)
         entropy_local[idx] = S(Omk, kpsq)
         Ombar_local[idx] = np.mean(Ombar)
-        Q_local[idx] = np.mean(Q_x)
+        Qbox_local[idx] = np.mean(Q)
         electric_reynolds_power_local[idx] = np.mean(RPhi * Ombar)
         diamagnetic_reynolds_power_local[idx] = np.mean(RP * Ombar)
         reynolds_power_local[idx] = np.mean((RPhi + RP) * Ombar)
 
 # Gather results from all processes
-P2_t = P2_ZF_t = energy_t = energy_ZF_t = kin_energy_t = kin_energy_ZF_t = enstrophy_t = enstrophy_ZF_t = gen_energy_t = gen_energy_ZF_t = entropy_t = Ombar_t = Q_t = electric_reynolds_power_t = diamagnetic_reynolds_power_t = reynolds_power_t = None
+P2_t = P2_ZF_t = energy_t = energy_ZF_t = kin_energy_t = kin_energy_ZF_t = enstrophy_t = enstrophy_ZF_t = gen_energy_t = gen_energy_ZF_t = entropy_t = Ombar_t = Qbox_t = electric_reynolds_power_t = diamagnetic_reynolds_power_t = reynolds_power_t = None
 
 if rank == 0:
     P2_t = np.zeros(nt)
@@ -231,7 +232,7 @@ if rank == 0:
     gen_energy_ZF_t = np.zeros(nt)
     entropy_t = np.zeros(nt)
     Ombar_t = np.zeros(nt)
-    Q_t = np.zeros(nt)
+    Qbox_t = np.zeros(nt)
     electric_reynolds_power_t = np.zeros(nt)
     diamagnetic_reynolds_power_t = np.zeros(nt)
     reynolds_power_t = np.zeros(nt)
@@ -248,7 +249,7 @@ comm.Gather(gen_energy_local, gen_energy_t, root=0)
 comm.Gather(gen_energy_ZF_local, gen_energy_ZF_t, root=0)
 comm.Gather(entropy_local, entropy_t, root=0)
 comm.Gather(Ombar_local, Ombar_t, root=0)
-comm.Gather(Q_local, Q_t, root=0)
+comm.Gather(Qbox_local, Qbox_t, root=0)
 comm.Gather(electric_reynolds_power_local, electric_reynolds_power_t, root=0)
 comm.Gather(diamagnetic_reynolds_power_local, diamagnetic_reynolds_power_t, root=0)
 comm.Gather(reynolds_power_local, reynolds_power_t, root=0)
@@ -267,12 +268,11 @@ if rank == 0:
 
     # Plot variance(P) vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], P2_t, label = '$P_{total}$')
+    plt.semilogy(t[:nt], P2_t, label = '$P_{total}^2$')
     plt.semilogy(t[:nt], P2_ZF_t, label = '$P_{ZF}^2$')
     plt.semilogy(t[:nt], P2_t, label = '$P_{turb}^2$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$P^2$')
-    plt.title('$P^2$ vs $\\gamma$ t')
+    plt.xlabel(r'$\gamma t$')
+    plt.ylabel(r'$\langle P^2\rangle$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -284,12 +284,11 @@ if rank == 0:
 
     # Plot total energy vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], energy_t, label = '$\\mathcal{E}_{total}$')
-    plt.semilogy(t[:nt], energy_ZF_t, label = '$\\mathcal{E}_{ZF}$')
-    plt.semilogy(t[:nt], energy_turb_t, label = '$\\mathcal{E}_{turb}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{E}$')
-    plt.title('Total Energy vs $\\gamma$ t')
+    plt.semilogy(t[:nt], energy_t, label = r'$\mathcal{E}_{total}$')
+    plt.semilogy(t[:nt], energy_ZF_t, label = r'$\mathcal{E}_{ZF}$')
+    plt.semilogy(t[:nt], energy_turb_t, label = r'$\mathcal{E}_{turb}$')
+    plt.xlabel(r'$\gamma t$')
+    plt.ylabel(r'$\mathcal{E}$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -301,10 +300,9 @@ if rank == 0:
 
     # Plot zonal energy fraction vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
-    plt.title('Zonal energy fraction vs $\\gamma$ t')
+    plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = r'$\mathcal{E}_{ZF}/\mathcal{E}$')
+    plt.xlabel(r'$\gamma t$')
+    plt.ylabel(r'$\mathcal{E}_{ZF}/\mathcal{E}$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -316,12 +314,11 @@ if rank == 0:
 
     # # Plot kinetic energy vs time
     # plt.figure(figsize=(8,6))
-    # plt.semilogy(t[:nt], kin_energy_t, label = '$\\mathcal{E}_{kin,total}$')
-    # plt.semilogy(t[:nt], kin_energy_ZF_t, label = '$\\mathcal{E}_{kin,ZF}$')
-    # plt.semilogy(t[:nt], kin_energy_turb_t, label = '$\\mathcal{E}_{kin,turb}$')
-    # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\mathcal{E}_{kin}$')
-    # plt.title('Kinetic Energy vs $\\gamma$ t')
+    # plt.semilogy(t[:nt], kin_energy_t, label = r'$\mathcal{E}_{kin,total}$')
+    # plt.semilogy(t[:nt], kin_energy_ZF_t, label = r'$\mathcal{E}_{kin,ZF}$')
+    # plt.semilogy(t[:nt], kin_energy_turb_t, label = r'$\mathcal{E}_{kin,turb}$')
+    # plt.xlabel(r'$\gamma t$')
+    # plt.ylabel(r'$\mathcal{E}_{kin}$')
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
@@ -333,12 +330,11 @@ if rank == 0:
 
     # Plot generalized energy vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], gen_energy_t, label = '$\\mathcal{G}$')
-    plt.semilogy(t[:nt], gen_energy_ZF_t, label = '$\\mathcal{G}_{ZF}$')
-    plt.semilogy(t[:nt], gen_energy_turb_t, label = '$\\mathcal{G}_{turb}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{G}$')
-    plt.title('Generalized Energy vs $\\gamma$ t')
+    plt.semilogy(t[:nt], gen_energy_t, label = r'$\mathcal{G}$')
+    plt.semilogy(t[:nt], gen_energy_ZF_t, label = r'$\mathcal{G}_{ZF}$')
+    plt.semilogy(t[:nt], gen_energy_turb_t, label = r'$\mathcal{G}_{turb}$')
+    plt.xlabel(r'$\gamma t$')
+    plt.ylabel(r'$\mathcal{G}$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -350,10 +346,9 @@ if rank == 0:
 
     # # Plot hyd. entropy vs time
     # plt.figure(figsize=(8,6))
-    # plt.semilogy(t[:nt], entropy_t, label = '$\\mathcal{S}$')
-    # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\mathcal{S}=-\\sum_{\\mathbf{k}}p_{\\mathbf{k}}\\log p_{\\mathbf{k}}$')
-    # plt.title('Entropy vs $\\gamma$ t')
+    # plt.semilogy(t[:nt], entropy_t, label = r'$\mathcal{S}$')
+    # plt.xlabel(r'$\gamma t$')
+    # plt.ylabel(r'$\mathcal{S}=-\sum_{\mathbf{k}}p_{\mathbf{k}}\log p_{\mathbf{k}}$')
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
@@ -365,27 +360,25 @@ if rank == 0:
 
     # Plot Q vs time
     plt.figure(figsize=(16, 9))
-    plt.plot(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
-    plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{Q}$')
-    plt.title('$\\mathcal{Q}$ vs $\\gamma t$')
+    plt.plot(t[:nt], Qbox_t, '-', label = r'$\mathcal{Q}_{box}$')
+    plt.xlabel(r'$\gamma t$')
+    plt.ylabel(r'$\mathcal{Q}_{box}$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
     if fname.endswith('out.h5'):
-        plt.savefig(datadir+'Q_vs_t.pdf',dpi=100)
+        plt.savefig(datadir+'Qbox_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Qbox_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     # Plot Reynolds power vs time
     plt.figure(figsize=(16, 9))
-    plt.plot(t[:nt], electric_reynolds_power_t, '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
-    plt.plot(t[:nt], diamagnetic_reynolds_power_t, '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
-    plt.plot(t[:nt], reynolds_power_t, '-', label = '$<R \\partial_x \\bar{v}_y>$')
-    plt.xlabel('$\\gamma t$')
+    plt.plot(t[:nt], electric_reynolds_power_t, '-', label = r'$<R_{\phi} \partial_x \bar{v}_y>$')
+    plt.plot(t[:nt], diamagnetic_reynolds_power_t, '-', label = r'$<R_{d}  \partial_x \bar{v}_y>$')
+    plt.plot(t[:nt], reynolds_power_t, '-', label = r'$<R \partial_x \bar{v}_y>$')
+    plt.xlabel(r'$\gamma t$')
     plt.ylabel('Reynolds power')
-    plt.title('Reynolds power vs $\\gamma t$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -397,12 +390,11 @@ if rank == 0:
 
     # Plot Cumulative Reynolds power vs time
     plt.figure(figsize=(16, 9))
-    plt.plot(t[:nt], np.cumsum(electric_reynolds_power_t), '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
-    plt.plot(t[:nt], np.cumsum(diamagnetic_reynolds_power_t), '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
-    plt.plot(t[:nt], np.cumsum(reynolds_power_t), '-', label = '$<R \\partial_x \\bar{v}_y>$')
-    plt.xlabel('$\\gamma t$')
+    plt.plot(t[:nt], np.cumsum(electric_reynolds_power_t), '-', label = r'$<R_{\phi} \partial_x \bar{v}_y>$')
+    plt.plot(t[:nt], np.cumsum(diamagnetic_reynolds_power_t), '-', label = r'$<R_{d}  \partial_x \bar{v}_y>$')
+    plt.plot(t[:nt], np.cumsum(reynolds_power_t), '-', label = r'$<R \partial_x \bar{v}_y>$')
+    plt.xlabel(r'$\gamma t$')
     plt.ylabel('Cumulative Reynolds power')
-    plt.title('Cumulative Reynolds power vs $\\gamma t$')
     plt.grid()
     plt.legend()
     plt.tight_layout()

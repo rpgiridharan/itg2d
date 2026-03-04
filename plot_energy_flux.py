@@ -34,7 +34,8 @@ plt.rcParams.update({
     'axes.labelsize': 20,
     'xtick.labelsize': 16,
     'ytick.labelsize': 16,
-    'legend.fontsize': 16
+    'legend.fontsize': 16,
+    'legend.edgecolor': 'black'
 })
 
 #%% Load the HDF5 file
@@ -43,8 +44,8 @@ plt.rcParams.update({
 Npx=1024
 datadir=f'data/{Npx}/'
 
-# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
-fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
+fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
 # fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5.h5'
 
 # kapt=1.0
@@ -215,16 +216,15 @@ if rank == 0:
 #%% Plots
 if rank == 0:
     plt.figure(figsize=(16, 9))
-    plt.plot(k[1:-1], Pik[1:-1], label = '$\\Pi_{k}$')
-    plt.plot(k[1:-1], Pik_phi[1:-1], label = '$\\Pi_{k,\\phi}$')
-    plt.plot(k[1:-1], Pik_d[1:-1], label = '$\\Pi_{k,d}$')
+    plt.plot(k[1:-1], Pik[1:-1], label = r'$\Pi_{k}$')
+    plt.plot(k[1:-1], Pik_phi[1:-1], label = r'$\Pi_{k,\phi}$')
+    plt.plot(k[1:-1], Pik_d[1:-1], label = r'$\Pi_{k,d}$')
     plt.axhline(0,color='k', linestyle='-', linewidth=1)
     plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
     plt.axvline(x=k_lin, color='k', linestyle='-.', linewidth=2, label=f'$k_{{lin}}={k_lin:.2f}$')
     plt.xscale('log')
     plt.xlabel('$k$')
-    plt.ylabel('$\\Pi_k$')
-    plt.title(f'$\\Pi_k$ for $\\kappa_T={kapt:.2f}$')
+    plt.ylabel(r'$\Pi_k$')
     plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
@@ -236,13 +236,12 @@ if rank == 0:
     plt.show()
 
     plt.figure(figsize=(16, 9))
-    plt.plot(k[1:-1], fk[1:-1], label = '$\\mathcal{f}_{k,total}$')
+    plt.plot(k[1:-1], fk[1:-1], label = r'$\mathcal{f}_{k,total}$')
     plt.axhline(0,color='k', linestyle='-', linewidth=1)
     plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
     plt.xscale('log')
     plt.xlabel('$k$')
-    plt.ylabel('$\\mathcal{f}_k$')
-    plt.title(f'$\\mathcal{{f}}_k$ for $\\kappa_T={kapt:.2f}$')
+    plt.ylabel(r'$\mathcal{f}_k$')
     plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
@@ -254,13 +253,12 @@ if rank == 0:
     plt.show()
 
     plt.figure(figsize=(16, 9))
-    plt.plot(k[1:-1], dk[1:-1], label = '$\\mathcal{d}_{k,total}$')
+    plt.plot(k[1:-1], dk[1:-1], label = r'$\mathcal{d}_{k,total}$')
     plt.axhline(0,color='k', linestyle='-', linewidth=1)
     plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
     plt.xscale('log')
     plt.xlabel('$k$')
-    plt.ylabel('$\\mathcal{d}_k$')
-    plt.title(f'$\\mathcal{{d}}_k$ for $\\kappa_T={kapt:.2f}$')
+    plt.ylabel(r'$\mathcal{d}_k$')
     plt.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
@@ -281,10 +279,12 @@ if rank == 0:
         kde = gaussian_kde(series)
         x_range = np.linspace(series.min(), series.max(), 200)
         plt.hist(series, bins=50, density=True, alpha=0.3, color=color)
-        plt.plot(x_range, kde(x_range), label=f'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
-    plt.xlabel('$\\frac{\\Pi_k-<\\Pi_k>}{\\sigma}$')
+        plt.plot(x_range, kde(x_range), label=rf'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
+    plt.xlabel(r'$\frac{\Pi_k-<\Pi_k>}{\sigma}$')
     plt.ylabel('PDF')
-    plt.title(f'PDF of $\\Pi_k$ at $k_f={k_f:.2f}$')
+    plt.gca().text(0.97, 0.97, rf'$k_f={k_f:.2f}$', transform=plt.gca().transAxes,
+        fontsize=20, verticalalignment='top', horizontalalignment='right',
+        bbox=dict(boxstyle='round', facecolor='white', edgecolor='black', alpha=0.8))
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
@@ -304,10 +304,12 @@ if rank == 0:
         kde = gaussian_kde(series)
         x_range = np.linspace(series.min(), series.max(), 200)
         plt.hist(series, bins=50, density=True, alpha=0.3, color=color)
-        plt.plot(x_range, kde(x_range), label=f'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
-    plt.xlabel('$\\frac{\\Pi_k-<\\Pi_k>}{\\sigma}$')
+        plt.plot(x_range, kde(x_range), label=rf'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
+    plt.xlabel(r'$\frac{\Pi_k-<\Pi_k>}{\sigma}$')
     plt.ylabel('PDF')
-    plt.title(f'PDF of $\\Pi_k$ at $k_{{lin}}={k_lin:.2f}$')
+    plt.gca().text(0.97, 0.97, rf'$k_{{lin}}={k_lin:.2f}$', transform=plt.gca().transAxes,
+        fontsize=20, verticalalignment='top', horizontalalignment='right',
+        bbox=dict(boxstyle='round', facecolor='white', edgecolor='black', alpha=0.8))
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
@@ -327,10 +329,12 @@ if rank == 0:
         kde = gaussian_kde(series)
         x_range = np.linspace(series.min(), series.max(), 200)
         plt.hist(series, bins=50, density=True, alpha=0.3, color=color)
-        plt.plot(x_range, kde(x_range), label=f'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
-    plt.xlabel('$\\frac{\\Pi_k-<\\Pi_k>}{\\sigma}$')
+        plt.plot(x_range, kde(x_range), label=rf'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
+    plt.xlabel(r'$\frac{\Pi_k-<\Pi_k>}{\sigma}$')
     plt.ylabel('PDF')
-    plt.title(f'PDF of $\\Pi_k$ at $k=1$')
+    plt.gca().text(0.97, 0.97, r'$k=1$', transform=plt.gca().transAxes,
+        fontsize=20, verticalalignment='top', horizontalalignment='right',
+        bbox=dict(boxstyle='round', facecolor='white', edgecolor='black', alpha=0.8))
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()

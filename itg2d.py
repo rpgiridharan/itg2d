@@ -13,8 +13,8 @@ import os
 
 #%% Parameters
 
-# Npx,Npy=512,512
-Npx,Npy=1024,1024
+Npx,Npy=512,512
+# Npx,Npy=1024,1024
 # Npx,Npy=4096,4096
 Lx,Ly=32*np.pi,32*np.pi
 kapt=2.0 # threshold = 0.7
@@ -84,11 +84,11 @@ def fsavecb(t,y,flag):
     elif flag=='fluxes':
         vx=irft2(-1j*ky*Phik) #ExB flow: x comp
         wx=irft2(-1j*ky*Pk) #diamagnetic flow: x comp
-        Q_x=cp.mean(P*vx,1)
-        Q=cp.mean(Q_x)
+        Q=cp.mean(P*vx,1)
+        Qbox=cp.mean(Q)
         RPhi=cp.mean(vy*vx,1)
         RP=cp.mean(vy*wx,1)
-        save_data(fl,'fluxes',ext_flag=True,Q_x=Q_x.get(),Q=Q.get(),RPhi=RPhi.get(),RP=RP.get(),t=t)
+        save_data(fl,'fluxes',ext_flag=True,Q=Q.get(),Qbox=Qbox.get(),RPhi=RPhi.get(),RP=RP.get(),t=t)
     save_data(fl,'last',ext_flag=False,zk=zk.get(),t=t)
 
 def fshowcb(t,y):
@@ -96,10 +96,10 @@ def fshowcb(t,y):
     Phik,Pk=zk[:Nk],zk[Nk:]
     vx=irft2(-1j*ky*Phik)
     P=irft2(Pk)
-    Q=np.mean(vx*P)
+    Qbox=cp.mean(P*vx)
     Ktot = np.sum(kpsq*np.abs(Phik)**2)
     Kbar = np.sum((kx[slbar]*np.abs(Phik[slbar]))**2)
-    print(f'Ktot={Ktot:.3g}, Kbar/Ktot={Kbar/Ktot*100:.3g}%, Q={Q.get():.3g}')
+    print(f'Ktot={Ktot:.3g}, Kbar/Ktot={Kbar/Ktot*100:.3g}%, Qbox={Qbox.get():.3g}')
 
 def rhs_itg(t,y):
     zk=y.view(dtype=complex)

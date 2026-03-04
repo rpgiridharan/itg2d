@@ -7,22 +7,23 @@ import matplotlib.pyplot as plt
 import torch 
 import h5py
 
-plt.rcParams['lines.linewidth'] = 4
-plt.rcParams['axes.linewidth'] = 3  
-plt.rcParams['xtick.major.width'] = 3
-plt.rcParams['ytick.major.width'] = 3
-plt.rcParams['xtick.minor.visible'] = True
-plt.rcParams['ytick.minor.visible'] = True
-plt.rcParams['xtick.minor.width'] = 1.5 
-plt.rcParams['ytick.minor.width'] = 1.5 
-plt.rcParams['savefig.dpi'] = 100
 plt.rcParams.update({
-    "font.size": 22,          # default text
-    "axes.titlesize": 30,     # figure title
-    "axes.labelsize": 26,     # x/y labels
-    "xtick.labelsize": 20,
-    "ytick.labelsize": 20,
-    "legend.fontsize": 22
+    'lines.linewidth': 4,
+    'axes.linewidth': 3,
+    'xtick.major.width': 3,
+    'ytick.major.width': 3,
+    'xtick.minor.visible': True,
+    'ytick.minor.visible': True,
+    'xtick.minor.width': 1.5,
+    'ytick.minor.width': 1.5,
+    'savefig.dpi': 100,
+    'font.size': 20,
+    'axes.titlesize': 22,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16,
+    'legend.edgecolor': 'black'
 })
 
 #%% Initialize

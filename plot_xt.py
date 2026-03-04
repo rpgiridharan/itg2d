@@ -10,9 +10,24 @@ from modules.gamma import gam_max
 import os
 import glob 
 
-plt.rcParams['lines.linewidth'] = 4
-plt.rcParams['font.size'] = 16
-plt.rcParams['axes.linewidth'] = 3  
+plt.rcParams.update({
+    'lines.linewidth': 4,
+    'axes.linewidth': 3,
+    'xtick.major.width': 3,
+    'ytick.major.width': 3,
+    'xtick.minor.visible': True,
+    'ytick.minor.visible': True,
+    'xtick.minor.width': 1.5,
+    'ytick.minor.width': 1.5,
+    'savefig.dpi': 100,
+    'font.size': 20,
+    'axes.titlesize': 22,
+    'axes.labelsize': 20,
+    'xtick.labelsize': 16,
+    'ytick.labelsize': 16,
+    'legend.fontsize': 16,
+    'legend.edgecolor': 'black'
+})
 
 #%% Load the HDF5 file
 
@@ -32,13 +47,15 @@ fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
 # else:
 #     fname = files[0]
 
+# Downsample time axis to reduce memory usage
+stride = 4
+
 with h5.File(fname, 'r', swmr=True) as fl:
-    Q_t = fl['fluxes/Q'][:]
-    RPhi_t = fl['fluxes/RPhi'][:]
-    RP_t = fl['fluxes/RP'][:]
-    vbar_t = fl['zonal/vbar'][:]
-    Ombar_t = fl['zonal/Ombar'][:]
-    t = fl['fluxes/t'][:]
+    RPhi_t = fl['fluxes/RPhi'][::stride].astype(np.float32)
+    RP_t = fl['fluxes/RP'][::stride].astype(np.float32)
+    vbar_t = fl['zonal/vbar'][::stride].astype(np.float32)
+    dxvbar_t = fl['zonal/Ombar'][::stride].astype(np.float32)
+    t = fl['fluxes/t'][::stride].astype(np.float32)
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
     Lx = fl['params/Lx'][()]
@@ -67,215 +84,158 @@ slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 
 xl,yl=np.arange(0,Lx,Lx/Npx),np.arange(0,Ly,Ly/Npy)
 x,y=np.meshgrid(np.array(xl),np.array(yl),indexing='ij')
-
-dxvbar_t = Ombar_t
-R_t = RPhi_t + RP_t
-RP_frac_t = RP_t / R_t
-PPhi_t = RPhi_t*dxvbar_t
-PP_t = RP_t*dxvbar_t
-P_t = PPhi_t + PP_t
-PP_frac_t = PP_t / P_t
-
-vbar_lim = np.mean(np.abs(vbar_t))
-dxvbar_lim = np.mean(np.abs(dxvbar_t))
-RPhi_lim = np.mean(np.abs(RPhi_t))
-RP_lim = np.mean(np.abs(RP_t))
-R_lim = np.mean(np.abs(R_t))
-RP_frac_lim = np.mean(np.abs(RP_frac_t))
-PPhi_lim = np.mean(np.abs(PPhi_t))
-PP_lim = np.mean(np.abs(PP_t))
-P_lim = np.mean(np.abs(P_t))
-PP_frac_lim = np.mean(np.abs(PP_frac_t))
-
-#%% Plots
-
-# Create meshgrid with proper dimensions for pcolor
-nt_data = min(nt, vbar_t.shape[0])  # to not exceed array bounds
+nt_data = min(nt, vbar_t.shape[0])
 xm, tm = np.meshgrid(x[:, 0], t[:nt_data])
 
-fig, axs = plt.subplots(2, 4, figsize=(16, 9),sharey=True)  # 2 rows, 4 columns
+R_t = RPhi_t + RP_t
+del RPhi_t, RP_t
+
+vbar_lim   = float(np.percentile(np.abs(vbar_t),75))
+dxvbar_lim = float(np.percentile(np.abs(dxvbar_t),75))
+R_lim      = float(np.percentile(np.abs(R_t),75))
+P_lim      = float(np.percentile(np.abs(R_t[:nt_data] * dxvbar_t[:nt_data]),75))
+
+#%% Overview 2x2
+
+P_t = R_t[:nt_data] * dxvbar_t[:nt_data]
+fig, axs = plt.subplots(2, 2, figsize=(16, 9), sharey=True)
 axs[0, 0].pcolormesh(xm, tm, vbar_t[:nt_data,:], vmin=-vbar_lim, vmax=vbar_lim, cmap='seismic')
 axs[0, 0].set_title('Zonal flow: $\\partial_x\\overline{\\phi}$')
 axs[0, 0].set_xlabel('x')
 axs[0, 0].set_ylabel('$\\gamma t$')
 
-axs[0, 1].pcolormesh(xm, tm, RPhi_t[:nt_data,:], vmin=-RPhi_lim, vmax=RPhi_lim, cmap='seismic')
-axs[0, 1].set_title('Electric Reynolds Stress: $R_\\phi$')
-axs[0, 0].set_xlabel('x')
-
-axs[0, 2].pcolormesh(xm, tm, PP_t[:nt_data,:], vmin=-PP_lim, vmax=PP_lim, cmap='seismic')
-axs[0, 2].set_title('Diamagnetic Reynolds Stress: $R_d$')
-axs[0, 0].set_xlabel('x')
-
-axs[0, 3].pcolormesh(xm, tm, R_t[:nt_data,:], vmin=-R_lim, vmax=R_lim, cmap='seismic')
-axs[0, 3].set_title('Reynolds Stress: $R$')
-axs[0, 0].set_xlabel('x')
+axs[0, 1].pcolormesh(xm, tm, R_t[:nt_data,:], vmin=-R_lim, vmax=R_lim, cmap='seismic')
+axs[0, 1].set_title('Reynolds Stress: $R$')
+axs[0, 1].set_xlabel('x')
 
 axs[1, 0].pcolormesh(xm, tm, dxvbar_t[:nt_data,:], vmin=-dxvbar_lim, vmax=dxvbar_lim, cmap='seismic')
 axs[1, 0].set_title('Zonal shear: $\\partial_x^2\\overline{\\phi}$')
-axs[0, 0].set_xlabel('x')
-axs[0, 0].set_ylabel('$\\gamma t$')
+axs[1, 0].set_xlabel('x')
+axs[1, 0].set_ylabel('$\\gamma t$')
 
-axs[1, 1].pcolormesh(xm, tm, PPhi_t[:nt_data,:], vmin=-PPhi_lim, vmax=PPhi_lim, cmap='seismic')
-axs[1, 1].set_title('$R_\\phi$ production: $P_\\phi$')
-axs[0, 0].set_xlabel('x')
-
-axs[1, 2].pcolormesh(xm, tm, PP_t[:nt_data,:], vmin=-PP_lim, vmax=PP_lim, cmap='seismic')
-axs[1, 2].set_title('$R_d$ production: $P_d$')
-axs[0, 0].set_xlabel('x')
-
-axs[1, 3].pcolormesh(xm, tm, P_t[:nt_data,:], vmin=-P_lim, vmax=P_lim, cmap='seismic')
-axs[1, 3].set_title('$R$ production: $P$')
-axs[0, 0].set_xlabel('x')
+axs[1, 1].pcolormesh(xm, tm, P_t[:nt_data,:], vmin=-P_lim, vmax=P_lim, cmap='seismic')
+axs[1, 1].set_title('$R$ production: $P$')
+axs[1, 1].set_xlabel('x')
+del P_t
 
 fig.suptitle(f'$\\kappa_T={kapt}$, $D={D}$', fontsize=20, y=1.03)
 plt.tight_layout()
 if fname.endswith('out.h5'):
-    plt.savefig(datadir+'R_and_P_xt_plots.png', dpi=300, bbox_inches='tight')
+    plt.savefig(datadir+'R_and_P_xt_plots.pdf', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'R_and_P_xt_plots_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'R_and_P_xt_plots_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
 plt.show()
+plt.close()
 
-plt.figure(figsize=(16, 9))  
+#%% Zonal flow
+
+plt.figure(figsize=(16, 9))
 plt.pcolormesh(xm, tm, vbar_t[:nt_data,:], vmin=-vbar_lim, vmax=vbar_lim, cmap='seismic')
 plt.xlabel('x')
 plt.ylabel('$\\gamma t$')
 plt.title('Zonal flow: $\\partial_x\\overline{\\phi}$')
 plt.colorbar()
-plt.tight_layout(pad=0.5) 
+plt.tight_layout(pad=0.5)
 if fname.endswith('out.h5'):
-    plt.savefig(datadir+'vbar_xt.png', dpi=300, bbox_inches='tight')
+    plt.savefig(datadir+'vbar_xt.pdf', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'vbar_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'vbar_xt_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
 plt.show()
+plt.close()
+del vbar_t
 
-plt.figure(figsize=(16, 9)) 
-plt.pcolormesh(xm, tm, dxvbar_t[:nt_data,:], vmin=-dxvbar_lim, vmax=dxvbar_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('Zonal shear: $\\partial_x^2\\overline{\\phi}$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
+#%% Reynolds stresses
+# Reload RPhi_t and RP_t from disk (freed earlier to save memory)
+with h5.File(fname, 'r', swmr=True) as fl:
+    RPhi_t = fl['fluxes/RPhi'][::stride].astype(np.float32)
+    RP_t   = fl['fluxes/RP'][::stride].astype(np.float32)
+
+RPhi_lim = float(np.percentile(np.abs(RPhi_t),75))
+RP_lim   = float(np.percentile(np.abs(RP_t),75))
+
+fig, axs = plt.subplots(1, 3, figsize=(16, 9), sharey=True)
+
+axs[0].pcolormesh(xm, tm, RPhi_t[:nt_data,:], vmin=-RPhi_lim, vmax=RPhi_lim, cmap='seismic')
+axs[0].set_title('$R_\\phi$')
+axs[0].set_xlabel('x')
+axs[0].set_ylabel('$\\gamma t$')
+fig.colorbar(axs[0].collections[0], ax=axs[0])
+PPhi_t = RPhi_t[:nt_data] * dxvbar_t[:nt_data]
+PPhi_lim = float(np.percentile(np.abs(PPhi_t),75))
+del RPhi_t
+
+axs[1].pcolormesh(xm, tm, RP_t[:nt_data,:], vmin=-RP_lim, vmax=RP_lim, cmap='seismic')
+axs[1].set_title('$R_d$')
+axs[1].set_xlabel('x')
+fig.colorbar(axs[1].collections[0], ax=axs[1])
+PP_t = RP_t[:nt_data] * dxvbar_t[:nt_data]
+PP_lim = float(np.percentile(np.abs(PP_t),75))
+del RP_t, dxvbar_t
+
+axs[2].pcolormesh(xm, tm, R_t[:nt_data,:], vmin=-R_lim, vmax=R_lim, cmap='seismic')
+axs[2].set_title('$R=R_\\phi + R_d$')
+axs[2].set_xlabel('x')
+fig.colorbar(axs[2].collections[0], ax=axs[2])
+del R_t
+
+fig.suptitle('Reynolds Stress', fontsize=20)
+plt.tight_layout()
 if fname.endswith('out.h5'):
-    plt.savefig(datadir+'Ombar_xt.png', dpi=300, bbox_inches='tight')
+    plt.savefig(datadir+'R_xt.pdf', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Ombar_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'R_xt_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
 plt.show()
+plt.close()
 
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, RPhi_t[:nt_data,:], vmin=-RPhi_lim, vmax=RPhi_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('Electric Reynolds Stress: $R_\\phi$')
-plt.colorbar()
-plt.tight_layout(pad=0.5)  
+#%% Reynolds stress production
+
+fig, axs = plt.subplots(1, 3, figsize=(16, 9), sharey=True)
+
+axs[0].pcolormesh(xm, tm, PPhi_t[:nt_data,:], vmin=-PPhi_lim, vmax=PPhi_lim, cmap='seismic')
+axs[0].set_title('$P_\\phi$')
+axs[0].set_xlabel('x')
+axs[0].set_ylabel('$\\gamma t$')
+fig.colorbar(axs[0].collections[0], ax=axs[0])
+
+axs[1].pcolormesh(xm, tm, PP_t[:nt_data,:], vmin=-PP_lim, vmax=PP_lim, cmap='seismic')
+axs[1].set_title('$P_d$')
+axs[1].set_xlabel('x')
+fig.colorbar(axs[1].collections[0], ax=axs[1])
+
+P_t = PPhi_t + PP_t
+del PPhi_t, PP_t
+axs[2].pcolormesh(xm, tm, P_t[:nt_data,:], vmin=-P_lim, vmax=P_lim, cmap='seismic')
+axs[2].set_title('$P=P_\\phi + P_d$')
+axs[2].set_xlabel('x')
+fig.colorbar(axs[2].collections[0], ax=axs[2])
+del P_t
+
+fig.suptitle('Reynolds stress production', fontsize=20)
+plt.tight_layout()
 if fname.endswith('out.h5'):
-    plt.savefig(datadir+'RPhi_xt.png', dpi=300, bbox_inches='tight')
+    plt.savefig(datadir+'P_xt.pdf', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'RPhi_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'P_xt_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
 plt.show()
+plt.close()
 
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, RP_t[:nt_data,:], vmin=-RP_lim, vmax=RP_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('Diamagnetic Reynolds Stress: $R_d$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'RP_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'RP_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
+#%% Heat flux
 
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, R_t[:nt_data,:], vmin=-R_lim, vmax=R_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('Reynolds Stress: $R=R_\\phi + R_d$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'R_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'R_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
+with h5.File(fname, 'r', swmr=True) as fl:
+    Q_t = fl['fluxes/Q'][::stride].astype(np.float32)
 
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, RP_frac_t[:nt_data,:], vmin=-RP_frac_lim, vmax=RP_frac_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('$R_d / (R_\\phi + R_d)$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'RP_frac_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'RP_frac_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
-
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, PPhi_t[:nt_data,:], vmin=-PPhi_lim, vmax=PPhi_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('$R_\\phi$ production: $P_\\phi$')
-plt.colorbar()
-plt.tight_layout(pad=0.5)  
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'PPhi_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'PPhi_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
-
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, PP_t[:nt_data,:], vmin=-PP_lim, vmax=PP_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('$R_d$ production: $P_d$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'PP_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'PP_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
-
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, P_t[:nt_data,:], vmin=-P_lim, vmax=P_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('$R$ production: $P=P_\\phi + P_d$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'P_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'P_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
-
-plt.figure(figsize=(16, 9))  
-plt.pcolormesh(xm, tm, PP_frac_t[:nt_data,:], vmin=-PP_frac_lim, vmax=PP_frac_lim, cmap='seismic')
-plt.xlabel('x')
-plt.ylabel('$\\gamma t$')
-plt.title('$P_d / (P_\\phi + P_d)$')
-plt.colorbar()
-plt.tight_layout(pad=0.5) 
-if fname.endswith('out.h5'):
-    plt.savefig(datadir+'PP_frac_xt.png', dpi=300, bbox_inches='tight')
-else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'PP_frac_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-plt.show()
-
-Q_lim = np.mean(np.abs(Q_t))
-plt.figure(figsize=(16, 9))  
+Q_lim = float(np.percentile(np.abs(Q_t),90))
+plt.figure(figsize=(16, 9))
 plt.pcolormesh(xm, tm, Q_t[:nt_data,:], vmin=-Q_lim, vmax=Q_lim, cmap='seismic')
 plt.xlabel('x')
 plt.ylabel('$\\gamma t$')
 plt.title('Heat flux: $Q$')
 plt.colorbar()
-plt.tight_layout(pad=0.5)  
+plt.tight_layout(pad=0.5)
 if fname.endswith('out.h5'):
-    plt.savefig(datadir+'Q_xt.png', dpi=300, bbox_inches='tight')
+    plt.savefig(datadir+'Q_xt.pdf', dpi=300, bbox_inches='tight')
 else:
-    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_xt_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
-# plt.show()
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_xt_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
+plt.show()
+plt.close()
+del Q_t, xm, tm
