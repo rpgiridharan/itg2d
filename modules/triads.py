@@ -12,17 +12,12 @@ def make_triad(
 ):
     """Construct a triad in continuous k-space (not constrained to any grid).
 
-    Enforces exact algebraic closure:
-        k + p + q = 0
-
-    Also enforces:
+    Enforces:
+        - k + p + q = 0   
         - nonzero y-components for q,k,p
         - |q| < |k| < |p|
 
-    Notes
-    -----
-    - `q` is sampled by choosing a magnitude and angle.
-    - Use `seed` for reproducibility.
+    Use `seed` for reproducibility.
     """
 
     k2 = kx**2 + ky**2

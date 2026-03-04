@@ -152,9 +152,9 @@ def round_to_nsig(number, n):
 
 #%% More parameters  
 
-output_dir = "data_2d3c/"
+output_dir = f"data_2d3c/{Npx}/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}_case7.h5'
+fname = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}_case7.h5'
 
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,HPhi,HP,slky)
@@ -162,7 +162,7 @@ dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
 t0,t1=0.0,round(600/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
 wecontinue=False
-if not os.path.exists(filename):
+if not os.path.exists(fname):
     wecontinue=False
 
 #%% Run the simulation    
@@ -170,12 +170,12 @@ if not os.path.exists(filename):
 print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
 
 if(wecontinue):
-    fl=h5.File(filename,'r+',libver='latest')
+    fl=h5.File(fname,'r+',libver='latest')
     fl.swmr_mode = True
     zk=fl['last/zk'][()]
     t0=fl['last/t'][()]
 else:
-    fl=h5.File(filename,'w',libver='latest')
+    fl=h5.File(fname,'w',libver='latest')
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)

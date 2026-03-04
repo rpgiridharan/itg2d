@@ -36,8 +36,8 @@ plt.rcParams.update({
 
 comm.Barrier()
 datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024.h5'
-with h5.File(file_name, 'r', swmr=True) as fl:
+fname = datadir+'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024.h5'
+with h5.File(fname, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
     Pk = fl['fields/Pk'][0]
     Vk = fl['fields/Vk'][0]
@@ -190,7 +190,7 @@ gen_energy_ZF_local = np.zeros(len(local_indices), dtype=np.float64)
 entropy_local = np.zeros(len(local_indices), dtype=np.float64)
 Q_local = np.zeros(len(local_indices), dtype=np.float64)
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     for idx, i in enumerate(local_indices):
         print(f"Rank {rank} processing time step {i}")
         Pk = fl['fields/Pk'][i]
@@ -246,7 +246,7 @@ if rank == 0:
     gen_energy_turb_t = gen_energy_t - gen_energy_ZF_t
 
     # Plot variance(P) vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], P2_t, label = '$P_{total}$')
     plt.semilogy(t[:nt], P2_ZF_t, label = '$P_{ZF}^2$')
     plt.semilogy(t[:nt], P2_t, label = '$P_{turb}^2$')
@@ -256,14 +256,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'P2_vs_t.pdf')
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot variance(V) vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], V2_t, label = '$V_{total}$')
     plt.semilogy(t[:nt], V2_ZF_t, label = '$V_{ZF}^2$')
     plt.semilogy(t[:nt], V2_turb_t, label = '$V_{turb}^2$')
@@ -273,14 +273,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'V2_vs_t.pdf')
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'V2_vs_t_').replace('.h5', '.png'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'V2_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot energy vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], energy_t, label = '$\\mathcal{E}_{total}$')
     plt.semilogy(t[:nt], energy_ZF_t, label = '$\\mathcal{E}_{ZF}$')
     plt.semilogy(t[:nt], energy_turb_t, label = '$\\mathcal{E}_{turb}$')
@@ -290,14 +290,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_vs_t.pdf')
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # Plot zonal energy fraction vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
@@ -305,10 +305,10 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'zonal_energy_fraction_vs_t.pdf')
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # # Plot kinetic energy vs time
@@ -322,10 +322,10 @@ if rank == 0:
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
     #     plt.savefig(datadir+'kinetic_energy_vs_t.pdf')
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=100)
+    #     plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     # plt.show()
 
     # # Plot enstrophy vs time
@@ -339,14 +339,14 @@ if rank == 0:
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
     #     plt.savefig(datadir+'enstrophy_vs_t.pdf')
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=100)
+    #     plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.png'), dpi=100)
     # plt.show()
 
     # Plot generalized energy vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], gen_energy_t, label = '$\\mathcal{E}_{gen,total}$')
     plt.semilogy(t[:nt], gen_energy_ZF_t, label = '$\\mathcal{E}_{gen,ZF}$')
     plt.semilogy(t[:nt], gen_energy_turb_t, label = '$\\mathcal{E}_{gen,turb}$')
@@ -356,10 +356,10 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'generalized_energy_vs_t.pdf')
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.png'),dpi=100)
     plt.show()
 
     # # Plot hyd. entropy vs time
@@ -371,14 +371,14 @@ if rank == 0:
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
     #     plt.savefig(datadir+'entropy_vs_t.pdf')
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=100)
+    #     plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.png'), dpi=100)
     # plt.show()
 
     # Plot Q vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{Q}$')
@@ -386,8 +386,8 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'Q_vs_t.pdf')
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.png'), dpi=100)
     plt.show()

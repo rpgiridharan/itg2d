@@ -29,9 +29,9 @@ files = glob.glob(pattern)
 if not files:
     print(f"No file found for kappa_T = {kapt}")
 else:
-    file_name = files[0]
+    fname = files[0]
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     t = fl['fields/t'][:]
     nt = len(t)
     Omk = np.mean(fl['fields/Omk'][-int(nt/2):],axis=0)
@@ -112,10 +112,10 @@ ax.set_title('$log(\\mathcal{E}_k)(k_x, k_y)$')
 ax.view_init(elev=30, azim=-60)
 fig.colorbar(surf, ax=ax, shrink=0.6, aspect=10, pad=0.15)
 plt.tight_layout()
-if file_name.endswith('out.h5'):
+if fname.endswith('out.h5'):
     plt.savefig(datadir+'E_kx_ky_surf.png', dpi=600)
 else:
-    plt.savefig(datadir+"E_kx_ky_surf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"E_kx_ky_surf_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
 #%% Colormesh of log(E_kx_ky)      
@@ -127,10 +127,10 @@ plt.ylabel('$k_y$')
 plt.title('$log(\\mathcal{E}_k)(k_x, k_y)$')
 plt.colorbar()
 plt.tight_layout()
-if file_name.endswith('out.h5'):
+if fname.endswith('out.h5'):
     plt.savefig(datadir+'E_kx_ky.png', dpi=600)
 else:
-    plt.savefig(datadir+"E_kx_ky_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+    plt.savefig(datadir+"E_kx_ky_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()
 
 #%% Colormesh of E_kx_ky 
@@ -143,8 +143,8 @@ plt.ylabel('$k_y$')
 plt.title('$\\mathcal{E}_k(k_x, k_y)$')
 plt.colorbar()
 plt.tight_layout()
-# if file_name.endswith('out.h5'):
+# if fname.endswith('out.h5'):
 #     plt.savefig(datadir+'E_kx_ky.png', dpi=600)
 # else:
-#     plt.savefig(datadir+"E_kx_ky_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
+#     plt.savefig(datadir+"E_kx_ky_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.png'), dpi=600)
 plt.show()

@@ -5,7 +5,8 @@ import cupy as cp
 import matplotlib
 matplotlib.use('Qt5Agg')
 import matplotlib.pyplot as plt
-from modules.mlsarray import Slicelist
+from modules.mlsarray import Slicelist, irft2np
+from functools import partial
 from modules.gamma import gam_max   
 from mpi4py import MPI
 import glob
@@ -35,29 +36,27 @@ plt.rcParams.update({
 
 #%% Load the HDF5 file
 
-datadir='data/'
+# Npx=512
+Npx=1024
+datadir=f'data/{Npx}/'
 
-# file_name = datadir + 'out_kapt_2_0_D_0_01_H_1_1_em5_1024x1024.h5'
-# file_name = datadir + 'out_kapt_2_0_D_0_05_H_9_7_em6_1024x1024.h5'
-file_name = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
-# file_name = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
+# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
+fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5.h5'
 
 # kapt=2.0
-# D=1e-2
+# D=0.1
 # Np=1024
 # pattern = datadir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}*_{Np}x{Np}.h5'
 # files = glob.glob(pattern)
 # if not files:
 #     print(f"No file found for kappa_T = {kapt}")
 # else:
-#     file_name = files[0]
+#     fname = files[0]
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][0]
     Pk = fl['fields/Pk'][0]
-    Ombar = fl['zonal/Ombar'][0]
-    Pbar = fl['zonal/Pbar'][0]
-    Q = fl['fluxes/Q'][0]
     t = fl['fields/t'][:]
     kx = fl['data/kx'][:]
     ky = fl['data/ky'][:]
@@ -69,14 +68,19 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     kapt = fl['params/kapt'][()]
     kapb = fl['params/kapb'][()]
     D = fl['params/D'][()]
-    HPhi = fl['params/HPhi'][()]
-    HP = fl['params/HP'][()]
+    if 'H' in fl['params']:
+        H = fl['params/H'][()]
+    elif 'HP' in fl['params']:
+        HP = fl['params/HP'][()]
+        H=HP
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,H)
 t=t*gammax
+kpsq = kx**2 + ky**2
+irft2 = partial(irft2np, Npx=int(Npx), Npy=int(Npy), Nx=int(Nx), sl=sl)
 
 #%% Functions for energy, enstrophy and entropy
 
@@ -175,18 +179,23 @@ electric_reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
 diamagnetic_reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
 reynolds_power_local = np.zeros(len(local_indices), dtype=np.float64)
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     for idx, i in enumerate(local_indices):
         print(f"Rank {rank} processing time step {i}")
         Omk = fl['fields/Omk'][i]
         Pk = fl['fields/Pk'][i]
-        Ombar = fl['zonal/Ombar'][i]
-        Pbar = fl['zonal/Pbar'][i]
-        Q = fl['fluxes/Q'][i]
-        RPhi = fl['fluxes/RPhi'][i]
-        RP = fl['fluxes/RP'][i]
 
         kpsq = kx**2 + ky**2
+        Phik = -Omk / kpsq
+        Om   = irft2(Omk)    
+        P    = irft2(Pk)
+        vx   = irft2(-1j*ky*Phik)
+        vy   = irft2(1j*kx*Phik)
+        wx   = irft2(-1j*ky*Pk)
+        Ombar = np.mean(Om, axis=1)
+        Q_x     = np.mean(P*vx, axis=1)
+        RPhi  = np.mean(vy*vx, axis=1)
+        RP    = np.mean(vy*wx, axis=1)
 
         # Calculate the consv quantities and fluxes
         P2_local[idx] = np.sum(np.abs(Pk)**2)
@@ -201,7 +210,7 @@ with h5.File(file_name, 'r', swmr=True) as fl:
         gen_energy_ZF_local[idx] = G_ZF(Omk, ky, kpsq, slbar)
         entropy_local[idx] = S(Omk, kpsq)
         Ombar_local[idx] = np.mean(Ombar)
-        Q_local[idx] = np.mean(Q)
+        Q_local[idx] = np.mean(Q_x)
         electric_reynolds_power_local[idx] = np.mean(RPhi * Ombar)
         diamagnetic_reynolds_power_local[idx] = np.mean(RP * Ombar)
         reynolds_power_local[idx] = np.mean((RPhi + RP) * Ombar)
@@ -257,7 +266,7 @@ if rank == 0:
     gen_energy_turb_t = gen_energy_t - gen_energy_ZF_t
 
     # Plot variance(P) vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], P2_t, label = '$P_{total}$')
     plt.semilogy(t[:nt], P2_ZF_t, label = '$P_{ZF}^2$')
     plt.semilogy(t[:nt], P2_t, label = '$P_{turb}^2$')
@@ -267,14 +276,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'P2_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'P2_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot total energy vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], energy_t, label = '$\\mathcal{E}_{total}$')
     plt.semilogy(t[:nt], energy_ZF_t, label = '$\\mathcal{E}_{ZF}$')
     plt.semilogy(t[:nt], energy_turb_t, label = '$\\mathcal{E}_{turb}$')
@@ -284,14 +293,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot zonal energy fraction vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
@@ -299,10 +308,10 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'zonal_energy_fraction_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'zonal_energy_fraction_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # # Plot kinetic energy vs time
@@ -316,31 +325,14 @@ if rank == 0:
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
     #     plt.savefig(datadir+'kinetic_energy_vs_t.pdf',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
-    # plt.show()
-
-    # # Plot enstrophy vs time
-    # plt.figure(figsize=(8,6))
-    # plt.semilogy(t[:nt], enstrophy_t, label = '$\\mathcal{W}_{total}$')
-    # plt.semilogy(t[:nt], enstrophy_ZF_t, label = '$\\mathcal{W}_{ZF}$')
-    # plt.semilogy(t[:nt], enstrophy_turb_t, label = '$\\mathcal{W}_{turb}$')
-    # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\mathcal{W}$')
-    # plt.title('Enstrophy vs $\\gamma$ t')
-    # plt.grid()
-    # plt.legend()
-    # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'enstrophy_vs_t.pdf',dpi=100)
-    # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'enstrophy_vs_t_').replace('.h5', '.pdf'), dpi=100)
+    #     plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'kinetic_energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
     # plt.show()
 
     # Plot generalized energy vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], gen_energy_t, label = '$\\mathcal{G}$')
     plt.semilogy(t[:nt], gen_energy_ZF_t, label = '$\\mathcal{G}_{ZF}$')
     plt.semilogy(t[:nt], gen_energy_turb_t, label = '$\\mathcal{G}_{turb}$')
@@ -350,10 +342,10 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'generalized_energy_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'generalized_energy_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # # Plot hyd. entropy vs time
@@ -365,14 +357,14 @@ if rank == 0:
     # plt.grid()
     # plt.legend()
     # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
     #     plt.savefig(datadir+'entropy_vs_t.pdf',dpi=100)
     # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.pdf'), dpi=100)
+    #     plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'entropy_vs_t_').replace('.h5', '.pdf'), dpi=100)
     # plt.show()
 
     # Plot Q vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$\\mathcal{Q}$')
@@ -380,14 +372,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'Q_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     # Plot Reynolds power vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], electric_reynolds_power_t, '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
     plt.plot(t[:nt], diamagnetic_reynolds_power_t, '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
     plt.plot(t[:nt], reynolds_power_t, '-', label = '$<R \\partial_x \\bar{v}_y>$')
@@ -397,14 +389,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'reynolds_power_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'reynolds_power_vs_t_').replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'reynolds_power_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     # Plot Cumulative Reynolds power vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], np.cumsum(electric_reynolds_power_t), '-', label = '$<R_{\\phi} \\partial_x \\bar{v}_y>$')
     plt.plot(t[:nt], np.cumsum(diamagnetic_reynolds_power_t), '-', label = '$<R_{d}  \\partial_x \\bar{v}_y>$')
     plt.plot(t[:nt], np.cumsum(reynolds_power_t), '-', label = '$<R \\partial_x \\bar{v}_y>$')
@@ -414,8 +406,8 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    # if file_name.endswith('out.h5'):
-    #     plt.savefig(datadir+'cum_reynolds_power_vs_t.pdf',dpi=100)
-    # else:
-    #     plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'cum_reynolds_power_vs_t_').replace('.h5', '.pdf'), dpi=100)
+    if fname.endswith('out.h5'):
+        plt.savefig(datadir+'cum_reynolds_power_vs_t.pdf',dpi=100)
+    else:
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'cum_reynolds_power_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()

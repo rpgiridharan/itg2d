@@ -13,9 +13,9 @@ PUMP_MODE = 1  # 0=q, 1=k, 2=p
 delta = 0.5*np.pi  # phase difference between pump modes
 
 # zero when val is 0
-ZERO_M = 0
+ZERO_M = 1
 ZERO_L = 1
-ZERO_N = 0
+ZERO_N = 1
 
 Nk = 3
 # (qx, qy, kx, ky, px, py) = make_triad(kx=0.0, ky=1.0, seed=0)
@@ -39,7 +39,7 @@ t0,t1=0.0,100.0
 
 output_dir = "data_instability/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_instability_{ZERO_M}_{ZERO_L}_{ZERO_N}_pump_{PUMP_MODE}_delta_{str(round(delta/np.pi,2)).replace(".", "_")}_pi.h5'
+fname = output_dir + f'out_instability_{ZERO_M}_{ZERO_L}_{ZERO_N}_pump_{PUMP_MODE}_delta_{str(round(delta/np.pi,2)).replace(".", "_")}_pi.h5'
 
 #%% Functions
 
@@ -69,7 +69,7 @@ def rhs(t, y):
 
 #%% Run the simulation
 
-fl = h5.File(filename, 'w', libver='latest')
+fl = h5.File(fname, 'w', libver='latest')
 fl.swmr_mode = True
 
 save_data(fl, 'data', ext_flag=False, qx=qx, kx=kx, px=px, qy=qy, ky=ky, py=py,M=M, Lqkp=Lqkp, Lkpq=Lkpq, Lpqk=Lpqk, Nqkp=Nqkp, Nkpq=Nkpq, Npqk=Npqk, t0=t0, t1=t1)

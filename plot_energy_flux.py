@@ -12,7 +12,7 @@ import os
 from functools import partial
 from mpi4py import MPI
 import glob
-from scipy.stats import gaussian_kde
+from scipy.stats import gaussian_kde, skew, kurtosis
 
 # Initialize MPI
 comm = MPI.COMM_WORLD
@@ -39,7 +39,14 @@ plt.rcParams.update({
 
 #%% Load the HDF5 file
 
-datadir='data/'
+# Npx=512
+Npx=1024
+datadir=f'data/{Npx}/'
+
+# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
+fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5.h5'
+
 # kapt=1.0
 # D=0.1
 # Np=1024
@@ -48,11 +55,9 @@ datadir='data/'
 # if not files:
 #     print(f"No file found for kappa_T = {kapt}")
 # else:
-#     file_name = files[0]
+#     fname = files[0]
 
-file_name = datadir + 'out_kapt_2_0_D_0_02_H_1_0_em5_1024x1024.h5'
-
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     t = fl['fields/t'][:]
     nt= len(t)
     kx = fl['data/kx'][:]
@@ -65,15 +70,18 @@ with h5.File(file_name, 'r', swmr=True) as fl:
     kapt = fl['params/kapt'][()]
     kapb = fl['params/kapb'][()]
     D = fl['params/D'][()]
-    HP = fl['params/HP'][()]
-    HPhi = fl['params/HPhi'][()]
+    if 'H' in fl['params']:
+        H = fl['params/H'][()]
+    elif 'HP' in fl['params']:
+        HP = fl['params/HP'][()]
+        H=HP
 
 Nx,Ny=2*Npx//3,2*Npy//3  
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
-gammax=gam_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi)
+gammax=gam_max(kx,ky,kapn,kapt,kapb,D,H)
 t=t*gammax
-k_lin = ky_max(kx,ky,kapn,kapt,kapb,D,HP,HPhi)
+k_lin = ky_max(kx,ky,kapn,kapt,kapb,D,H)
 
 #%% Functions for energy, enstrophy and entropy
 
@@ -113,7 +121,7 @@ def spectrum(Omk, Pk, kx, ky, k, delk, flag='Pik'):
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
     elif flag=='dk':
-        ak = np.real(np.conj(Phik)*(D*kpsq*Phik+HPhi*(1+kpsq)/kpsq**2*Phik))
+        ak = np.real(np.conj(Phik)*(D*kpsq*Phik+H*(1+kpsq)/kpsq**2*Phik))
         for i in range(len(k)):
             Ak[i] = np.sum(ak[np.where(np.logical_and(kp>k[i], kp<=k[i]+delk))])/delk
     return Ak
@@ -141,7 +149,7 @@ Pik_d_t_local = np.zeros((count_local, len(k)))
 fk_t_local = np.zeros((count_local, len(k)))
 dk_t_local = np.zeros((count_local, len(k)))
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     for idx, it in enumerate(local_indices):
         print(f"Rank {rank} processing time step {it}")
         Omk = fl['fields/Omk'][it+nt//2]
@@ -195,9 +203,18 @@ if rank == 0:
     Pik_d_series_max_norm = (Pik_d_series_max - np.mean(Pik_d_series_max)) / np.std(Pik_d_series_max)
     Pik_series_max_norm = (Pik_series_max - np.mean(Pik_series_max)) / np.std(Pik_series_max)
 
+    # PDF of fluxes at k=1
+    idx_k = np.argmin(np.abs(k - 1))
+    Pik_phi_series_1 = Pik_phi_t[:, idx_k]
+    Pik_d_series_1 = Pik_d_t[:, idx_k]
+    Pik_series_1 = Pik_phi_series_1 + Pik_d_series_1
+    Pik_phi_series_1_norm = (Pik_phi_series_1 - np.mean(Pik_phi_series_1)) / np.std(Pik_phi_series_1)
+    Pik_d_series_1_norm = (Pik_d_series_1 - np.mean(Pik_d_series_1)) / np.std(Pik_d_series_1)
+    Pik_series_1_norm = (Pik_series_1 - np.mean(Pik_series_1)) / np.std(Pik_series_1)
+
 #%% Plots
 if rank == 0:
-    plt.figure()
+    plt.figure(figsize=(16, 9))
     plt.plot(k[1:-1], Pik[1:-1], label = '$\\Pi_{k}$')
     plt.plot(k[1:-1], Pik_phi[1:-1], label = '$\\Pi_{k,\\phi}$')
     plt.plot(k[1:-1], Pik_d[1:-1], label = '$\\Pi_{k,d}$')
@@ -212,13 +229,13 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_flux.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_flux_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_flux_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
-    plt.figure()
+    plt.figure(figsize=(16, 9))
     plt.plot(k[1:-1], fk[1:-1], label = '$\\mathcal{f}_{k,total}$')
     plt.axhline(0,color='k', linestyle='-', linewidth=1)
     plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
@@ -230,13 +247,13 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_injection.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_injection_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_injection_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
-    plt.figure()
+    plt.figure(figsize=(16, 9))
     plt.plot(k[1:-1], dk[1:-1], label = '$\\mathcal{d}_{k,total}$')
     plt.axhline(0,color='k', linestyle='-', linewidth=1)
     plt.axvline(x=k_f, color='k', linestyle=':', linewidth=2, label=f'$k_f={k_f:.2f}$')
@@ -248,47 +265,80 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'dissipation.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"dissipation_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"dissipation_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
-    plt.figure()
-    for series, label in zip([Pik_series_norm, Pik_phi_series_norm, Pik_d_series_norm], 
-                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$']):
+    # PDF of fluxes at k_f
+    plt.figure(figsize=(16, 9))
+    for series, label, color in zip([Pik_series_norm, Pik_phi_series_norm, Pik_d_series_norm], 
+                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$'],
+                            ['C0', 'C1', 'C2']):
+        s = skew(series)
+        f = kurtosis(series, fisher=False)  # Gaussian = 3
         kde = gaussian_kde(series)
         x_range = np.linspace(series.min(), series.max(), 200)
-        plt.hist(series, bins=50, density=True, alpha=0.3, color='gray')
-        plt.plot(x_range, kde(x_range), label=label)
-    plt.xlabel('$\\frac{\\left(\\Pi_k-<\\Pi_k>\\right)}{\\sigma}$')
+        plt.hist(series, bins=50, density=True, alpha=0.3, color=color)
+        plt.plot(x_range, kde(x_range), label=f'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
+    plt.xlabel('$\\frac{\\Pi_k-<\\Pi_k>}{\\sigma}$')
     plt.ylabel('PDF')
     plt.title(f'PDF of $\\Pi_k$ at $k_f={k_f:.2f}$')
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_flux_pdf_.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_flux_pdf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_flux_pdf_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
-    plt.figure()
-    for series, label in zip([Pik_series_max_norm, Pik_phi_series_max_norm, Pik_d_series_max_norm], 
-                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$']):
+    # PDF of fluxes at k=kymax
+    plt.figure(figsize=(16, 9))
+    for series, label, color in zip([Pik_series_max_norm, Pik_phi_series_max_norm, Pik_d_series_max_norm], 
+                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$'],
+                            ['C0', 'C1', 'C2']):
+        s = skew(series)
+        f = kurtosis(series, fisher=False)  # Gaussian = 3
         kde = gaussian_kde(series)
         x_range = np.linspace(series.min(), series.max(), 200)
-        plt.hist(series, bins=50, density=True, alpha=0.3, color='gray')
-        plt.plot(x_range, kde(x_range), label=label)
-    plt.xlabel('$\\frac{\\left(\\Pi_k-<\\Pi_k>\\right)}{\\sigma}$')
+        plt.hist(series, bins=50, density=True, alpha=0.3, color=color)
+        plt.plot(x_range, kde(x_range), label=f'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
+    plt.xlabel('$\\frac{\\Pi_k-<\\Pi_k>}{\\sigma}$')
     plt.ylabel('PDF')
     plt.title(f'PDF of $\\Pi_k$ at $k_{{lin}}={k_lin:.2f}$')
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_flux_kymax_pdf_.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_flux_kymax_pdf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_flux_kymax_pdf_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
+
+    # PDF of fluxes at k=1
+    plt.figure(figsize=(16, 9))
+    for series, label, color in zip([Pik_series_1_norm, Pik_phi_series_1_norm, Pik_d_series_1_norm], 
+                            [r'$\Pi_{k}$', r'$\Pi_{k,\phi}$', r'$\Pi_{k,d}$'],
+                            ['C0', 'C1', 'C2']):
+        s = skew(series)
+        f = kurtosis(series, fisher=False)  # Gaussian = 3
+        kde = gaussian_kde(series)
+        x_range = np.linspace(series.min(), series.max(), 200)
+        plt.hist(series, bins=50, density=True, alpha=0.3, color=color)
+        plt.plot(x_range, kde(x_range), label=f'{label}  $S={s:.2f},\ F={f:.2f}$', color=color)
+    plt.xlabel('$\\frac{\\Pi_k-<\\Pi_k>}{\\sigma}$')
+    plt.ylabel('PDF')
+    plt.title(f'PDF of $\\Pi_k$ at $k=1$')
+    plt.legend()
+    plt.grid(which='both', linestyle='--', linewidth=0.5)
+    plt.tight_layout()
+    if fname.endswith('out.h5'):
+        plt.savefig(datadir+'energy_flux_k1_pdf_.pdf', dpi=100)
+    else:
+        plt.savefig(datadir+"energy_flux_k1_pdf_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+    plt.show()
+
+    
 

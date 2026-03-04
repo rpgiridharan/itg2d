@@ -31,8 +31,8 @@ plt.rcParams.update({
 
 #%% Load the HDF5 file
 datadir = 'data_scan/'
-# file_name = datadir + 'out_kapt_0_2_D_0_001_H_7_9_em5_NZ_1024x1024.h5'
-# file_name = datadir + 'out_kapt_2_0_D_0_001_H_1_1_em4_NZ_1024x1024.h5'
+# fname = datadir + 'out_kapt_0_2_D_0_001_H_7_9_em5_NZ_1024x1024.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_001_H_1_1_em4_NZ_1024x1024.h5'
 
 kapt=0.4
 D=0.1
@@ -42,10 +42,10 @@ files = glob.glob(pattern)
 if not files:
     print(f"No file found for kappa_T = {kapt}")
 else:
-    file_name = files[0]
+    fname = files[0]
 
 it = -1
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][it]
     Pk = fl['fields/Pk'][it]
     Ombar = fl['zonal/Ombar'][it]
@@ -90,7 +90,7 @@ def plot_colormesh(dat, dat_bar, title, lab_bar, ax):
     plt.colorbar(c, ax=ax)
 
 # Create subplots for Om and T
-fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
+fig, axs = plt.subplots(1, 2, figsize=(16, 9), sharey=True)
 
 # Plot each dataset
 plot_colormesh(Om, vbar, '$\\Omega$', '$\\overline{v}_y$', axs[0])
@@ -100,15 +100,15 @@ plot_colormesh(P, vbar, '$P$', '$\\overline{v}_y$', axs[1])
 fig.tight_layout(pad=0.5) # Use tight_layout with reduced padding
 
 # Add bbox_inches='tight' to savefig calls
-if file_name.endswith('out.h5'):
+if fname.endswith('out.h5'):
     plt.savefig(datadir+'fields.pdf', dpi=100, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'fields_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'fields_').replace('.h5', '.pdf'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # %%
 # Plot Om
-fig, ax = plt.subplots(figsize=(6, 5))
+fig, ax = plt.subplots(figsize=(16, 9))
 c =ax.pcolormesh(x,y,Om, cmap='seismic', vmin=-np.max(np.abs(Om)), vmax=np.max(np.abs(Om)))
 ax.plot(x[:,0], 0.5*(y[:,-1]+y[:,0])+0.25*(y[:,-1]-y[:,0])*vbar/np.max(np.abs(vbar)),'w',linewidth=5)
 ax.plot(x[:,0], 0.5*(y[:,-1]+y[:,0])+0.25*(y[:,-1]-y[:,0])*vbar/np.max(np.abs(vbar)),'k',label='$\\overline{v}_y$')
@@ -118,12 +118,12 @@ ax.set_xlabel('$x$')
 ax.set_ylabel('$y$')
 plt.colorbar(c, ax=ax)
 fig.tight_layout(pad=0.5)
-plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'fields_Om_').replace('.h5', '.pdf'), bbox_inches='tight')
+plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'fields_Om_').replace('.h5', '.pdf'), bbox_inches='tight')
 plt.show()
 
 # # Plot P
 # fig, ax = plt.subplots(figsize=(6, 5))
 # plot_colormesh(P, Pbar, '$P$', '$\\overline{P}$', ax)
 # fig.tight_layout(pad=0.5)
-# plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'fields_P_').replace('.h5', '.pdf'), bbox_inches='tight')
+# plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'fields_P_').replace('.h5', '.pdf'), bbox_inches='tight')
 # plt.show()

@@ -58,14 +58,14 @@ n_kapt=len(kapt_vals)
 
 datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
-file_name = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
-# file_name = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
+fname = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+# fname = datadir + f'negdiscmax_vals_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
 
 #%% Compute
 
 # Create datasets
 
-with h5py.File(file_name, 'w') as fl:
+with h5py.File(fname, 'w') as fl:
     shape = (n_kapn, n_kapt)
     fl.create_dataset('kapt_vals', data=kapt_vals, dtype=np.float64)
     fl.create_dataset('kapn_vals', data=kapn_vals, dtype=np.float64)
@@ -80,7 +80,7 @@ for i in range(len(kapn_vals)):
         print(f'Computing for kapn={kapn_vals[i]}, kapt={kapt_vals[j]}, kapb={kapb}')
 
         # Compute and store max(-Δ) over k-grid (zero if no negative Δ)
-        with h5py.File(file_name, 'a', libver='latest') as fl:
+        with h5py.File(fname, 'a', libver='latest') as fl:
             kpsq = kx**2 + ky**2
             disc = compute_discriminant(kpsq, base_pars['kapn'], base_pars['kapt'], base_pars['kapb'])
             negdiscmax = float(np.max(-disc))

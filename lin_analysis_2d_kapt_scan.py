@@ -82,8 +82,8 @@ os.makedirs(datadir, exist_ok=True)
 #%% Compute
 
 # Create datasets
-file_name = datadir+f'gammax_vals_kapt_scan_kapn_{str(kapn).replace(".", "_")}_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
-with h5py.File(file_name, 'w') as fl:
+fname = datadir+f'gammax_vals_kapt_scan_kapn_{str(kapn).replace(".", "_")}_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+with h5py.File(fname, 'w') as fl:
     fl.create_dataset('gammax_vals', shape=(n_kapt,), dtype=np.float64)
     fl.create_dataset('kapt_vals', data=kapt_vals, dtype=np.float64)
     fl.create_dataset('kapn', data=kapn, dtype=np.float64)
@@ -100,7 +100,7 @@ for i in range(len(kapt_vals)):
     gam=om.imag[:,:,0]
 
     # Store gammax
-    with h5py.File(file_name, 'a', libver='latest') as fl:
+    with h5py.File(fname, 'a', libver='latest') as fl:
         # fl.swmr_mode = True
         fl['gammax_vals'][i] = np.max(gam)
         fl.flush()

@@ -114,7 +114,7 @@ omr_kx0 = omr[0,:]
 
 #%% Plots
    
-plt.figure(figsize=(9.71,6))
+plt.figure(figsize=(16, 9))
 slx=slice(None,int(Nx/8),int((Nx/8)/5)) #7 kx points
 plt.plot(ky[slx,:int(Ny/4)].T,gam[slx,:int(Ny/4)].T,'.-')
 plt.axhline(0.0, color='k', linestyle='--')

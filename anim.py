@@ -33,9 +33,10 @@ datadir = "data/"
 # datadir = "data_2d3c/"
 # datadir="data_sweep/"
 
-# infl = datadir + 'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024_classic.h5'
-infl = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
-# infl = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
+# fname = datadir + 'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024_classic.h5'
+# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6_1024x1024.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
 
 # kapt=2.0
 # D=1e-3
@@ -45,11 +46,11 @@ infl = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
 # if not files:
 #     print(f"No file found for kappa_T = {kapt}")
 # else:
-#     infl = files[0]
+#     fname = files[0]
 
-outfl = infl.replace('.h5', '.mp4')
+outfl = fname.replace('.h5', '.mp4')
 
-with h5.File(infl, "r", libver='latest', swmr=True) as fl:
+with h5.File(fname, "r", libver='latest', swmr=True) as fl:
     t = fl['fields/t'][:]
     Npx= fl['params/Npx'][()]
     Npy= fl['params/Npy'][()]
@@ -61,7 +62,7 @@ Nx,Ny=2*Npx//3,2*Npy//3
 sl=Slicelist(Nx,Ny)
 slbar=np.s_[int(Ny/2)-1:int(Ny/2)*int(Nx/2)-1:int(Nx/2)]
 
-with h5.File(infl, "r", libver='latest', swmr=True) as fl:
+with h5.File(fname, "r", libver='latest', swmr=True) as fl:
     Om = irft2np(fl['fields/Omk'][0],Npx,Npy,Nx,sl)
     P = irft2np(fl['fields/Pk'][0],Npx,Npy,Nx,sl)
     Om_last = irft2np(fl['fields/Omk'][-1],Npx,Npy,Nx,sl)
@@ -114,7 +115,7 @@ lt_loc = comm.scatter(lt_loc, root=0)
 
 for j in lt_loc:
     print(j)
-    with h5.File(infl, "r", libver='latest', swmr=True) as fl:
+    with h5.File(fname, "r", libver='latest', swmr=True) as fl:
         Om = irft2np(fl['fields/Omk'][j],Npx,Npy,Nx,sl)
         P = irft2np(fl['fields/Pk'][j],Npx,Npy,Nx,sl)
 
@@ -126,7 +127,7 @@ for j in lt_loc:
 comm.Barrier()
 
 if comm.rank == 0:
-    with h5.File(infl, "r", libver='latest', swmr=True) as fl:
+    with h5.File(fname, "r", libver='latest', swmr=True) as fl:
         Om = irft2np(fl['fields/Omk'][0],Npx,Npy,Nx,sl)
         P = irft2np(fl['fields/Pk'][0],Npx,Npy,Nx,sl)
 

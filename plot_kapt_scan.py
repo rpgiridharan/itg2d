@@ -108,9 +108,9 @@ for i in local_indices:
         print(f"Rank {rank}: No file found for kappa_T = {kapt}")
         continue
     else:
-        file_name = files[0]
+        fname = files[0]
 
-    with h5.File(file_name, 'r', swmr=True) as fl:
+    with h5.File(fname, 'r', swmr=True) as fl:
         t = fl['fields/t'][:]
         nt = len(t)
         tf = fl['fluxes/t'][:]
@@ -167,7 +167,7 @@ if rank == 0:
 
 if rank == 0:
     # Plot P2 fraction vs kapt
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.errorbar(kapt_vals, P2_frac_scan, yerr=P2_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$P_{ZF}^2/P^2$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
@@ -188,7 +188,7 @@ if rank == 0:
     plt.show()
 
     # Plot total energy fraction vs kapt
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.errorbar(kapt_vals, E_frac_scan, yerr=E_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
@@ -209,7 +209,7 @@ if rank == 0:
     plt.show()
 
     # Plot generalized energy fraction vs kapt
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.errorbar(kapt_vals, G_frac_scan, yerr=G_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{G}_{ZF}/\\mathcal{G}$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
@@ -230,7 +230,7 @@ if rank == 0:
     plt.show()
 
     # Plot Q vs kapt
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.errorbar(kapt_vals, Q_scan, yerr=Q_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{Q}$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(

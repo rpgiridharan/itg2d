@@ -3,6 +3,7 @@
 /data_*
 /_tmpimg_folder
 /modules/__pycache__
+/__pycache__
 *.log
 *.lyx~
 *.lyx#

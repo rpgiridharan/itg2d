@@ -12,9 +12,9 @@ plt.rcParams['axes.linewidth'] = 2
 
 #%% Load the HDF5 file
 datadir = 'data/'
-file_name = datadir+'out_kapt_1_2_chi_0_1_D_1_0_em3_H_1_0_em3.h5'
+fname = datadir+'out_kapt_1_2_chi_0_1_D_0_1_H_1_0_em3.h5'
 it = -1
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     Om = np.mean(fl['fields/Om'][-200:],0)
     R = np.mean(fl['fluxes/R'][-200:],0)
     PiP = np.mean(fl['fluxes/PiP'][-200:],0)
@@ -41,7 +41,7 @@ x,y=np.meshgrid(np.array(xl),np.array(yl),indexing='ij')
 
 #%% Plots
 
-plt.figure(figsize=(8, 5))  # Set specific figure size
+plt.figure(figsize=(16, 9))  # Set specific figure size
 plt.plot(x[:,0],R,label='$\\mathcal{\\Pi}_\\phi$')
 plt.plot(x[:,0],PiP,label='$\\mathcal{\\Pi}_P$')
 plt.plot(x[:,0],R+PiP,label='$\\Pi_t=\\mathcal{\\Pi}_P+\\mathcal{\\Pi}_\\phi$')
@@ -53,12 +53,12 @@ plt.title('$\\mathcal{\\Pi}(x)$' %t[it])
 plt.legend()
 symmetrize_y_axis(plt.gca())
 plt.tight_layout(pad=0.5)  # Reduce padding
-if file_name.endswith('out.h5'):
+if fname.endswith('out.h5'):
     plt.savefig(datadir+'Pi.png', dpi=100, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Pi_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Pi_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 
-plt.figure(figsize=(8, 5))  # Set specific figure size
+plt.figure(figsize=(16, 9))  # Set specific figure size
 plt.plot(x[:,0],Q,label='$\\mathcal{Q}$')
 plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*vbar/np.max(np.abs(vbar)),'k',label='$\\overline{v}_y$')
 # plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*Ombar/np.max(Ombar),label='$\\partial_x\\overline{v}_y$')
@@ -69,10 +69,10 @@ plt.title('$\\mathcal{Q}(x)$' %t[it])
 plt.legend()
 # symmetrize_y_axis(plt.gca())
 plt.tight_layout(pad=0.5)  # Reduce padding
-if file_name.endswith('out.h5'):
+if fname.endswith('out.h5'):
     plt.savefig(datadir+'Q.png', dpi=100, bbox_inches='tight')
 else:
-    plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
+    plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 plt.show()
 
 # %%

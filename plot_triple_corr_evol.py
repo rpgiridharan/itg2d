@@ -23,9 +23,9 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 file
 datadir = 'data/'
 comm.Barrier()
-file_name = datadir+'out_kapt_0_9_chi_0_1_H_1_0_em3.h5'
+fname = datadir+'out_kapt_0_9_chi_0_1_H_1_0_em3.h5'
 it = -1
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     Omk = fl['fields/Omk'][it]
     Pk = fl['fields/Pk'][it]
     Ombar = fl['zonal/Ombar'][it]
@@ -158,7 +158,7 @@ R_local = np.zeros(len(local_indices), dtype=np.float64)
 PiP_local = np.zeros(len(local_indices), dtype=np.float64)
 Q_local = np.zeros(len(local_indices), dtype=np.float64)
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     for idx, i in enumerate(local_indices):
         print(f"Rank {rank} processing time step {i}")
         Omk = fl['fields/Omk'][i]
@@ -201,7 +201,7 @@ if rank == 0:
 if rank == 0:
 
     # Plot T1 vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], T1_t, label = '$T_1$')
     plt.xlabel('$t$')
     plt.ylabel('$T_1$')
@@ -209,14 +209,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'T1_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'T1_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'T1_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot T2 vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], T2_t, label = '$T_2$')
     plt.xlabel('$t$')
     plt.ylabel('$T_2$')
@@ -224,14 +224,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'T2_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'T2_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'T2_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot T3 vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], T3_t, label = '$T_3$')
     plt.xlabel('$t$')
     plt.ylabel('$T_3$')
@@ -239,14 +239,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'T3_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'T3_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'T3_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot T1+T2 vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], T1_t + T2_t, label = '$T_1 + T_2$')
     plt.xlabel('$t$')
     plt.ylabel('$T_1 + T_2$')
@@ -254,14 +254,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'T1_plus_T2_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'T1_plus_T2_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'T1_plus_T2_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot T1+T2+T3 vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], T1_t + T2_t + T3_t, label = '$T_1 + T_2 + T_3$')
     plt.xlabel('$t$')
     plt.ylabel('$T_1 + T_2 + T_3$')
@@ -269,14 +269,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'T1_plus_T2_plus_T3_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'T1_plus_T2_plus_T3_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'T1_plus_T2_plus_T3_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot L vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], L_t, label = '$L$')
     plt.xlabel('$t$')
     plt.ylabel('$L$')
@@ -284,14 +284,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'L_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'L_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'L_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot Dchi vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], Dchi_t, label = '$D_\\chi$')
     plt.xlabel('$t$')
     plt.ylabel('$D_\\chi$')
@@ -299,14 +299,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'Dchi_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Dchi_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Dchi_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot DH vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], DH_t, label = '$D_H$')
     plt.xlabel('$t$')
     plt.ylabel('$D_H$')
@@ -314,14 +314,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'DH_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'DH_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'DH_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot Dchi + DH vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], Dchi_t + DH_t, label = '$D_\\chi + D_H$')
     plt.xlabel('$t$')
     plt.ylabel('$D_\\chi + D_H$')
@@ -329,14 +329,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'Dchi_plus_DH_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Dchi_plus_DH_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Dchi_plus_DH_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot T1 + T2 + T3 + L + Dchi + DH vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], T1_t + T2_t + T3_t + L_t + Dchi_t + DH_t, label = '$T+L+D$')
     plt.xlabel('$t$')
     plt.ylabel('$T+L+D$')
@@ -344,15 +344,15 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'T_plus_L_plus_D_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'T_plus_L_plus_D_vs_t_').replace('.h5', '.pdf'),dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'T_plus_L_plus_D_vs_t_').replace('.h5', '.pdf'),dpi=100)
     plt.show()
 
     # Plot dQdt vs time
     dQdt = np.gradient(Q_t[:nt], t[:nt])
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.plot(t[:nt], dQdt, '-', label = '$\\frac{d\\mathcal{Q}}{dt}$')
     plt.xlabel('$t$')
     plt.ylabel('$\\frac{d\\mathcal{Q}}{dt}$')
@@ -360,14 +360,14 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'dQdt_vs_t.pdf',dpi=100)
     else:
-        plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'dQdt_vs_t_').replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'dQdt_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     # Plot Q vs time
-    plt.figure(figsize=(8,6))
+    plt.figure(figsize=(16, 9))
     plt.semilogy(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
     plt.xlabel('$t$')
     plt.ylabel('$\\mathcal{Q}$')
@@ -375,8 +375,8 @@ if rank == 0:
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
         # plt.savefig(datadir+'Q_vs_t.pdf',dpi=100)
     # else:
-        # plt.savefig(datadir+file_name.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.pdf'), dpi=100)
+        # plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Q_vs_t_').replace('.h5', '.pdf'), dpi=100)
     plt.show()

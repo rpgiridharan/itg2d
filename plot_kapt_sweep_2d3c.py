@@ -117,10 +117,10 @@ for i,kapt in enumerate(kapt_vals):
     if not files:
         print(f"No file found for kappa_T = {kapt}")
         continue
-    file_name = files[0] 
-    print(file_name)
+    fname = files[0] 
+    print(fname)
 
-    with h5.File(file_name, 'r', swmr=True) as fl:
+    with h5.File(fname, 'r', swmr=True) as fl:
         t = fl['fields/t'][:]
         nt = len(t)
         # print(nt)
@@ -164,7 +164,7 @@ for i,kapt in enumerate(kapt_vals):
 #%% Calculate and plot quantities vs time
 
 # Plot kinetic energy vs kapt
-plt.figure(figsize=(8,6))
+plt.figure(figsize=(16, 9))
 plt.errorbar(kapt_vals, E_frac_scan, yerr=E_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$',
              elinewidth=2, capthick=1, capsize=4)
 plt.xlabel('$\\kappa_T$')
@@ -190,7 +190,7 @@ plt.show()
 # plt.show()
 
 # Plot Q vs kapt
-plt.figure(figsize=(8,6))
+plt.figure(figsize=(16, 9))
 plt.errorbar(kapt_vals, Q_scan, yerr=Q_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{Q}$',
              elinewidth=2, capthick=1, capsize=4)
 plt.xlabel('$\\kappa_T$')

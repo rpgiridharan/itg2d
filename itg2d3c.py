@@ -38,10 +38,10 @@ t0,t1=0.0,round(100/gammax,0) #1800/gammax
 rtol,atol=1e-8,1e-10
 wecontinue=False
 
-output_dir = "data_2d3c/"
+output_dir = f"data_2d3c/{Npx}/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_D_{str(D).replace(".","_")}_kz_{str(kz).replace(".","_")}_{Npx}x{Npy}.h5'
-if not os.path.exists(filename):
+fname = output_dir + f'out_2d3c_kapt_{str(kapt).replace(".","_")}_D_{str(D).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
+if not os.path.exists(fname):
     wecontinue=False
 
 #%% Functions
@@ -138,12 +138,12 @@ def rhs_itg(t,y):
 print(f'D={D}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
 
 if(wecontinue):
-    fl=h5.File(filename,'r+',libver='latest')
+    fl=h5.File(fname,'r+',libver='latest')
     fl.swmr_mode = True
     zk=fl['last/zk'][()]
     t0=fl['last/t'][()]
 else:
-    fl=h5.File(filename,'w',libver='latest')
+    fl=h5.File(fname,'w',libver='latest')
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)

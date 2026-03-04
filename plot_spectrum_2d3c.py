@@ -36,8 +36,8 @@ plt.rcParams.update({
 
 #%% Load the HDF5 file
 datadir = 'data_2d3c/'
-file_name = datadir+'out_2d3c_kapt_2_0_D_0_05_kz_0_0127.h5'
-with h5.File(file_name, 'r', swmr=True) as fl:
+fname = datadir+'out_2d3c_kapt_2_0_D_0_05_kz_0_0127.h5'
+with h5.File(fname, 'r', swmr=True) as fl:
     t = fl['fields/t'][:]
     nt = len(t)
     kx = fl['data/kx'][:]
@@ -236,7 +236,7 @@ Gk_ZF_local = np.zeros((len(local_indices), len(k)))
 GKk_local = np.zeros((len(local_indices), len(k)))
 GKk_ZF_local = np.zeros((len(local_indices), len(k)))
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     for idx, it in enumerate(local_indices):
         Omk = fl['fields/Omk'][it+nt//2]
         Pk = fl['fields/Pk'][it+nt//2]
@@ -339,10 +339,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'pressure_spectrum.pdf')
     else:
-        plt.savefig(datadir+"pressure_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"pressure_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     Vkp = VS(Vk, kp, k, dk)
@@ -360,10 +360,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'parallel_velocity_spectrum.pdf')
     else:
-        plt.savefig(datadir+"parallel_velocity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"parallel_velocity_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     Ek = ES(Omk, kp, k, dk)
@@ -381,10 +381,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_spectrum.pdf')
     else:
-        plt.savefig(datadir+"energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"energy_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     Kk = KS(Omk, kp, k, dk)
@@ -402,10 +402,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'kinetic_energy_spectrum.pdf')
     else:
-        plt.savefig(datadir+"kinetic_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"kinetic_energy_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     Wk = WS(Omk, kp, k, dk)
@@ -423,10 +423,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'enstrophy_spectrum.pdf')
     else:
-        plt.savefig(datadir+"enstrophy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"enstrophy_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     Gk = GS(Omk, Pk, kp, k, dk)
@@ -444,10 +444,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'generalized_energy_spectrum.pdf')
     else:
-        plt.savefig(datadir+"generalized_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"generalized_energy_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     GKk = GKS(Omk, Pk, kp, k, dk)
@@ -465,10 +465,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'generalized_kinetic_energy_spectrum.pdf')
     else:
-        plt.savefig(datadir+"generalized_kinetic_energy_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+        plt.savefig(datadir+"generalized_kinetic_energy_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     plt.show()
 
     # Hk = HS(Omk, Vk, kp, k, dk)
@@ -485,10 +485,10 @@ if rank == 0:
     # plt.legend()
     # plt.grid(which='both', linestyle='--', linewidth=0.5)
     # plt.tight_layout()
-    # if file_name.endswith('out.h5'):
+    # if fname.endswith('out.h5'):
     #     plt.savefig(datadir+'helicity_spectrum.pdf')
     # else:
-    #     plt.savefig(datadir+"helicity_spectrum_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
+    #     plt.savefig(datadir+"helicity_spectrum_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'))
     # plt.show()
 
 

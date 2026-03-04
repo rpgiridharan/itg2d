@@ -26,7 +26,7 @@ plt.rcParams['axes.linewidth'] = 3
 #%% Load the HDF5 file
 
 datadir='data_2d3c/'
-file_name = datadir + 'out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5'
+fname = datadir + 'out_2d3c_kapt_1_2_chi_0_1_kz_0_01.h5'
 kapt=0.3
 # chi=0.1
 # pattern = datadir + f'out_2d3c_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}*.h5'
@@ -34,9 +34,9 @@ kapt=0.3
 # if not files:
 #     print(f"No file found for kappa_T = {kapt}")
 # else:
-#     file_name = files[0]
+#     fname = files[0]
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     t = fl['fields/t'][:]
     nt= len(t)
     kx = fl['data/kx'][:]
@@ -127,7 +127,7 @@ Pik_d_t_local = np.zeros((count_local, len(k)))
 fk_t_local = np.zeros((count_local, len(k)))
 dk_t_local = np.zeros((count_local, len(k)))
 
-with h5.File(file_name, 'r', swmr=True) as fl:
+with h5.File(fname, 'r', swmr=True) as fl:
     for idx, it in enumerate(local_indices):
         print(f"Rank {rank} processing time step {it}")
         Omk = fl['fields/Omk'][it+nt//2]
@@ -197,10 +197,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_flux.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_flux_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_flux_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     plt.figure()
@@ -214,10 +214,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_injection.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_injection_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_injection_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     plt.figure()
@@ -231,10 +231,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'dissipation.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"dissipation_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"dissipation_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     plt.figure()
@@ -250,10 +250,10 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_flux_pdf_.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_flux_pdf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_flux_pdf_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 
     plt.figure()
@@ -269,9 +269,9 @@ if rank == 0:
     plt.legend()
     plt.grid(which='both', linestyle='--', linewidth=0.5)
     plt.tight_layout()
-    if file_name.endswith('out.h5'):
+    if fname.endswith('out.h5'):
         plt.savefig(datadir+'energy_flux_kymax_pdf_.pdf', dpi=100)
     else:
-        plt.savefig(datadir+"energy_flux_kymax_pdf_" + file_name.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
+        plt.savefig(datadir+"energy_flux_kymax_pdf_" + fname.split('/')[-1].split('out_')[-1].replace('.h5', '.pdf'), dpi=100)
     plt.show()
 

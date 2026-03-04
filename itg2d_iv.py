@@ -140,11 +140,11 @@ def round_to_nsig(number, n):
 
 #%% More parameters  
 
-output_dir = "data/"
+output_dir = f"data/{Npx}/"
 os.makedirs(output_dir, exist_ok=True)
-filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+fname = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_chi_{str(chi).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
 wecontinue=True
-if not os.path.exists(filename):
+if not os.path.exists(fname):
     wecontinue=False
 
 dtshow=0.1
@@ -158,12 +158,12 @@ rtol,atol=1e-8,1e-10
 print(f'chi={chi}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
 
 if(wecontinue):
-    fl=h5.File(filename,'r+',libver='latest')
+    fl=h5.File(fname,'r+',libver='latest')
     fl.swmr_mode = True
     zk=fl['last/zk'][()]
     t0=fl['last/t'][()]
 else:
-    fl=h5.File(filename,'w',libver='latest')
+    fl=h5.File(fname,'w',libver='latest')
     fl.swmr_mode = True
     zk=init_fields(kx,ky)
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)

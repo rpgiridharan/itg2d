@@ -136,15 +136,15 @@ for i, kapt_val in enumerate(kapt_vals):
     kapn=round(kapt/eta,3)
     kz=round(0.05*gam_max(kx,ky,kapn,kapt,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky)/gam_max(kx,ky,0.4,1.2,kapb,chi,a,b,s,0.0,0.0,0.0,0.0,slky),4)
 
-    filename = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
+    fname = output_dir + f'out_2d3c_sweep_kapt_{str(kapt).replace(".","_")}_chi_{str(chi).replace(".","_")}_kz_{str(kz).replace(".","_")}.h5'
 
     resume_this_step=False
     skip_this_step=False
     t_start=sim_t0
     stored_t1=None
 
-    if wecontinue and os.path.exists(filename):
-        with h5.File(filename,'r') as existing:
+    if wecontinue and os.path.exists(fname):
+        with h5.File(fname,'r') as existing:
             has_last=('last' in existing and 'zk' in existing['last'] and 't' in existing['last'])
             if 'data' in existing and 't1' in existing['data']:
                 stored_t1=float(existing['data/t1'][()])
@@ -180,8 +180,8 @@ for i, kapt_val in enumerate(kapt_vals):
         print(f'  Skipping sweep step {i+1}/{len(kapt_vals)}; checkpoint already at t={t1} for kapt={kapt}')
         continue
 
-    file_mode='r+' if resume_this_step and os.path.exists(filename) else 'w'
-    fl=h5.File(filename,file_mode,libver='latest')
+    file_mode='r+' if resume_this_step and os.path.exists(fname) else 'w'
+    fl=h5.File(fname,file_mode,libver='latest')
     fl.swmr_mode = True
 
     save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=sim_t0,t1=t1)

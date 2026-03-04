@@ -93,8 +93,8 @@ n_kapt=len(kapt_vals)
 
 datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
-file_name = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
-# file_name = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
+fname = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+# fname = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
 
 def one_over(x):
     out = np.zeros_like(x)
@@ -104,7 +104,7 @@ def one_over(x):
 
 # Create datasets
 
-with h5py.File(file_name, 'w') as fl:
+with h5py.File(fname, 'w') as fl:
     shape = (n_kapn, n_kapt)
     fl.create_dataset('gammax_vals', shape, dtype=np.float64)
     fl.create_dataset('Dturbmax_vals', shape, dtype=np.float64)
@@ -125,7 +125,7 @@ for i in range(len(kapn_vals)):
         Dturb=gam*one_over(kx**2+ky**2)
 
         # Store gammax
-        with h5py.File(file_name, 'a', libver='latest') as fl:
+        with h5py.File(fname, 'a', libver='latest') as fl:
             # fl.swmr_mode = True
             fl['gammax_vals'][i, j] = np.max(gam)
             fl['Dturbmax_vals'][i, j] = np.max(Dturb)

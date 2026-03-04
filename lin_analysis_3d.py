@@ -120,7 +120,7 @@ omr_kx0 = omr[0,:,:]
 
 #%% Plots
 
-plt.figure(figsize=(9.71,6))
+plt.figure(figsize=(16, 9))
 slz=slice(None,Nz,int(Nz/8)) #9 kz points
 plt.plot(ky[0,:int(Ny/4),slz],gam_kx0[:int(Ny/4),slz],'.-')
 plt.axhline(0.0, color='k', linestyle='--')
@@ -143,7 +143,7 @@ plt.tight_layout()
 plt.savefig('data/ky_vs_kz_itg.png',dpi=600)
 plt.show()
 
-plt.figure(figsize=(9.71,6))
+plt.figure(figsize=(16, 9))
 sly=slice(None,int(Ny/8),int(Ny/64)) #9 ky points
 plt.plot(kz[0,sly,:int(Nz/2)].T,gam_kx0[sly,:int(Nz/2)].T,'.-')
 plt.axhline(0.0, color='k', linestyle='--')
@@ -155,7 +155,7 @@ plt.tight_layout()
 # plt.savefig('data/gam_vs_kz_kyvals_itg.png',dpi=600)
 plt.show()
 
-plt.figure(figsize=(9.71,6))
+plt.figure(figsize=(16, 9))
 slx=slice(None,int(Nx/2),int((Nx/2)/8)) #9 kx points
 plt.plot(ky[slx,:int(Ny/2),0].T,gam_kz0[slx,:int(Ny/2)].T,'.-')
 plt.axhline(0.0, color='k', linestyle='--')

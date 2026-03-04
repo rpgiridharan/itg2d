@@ -125,19 +125,19 @@ for kapt in kapt_vals:
 
     output_dir = "data_scan/"
     os.makedirs(output_dir, exist_ok=True)
-    filename = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
-    if not os.path.exists(filename):
+    fname = output_dir + f'out_kapt_{str(kapt).replace(".", "_")}_D_{str(D).replace(".", "_")}_H_{format_exp(HPhi)}.h5'
+    if not os.path.exists(fname):
         wecontinue=False
 
     print(f'D={D}, kapn={kapn}, kapt={kapt}, kapb={kapb}')
 
     if(wecontinue):
-        fl=h5.File(filename,'r+',libver='latest')
+        fl=h5.File(fname,'r+',libver='latest')
         fl.swmr_mode = True
         zk=fl['last/zk'][()]
         t0=fl['last/t'][()]
     else:
-        fl=h5.File(filename,'w',libver='latest')
+        fl=h5.File(fname,'w',libver='latest')
         fl.swmr_mode = True
         zk=init_fields(kx,ky)
         save_data(fl,'data',ext_flag=False,kx=kx.get(),ky=ky.get(),t0=t0,t1=t1)
