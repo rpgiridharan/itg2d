@@ -27,15 +27,16 @@ kpsq=kx**2+ky**2
 Nk=kx.size
 slky=np.s_[:int(Ny/2)-1] # ky values for excluding ky=0
 
-D=round(0.1*(512/Npx)**2,2) #0.1 for 512x512
+# D=round(0.1*(512/Npx)**2,3) #0.1 for 512x512
+D=0.1
 kz=0.1 #<=0.2
 
 dtshow=0.1
 gammax=gam_max(kx,ky,kapn,kapt,kapb,D,kz)
 dtstep,dtsavecb=round_to_nsig(0.00275/gammax,1),round_to_nsig(0.0275/gammax,1)
-t0,t1=0.0,round(300/gammax,0) #1800/gammax
+t0,t1=0.0,round(600/gammax,0) #100, 600
 rtol,atol=1e-8,1e-10
-wecontinue=True
+wecontinue=False
 
 output_dir = f"data_2d3c/{Npx}/"
 os.makedirs(output_dir, exist_ok=True)
@@ -116,9 +117,9 @@ def rhs_itg(t,y):
     fac=sigk+kpsq
     nOmg=irft2(fac*Phik)
 
-    dPhikdt[:]=-1j*kz*sigk*Vk/fac-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-sigk*D*kpsq*Phik
-    dPkdt[:]=-(5/3)*1j*kz*sigk*Vk-1j*ky*(kapn+kapt)*Phik-sigk*D*kpsq*Pk
-    dVkdt[:]=-1j*kz*sigk*(Pk+Phik)-sigk*D*kpsq*Vk
+    dPhikdt[:]=-1j*kz*sigk*Vk/fac-1j*ky*kapn*Phik/fac+1j*ky*(kapn+kapt)*kpsq*Phik/fac+1j*ky*kapb*Pk/fac-D*kpsq*Phik
+    dPkdt[:]=-(5/3)*1j*kz*sigk*Vk-1j*ky*(kapn+kapt)*Phik-D*kpsq*Pk
+    dVkdt[:]=-1j*kz*sigk*(Pk+Phik)-D*kpsq*Vk
 
     # dPhikdt[:]+=(1j*kx*rft2(dyphi*nOmg)-1j*ky*rft2(dxphi*nOmg))/fac
     # dPhikdt[:]+= (kx**2*rft2(dxphi*dyP) - ky**2*rft2(dyphi*dxP) + kx*ky*rft2(dyphi*dyP - dxphi*dxP))/fac

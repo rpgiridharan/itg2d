@@ -177,7 +177,7 @@ if rank == 0:
 if rank == 0:
     # Plot P2 fraction vs kapt
     plt.figure(figsize=(16, 9))
-    plt.errorbar(kapt_vals, P2_frac_scan, yerr=P2_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$P_{ZF}^2/P^2$',
+    plt.errorbar(kapt_vals, P2_frac_scan, yerr=P2_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$P_{\mathrm{ZF}}^2/P^2$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
         kapt_vals,
@@ -188,8 +188,8 @@ if rank == 0:
         label='Error band'
     )
     plt.xlabel('$\\kappa_T$')
-    plt.ylabel('$P_{ZF}^2/P^2$')
-    plt.title('$P_{ZF}^2/P^2$ vs $\\kappa_T$')
+    plt.ylabel('$P_{\mathrm{ZF}}^2/P^2$')
+    plt.title('$P_{\mathrm{ZF}}^2/P^2$ vs $\\kappa_T$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -198,7 +198,7 @@ if rank == 0:
 
     # Plot total energy fraction vs kapt
     plt.figure(figsize=(16, 9))
-    plt.errorbar(kapt_vals, E_frac_scan, yerr=E_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$',
+    plt.errorbar(kapt_vals, E_frac_scan, yerr=E_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\E_{\mathrm{ZF}}/\E$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
         kapt_vals,
@@ -209,8 +209,8 @@ if rank == 0:
         label='Error band'
     )
     plt.xlabel('$\\kappa_T$')
-    plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
-    plt.title('$\\mathcal{E}_{ZF}/\\mathcal{E}$ vs $\\kappa_T$')
+    plt.ylabel('$\E_{\mathrm{ZF}}/\E$')
+    plt.title('$\E_{\mathrm{ZF}}/\E$ vs $\\kappa_T$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -219,7 +219,7 @@ if rank == 0:
 
     # Plot generalized energy fraction vs kapt
     plt.figure(figsize=(16, 9))
-    plt.errorbar(kapt_vals, G_frac_scan, yerr=G_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{G}_{ZF}/\\mathcal{G}$',
+    plt.errorbar(kapt_vals, G_frac_scan, yerr=G_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\G_{\mathrm{ZF}}/\G$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
         kapt_vals,
@@ -230,8 +230,8 @@ if rank == 0:
         label='Error band'
     )
     plt.xlabel('$\\kappa_T$')
-    plt.ylabel('$\\mathcal{G}_{ZF}/\\mathcal{G}$')
-    plt.title('$\\mathcal{G}_{ZF}/\\mathcal{G}$ fraction vs $\\kappa_T$')
+    plt.ylabel('$\G_{\mathrm{ZF}}/\G$')
+    plt.title('$\G_{\mathrm{ZF}}/\G$ fraction vs $\\kappa_T$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -240,7 +240,7 @@ if rank == 0:
 
     # Plot Q vs kapt
     plt.figure(figsize=(16, 9))
-    plt.errorbar(kapt_vals, Q_scan, yerr=Q_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{Q}$',
+    plt.errorbar(kapt_vals, Q_scan, yerr=Q_scan_err, marker='o', linestyle='-', markersize=10, label = '$\Q$',
                 elinewidth=2, capthick=1, capsize=4)
     plt.fill_between(
         kapt_vals,
@@ -251,8 +251,8 @@ if rank == 0:
         label='Error band'
     )
     plt.xlabel('$\\kappa_T$')
-    plt.ylabel('$\\mathcal{Q}$')
-    plt.title('$\\mathcal{Q}$ vs $\\kappa_T$')
+    plt.ylabel('$\Q$')
+    plt.title('$\Q$ vs $\\kappa_T$')
     plt.grid()
     plt.legend()
     plt.tight_layout()

@@ -174,11 +174,11 @@ for i,kapt in enumerate(kapt_vals):
 
 # Plot kinetic energy vs kapt
 plt.figure(figsize=(16, 9))
-plt.errorbar(kapt_vals, E_frac_scan, yerr=E_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$',
+plt.errorbar(kapt_vals, E_frac_scan, yerr=E_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\E_{\mathrm{ZF}}/\E$',
              elinewidth=2, capthick=1, capsize=4)
 plt.xlabel('$\\kappa_T$')
-plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
-plt.title('$\\mathcal{E}_{ZF}/\\mathcal{E}$ vs $\\kappa_T$')
+plt.ylabel('$\E_{\mathrm{ZF}}/\E$')
+plt.title('$\E_{\mathrm{ZF}}/\E$ vs $\\kappa_T$')
 plt.grid()
 plt.legend()
 plt.tight_layout()
@@ -187,11 +187,11 @@ plt.show()
 
 # # Plot enstrophy vs kapt
 # plt.figure(figsize=(8,6))
-# plt.errorbar(kapt_vals, W_frac_scan, yerr=W_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{W}_{ZF}/\\mathcal{W}$',
+# plt.errorbar(kapt_vals, W_frac_scan, yerr=W_frac_scan_err, marker='o', linestyle='-', markersize=10, label = '$\W_{\mathrm{ZF}}/\W$',
 #              elinewidth=2, capthick=1, capsize=4)
 # plt.xlabel('$\\kappa_T$')
-# plt.ylabel('$\\mathcal{W}_{ZF}/\\mathcal{W}$')
-# plt.title('$\\mathcal{W}_{ZF}/\\mathcal{W}$ fraction vs $\\kappa_T$')
+# plt.ylabel('$\W_{\mathrm{ZF}}/\W$')
+# plt.title('$\W_{\mathrm{ZF}}/\W$ fraction vs $\\kappa_T$')
 # plt.grid()
 # plt.legend()
 # plt.tight_layout()
@@ -200,11 +200,11 @@ plt.show()
 
 # Plot Q vs kapt
 plt.figure(figsize=(16, 9))
-plt.errorbar(kapt_vals, Q_scan, yerr=Q_scan_err, marker='o', linestyle='-', markersize=10, label = '$\\mathcal{Q}$',
+plt.errorbar(kapt_vals, Q_scan, yerr=Q_scan_err, marker='o', linestyle='-', markersize=10, label = '$\Q$',
              elinewidth=2, capthick=1, capsize=4)
 plt.xlabel('$\\kappa_T$')
-plt.ylabel('$\\mathcal{Q}$')
-plt.title('$\\mathcal{Q}$ vs $\\kappa_T$')
+plt.ylabel('$\Q$')
+plt.title('$\Q$ vs $\\kappa_T$')
 plt.grid()
 plt.legend()
 plt.tight_layout()

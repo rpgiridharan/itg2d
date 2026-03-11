@@ -57,14 +57,14 @@ x,y=np.meshgrid(np.array(xl),np.array(yl),indexing='ij')
 #%% Plots
 
 plt.figure(figsize=(16, 9))  # Set specific figure size
-plt.plot(x[:,0],R,label='$\\mathcal{\\Pi}_\\phi$')
-plt.plot(x[:,0],PiP,label='$\\mathcal{\\Pi}_P$')
-plt.plot(x[:,0],R+PiP,label='$\\Pi_t=\\mathcal{\\Pi}_P+\\mathcal{\\Pi}_\\phi$')
+plt.plot(x[:,0],R,label='$\\Pi_{\\mathrm{\\phi}}$')
+plt.plot(x[:,0],PiP,label='$\\Pi_{\\mathrm{P}}$')
+plt.plot(x[:,0],R+PiP,label='$\\Pi_{\\mathrm{t}}=\\Pi_{\\mathrm{P}}+\\Pi_{\\mathrm{\\phi}}$')
 ylim = plt.gca().get_ylim()
 plt.plot(x[:,0],0.5*ylim[-1]*Ombar/np.max(np.abs(Ombar)),'k',label='$\\partial_x^2\\overline{\\phi}$')
 plt.axhline(0, color='gray', linestyle='--')
 plt.xlabel('x')
-plt.title('$\\mathcal{\\Pi}(x)$' %t[it])
+plt.title('$\\Pi(x)$' %t[it])
 plt.legend()
 symmetrize_y_axis(plt.gca())
 plt.tight_layout(pad=0.5)  # Reduce padding
@@ -74,13 +74,13 @@ else:
     plt.savefig(datadir+fname.split('/')[-1].replace('out_', 'Pi_').replace('.h5', '.png'), dpi=100, bbox_inches='tight')
 
 plt.figure(figsize=(16, 9))  # Set specific figure size
-plt.plot(x[:,0],Q,label='$\\mathcal{Q}$')
+plt.plot(x[:,0],Q,label='$Q$')
 plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*vbar/np.max(np.abs(vbar)),'k',label='$\\overline{v}_y$')
 # plt.plot(x[:,0],np.mean(Q)+0.05*np.max(np.abs(Q))*Ombar/np.max(Ombar),label='$\\partial_x\\overline{v}_y$')
 plt.axhline(np.mean(Q), color='gray', linestyle='--')
 plt.xlabel('x')
-plt.ylabel('$\\mathcal{Q}(x)$')
-plt.title('$\\mathcal{Q}(x)$' %t[it])
+plt.ylabel('$Q(x)$')
+plt.title('$Q(x)$' %t[it])
 plt.legend()
 # symmetrize_y_axis(plt.gca())
 plt.tight_layout(pad=0.5)  # Reduce padding

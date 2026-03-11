@@ -368,10 +368,10 @@ if rank == 0:
     # Plot dQdt vs time
     dQdt = np.gradient(Q_t[:nt], t[:nt])
     plt.figure(figsize=(16, 9))
-    plt.plot(t[:nt], dQdt, '-', label = '$\\frac{d\\mathcal{Q}}{dt}$')
+    plt.plot(t[:nt], dQdt, '-', label = '$\\frac{d\Q}{dt}$')
     plt.xlabel('$t$')
-    plt.ylabel('$\\frac{d\\mathcal{Q}}{dt}$')
-    plt.title('$\\frac{d\\mathcal{Q}}{dt}$')
+    plt.ylabel('$\\frac{d\Q}{dt}$')
+    plt.title('$\\frac{d\Q}{dt}$')
     plt.grid()
     plt.legend()
     plt.tight_layout()
@@ -383,10 +383,10 @@ if rank == 0:
 
     # Plot Q vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
+    plt.semilogy(t[:nt], Q_t, '-', label = '$\Q$')
     plt.xlabel('$t$')
-    plt.ylabel('$\\mathcal{Q}$')
-    plt.title('$\\mathcal{Q}$')
+    plt.ylabel('$\Q$')
+    plt.title('$\Q$')
     plt.grid()
     plt.legend()
     plt.tight_layout()

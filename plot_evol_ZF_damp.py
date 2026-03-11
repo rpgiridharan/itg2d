@@ -244,9 +244,9 @@ if rank == 0:
 
     # Plot variance(P) vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], P2_t, label = '$P_{total}$')
-    plt.semilogy(t[:nt], P2_ZF_t, label = '$P_{ZF}^2$')
-    plt.semilogy(t[:nt], P2_t, label = '$P_{turb}^2$')
+    plt.semilogy(t[:nt], P2_t, label = '$P_{\mathrm{total}}$')
+    plt.semilogy(t[:nt], P2_ZF_t, label = '$P_{\mathrm{ZF}}^2$')
+    plt.semilogy(t[:nt], P2_t, label = '$P_{\mathrm{turb}}^2$')
     plt.xlabel('$\\gamma t$')
     plt.ylabel('$P^2$')
     plt.title('$P^2$ vs $\\gamma$ t')
@@ -261,11 +261,11 @@ if rank == 0:
 
     # Plot total energy vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], energy_t, label = '$\\mathcal{E}_{total}$')
-    plt.semilogy(t[:nt], energy_ZF_t, label = '$\\mathcal{E}_{ZF}$')
-    plt.semilogy(t[:nt], energy_turb_t, label = '$\\mathcal{E}_{turb}$')
+    plt.semilogy(t[:nt], energy_t, label = '$\E_{\mathrm{total}}$')
+    plt.semilogy(t[:nt], energy_ZF_t, label = '$\E_{\mathrm{ZF}}$')
+    plt.semilogy(t[:nt], energy_turb_t, label = '$\E_{\mathrm{turb}}$')
     plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{E}$')
+    plt.ylabel('$\E$')
     plt.title('Total Energy vs $\\gamma$ t')
     plt.grid()
     plt.legend()
@@ -278,9 +278,9 @@ if rank == 0:
 
     # Plot zonal energy fraction vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\\mathcal{E}_{ZF}/\\mathcal{E}$')
+    plt.semilogy(t[:nt], energy_ZF_t/energy_t, label = '$\E_{\mathrm{ZF}}/\E$')
     plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{E}_{ZF}/\\mathcal{E}$')
+    plt.ylabel('$\E_{\mathrm{ZF}}/\E$')
     plt.title('Zonal energy fraction vs $\\gamma$ t')
     plt.grid()
     plt.legend()
@@ -293,11 +293,11 @@ if rank == 0:
 
     # Plot generalized energy vs time
     plt.figure(figsize=(16, 9))
-    plt.semilogy(t[:nt], gen_energy_t, label = '$\\mathcal{E}_{gen,total}$')
-    plt.semilogy(t[:nt], gen_energy_ZF_t, label = '$\\mathcal{E}_{gen,ZF}$')
-    plt.semilogy(t[:nt], gen_energy_turb_t, label = '$\\mathcal{E}_{gen,turb}$')
+    plt.semilogy(t[:nt], gen_energy_t, label = '$\E_{gen,\mathrm{total}}$')
+    plt.semilogy(t[:nt], gen_energy_ZF_t, label = '$\E_{gen,\mathrm{ZF}}$')
+    plt.semilogy(t[:nt], gen_energy_turb_t, label = '$\E_{gen,\mathrm{turb}}$')
     plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{E}_{gen}$')
+    plt.ylabel('$\E_{\mathrm{gen}}$')
     plt.title('Generalized Energy vs $\\gamma$ t')
     plt.grid()
     plt.legend()
@@ -310,9 +310,9 @@ if rank == 0:
 
     # # Plot hyd. entropy vs time
     # plt.figure(figsize=(8,6))
-    # plt.semilogy(t[:nt], entropy_t, label = '$\\mathcal{S}$')
+    # plt.semilogy(t[:nt], entropy_t, label = '$\S$')
     # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\mathcal{S}=-\\sum_{\\mathbf{k}}p_{\\mathbf{k}}\\log p_{\\mathbf{k}}$')
+    # plt.ylabel('$\S=-\\sum_{\\mathbf{k}}p_{\\mathbf{k}}\\log p_{\\mathbf{k}}$')
     # plt.title('Entropy vs $\\gamma$ t')
     # plt.grid()
     # plt.legend()
@@ -325,11 +325,11 @@ if rank == 0:
 
     # # Plot kinetic energy vs time
     # plt.figure(figsize=(8,6))
-    # plt.semilogy(t[:nt], kin_energy_t, label = '$\\mathcal{E}_{kin,total}$')
-    # plt.semilogy(t[:nt], kin_energy_ZF_t, label = '$\\mathcal{E}_{kin,ZF}$')
-    # plt.semilogy(t[:nt], kin_energy_turb_t, label = '$\\mathcal{E}_{kin,turb}$')
+    # plt.semilogy(t[:nt], kin_energy_t, label = '$\E_{kin,\mathrm{total}}$')
+    # plt.semilogy(t[:nt], kin_energy_ZF_t, label = '$\E_{kin,\mathrm{ZF}}$')
+    # plt.semilogy(t[:nt], kin_energy_turb_t, label = '$\E_{kin,\mathrm{turb}}$')
     # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\mathcal{E}_{kin}$')
+    # plt.ylabel('$\E_{\mathrm{kin}}$')
     # plt.title('Kinetic Energy vs $\\gamma$ t')
     # plt.grid()
     # plt.legend()
@@ -342,11 +342,11 @@ if rank == 0:
 
     # # Plot enstrophy vs time
     # plt.figure(figsize=(8,6))
-    # plt.semilogy(t[:nt], enstrophy_t, label = '$\\mathcal{W}_{total}$')
-    # plt.semilogy(t[:nt], enstrophy_ZF_t, label = '$\\mathcal{W}_{ZF}$')
-    # plt.semilogy(t[:nt], enstrophy_turb_t, label = '$\\mathcal{W}_{turb}$')
+    # plt.semilogy(t[:nt], enstrophy_t, label = '$\W_{\mathrm{total}}$')
+    # plt.semilogy(t[:nt], enstrophy_ZF_t, label = '$\W_{\mathrm{ZF}}$')
+    # plt.semilogy(t[:nt], enstrophy_turb_t, label = '$\W_{\mathrm{turb}}$')
     # plt.xlabel('$\\gamma t$')
-    # plt.ylabel('$\\mathcal{W}$')
+    # plt.ylabel('$\W$')
     # plt.title('Enstrophy vs $\\gamma$ t')
     # plt.grid()
     # plt.legend()
@@ -359,10 +359,10 @@ if rank == 0:
 
     # Plot Q vs time
     plt.figure(figsize=(16, 9))
-    plt.plot(t[:nt], Q_t, '-', label = '$\\mathcal{Q}$')
+    plt.plot(t[:nt], Q_t, '-', label = '$\Q$')
     plt.xlabel('$\\gamma t$')
-    plt.ylabel('$\\mathcal{Q}$')
-    plt.title('$\\mathcal{Q}$ vs $\\gamma t$')
+    plt.ylabel('$\Q$')
+    plt.title('$\Q$ vs $\\gamma t$')
     plt.grid()
     plt.legend()
     plt.tight_layout()

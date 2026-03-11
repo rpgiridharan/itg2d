@@ -13,8 +13,8 @@ import os
 
 #%% Parameters
 
-Npx,Npy=512,512
-# Npx,Npy=1024,1024
+# Npx,Npy=512,512
+Npx,Npy=1024,1024
 # Npx,Npy=4096,4096
 Lx,Ly=32*np.pi,32*np.pi
 kapt=2.0 # threshold = 0.7

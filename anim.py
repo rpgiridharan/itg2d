@@ -38,14 +38,15 @@ plt.rcParams.update({
 
 #%% Load the HDF5 file
 
-datadir = "data/"
-# datadir = "data_2d3c/"
-# datadir="data_sweep/"
+Npx=1024
+# datadir = "data{Npx}/"
+datadir=f'data_2d3c/{Npx}/'
 
-# fname = datadir + 'out_2d3c_kapt_2_0_D_0_03_kz_0_1_1024x1024_classic.h5'
-# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6_1024x1024.h5'
-# fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6_1024x1024.h5'
-# fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5_1024x1024.h5'
+fname = datadir+'out_2d3c_kapt_2_0_D_0_1_kz_0_1.h5'
+# fname = datadir + 'out_2d3c_kapt_2_0_D_0_03_kz_0_1_classic.h5'
+# fname = datadir + 'out_kapt_0_4_D_0_1_H_3_6_em6.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_8_6_em6.h5'
+# fname = datadir + 'out_kapt_2_0_D_0_1_H_1_7_em5.h5'
 
 # kapt=2.0
 # D=1e-3

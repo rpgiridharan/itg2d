@@ -32,8 +32,8 @@ datadir='data_linear/'
 os.makedirs(datadir, exist_ok=True)
 
 kapb=0.02
-# fname = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
-fname = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
+fname = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d.h5'
+# fname = datadir + f'lin_kapn_kapt_scan_kapb_{str(kapb).replace(".", "_")}_itg2d_wo_FLR.h5'
 base_name = fname.replace(datadir+'lin_', '').replace('_scan', '').replace('.h5', '.pdf')
 
 # Load datasets
@@ -66,7 +66,6 @@ plt.axhline(y=0, linewidth=1, color='black')
 plt.axvline(x=0, linewidth=1, color='black')
 plt.xlabel('$\\kappa_n$')
 plt.ylabel('$\\kappa_T$')
-plt.title(f"$\\gamma_{{max}}$ for $\\kappa_B$={kapb:.2f}")
 plt.legend()
 plt.colorbar(im_gam)
 plt.savefig(datadir + fname.replace(datadir+'lin_', 'gammax_').replace('.h5', '.pdf'))
@@ -83,7 +82,6 @@ plt.axhline(y=0, linewidth=1, color='black')
 plt.axvline(x=0, linewidth=1, color='black')
 plt.xlabel('$\\kappa_n$')
 plt.ylabel('$\\kappa_T$')
-plt.title(f"$\\left(\\frac{{\\gamma}}{{k^2}}\\right)_{{\\text{{max}}}}$ for $\\kappa_B$={kapb:.2f}")
 plt.legend()
 plt.colorbar(im_dturb)
 plt.savefig(datadir + fname.replace(datadir+'lin_', 'Dturbmax_').replace('.h5', '.pdf'))
